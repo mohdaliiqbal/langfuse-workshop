@@ -165,6 +165,12 @@ with propagate_attributes(
     ...
 ```
 
+Ask a question and open the trace. The name `support-question` now appears at the top of the trace detail dialog instead of `answer`.
+
+![Trace name in detail dialog](assets/langfuse-tracename.png)
+
+This matters at scale — when you have thousands of traces from different features or pipelines, a meaningful name lets you filter and identify them instantly rather than guessing from function names.
+
 ---
 
 ## Checkpoint
