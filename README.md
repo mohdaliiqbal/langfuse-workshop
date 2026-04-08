@@ -12,13 +12,18 @@ This workshop supports two ways of working through the labs. Choose one before y
 Follow the `README.md` in each lab directory. Instructions are written for you to read and code manually, with screenshots showing what to expect at each step.
 
 ### Agent Mode
-Use an AI coding assistant (Claude Code, Cursor, Codex, or similar) to guide you through the code changes. The assistant makes the changes, explains what it did, and tells you what to verify in the Langfuse UI.
+Use an AI coding assistant (Claude Code, Cursor, Codex, or similar). The assistant makes code changes for you, explains what it did, and tells you what to verify in the Langfuse UI after each step. Steps that require browser actions (signing up, creating a project, copying API keys) will be clearly flagged — the agent will pause and tell you exactly what to do manually.
 
 **To use agent mode:**
-1. Open your AI assistant in the workshop directory
-2. The assistant will automatically load `AGENTS.md` from the root (if using Claude Code) — or paste its contents manually as your first message
-3. For each lab, tell your assistant: *"start lab 2"* — or paste the contents of that lab's `AGENT.md` file
-4. The assistant will make changes one step at a time, explain each one, and prompt you to verify in Langfuse before continuing
+1. Clone the repo and open the workshop directory in your AI assistant:
+   ```bash
+   git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
+   cd langfuse-workshop
+   ```
+2. **Claude Code**: `AGENTS.md` is loaded automatically — just say *"start lab 0"* to begin.
+   **Cursor / Codex / other**: Paste the contents of `AGENTS.md` as your first message, then say *"start lab 0"*.
+3. The assistant will guide you lab by lab. For each lab it reads `labs/XX/AGENT.md` and works through it step by step.
+4. For labs that require browser actions (Lab 1: Langfuse signup), the agent will pause and give you explicit instructions for what to do in the UI before continuing.
 
 > Both modes cover the same labs and produce the same results — agent mode just has an AI doing the typing and narrating the changes as it goes.
 
