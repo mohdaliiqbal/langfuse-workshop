@@ -42,13 +42,23 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ```bash
 # 1. Clone this repo
-git clone <repo-url>
+git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
 cd langfuse-workshop
 
 # 2. Bootstrap the project
 chmod +x setup.sh
 ./setup.sh
+```
 
+`setup.sh` does exactly four things — nothing more:
+1. Checks you have Python 3.10+
+2. Creates a virtual environment in `.venv/` (isolated, won't affect your system Python)
+3. Installs the dependencies listed in `requirements.txt` (`openai`, `langfuse`, `python-dotenv`, `rich`)
+4. Copies `.env.example` to `.env` if no `.env` exists yet
+
+It does **not** install anything globally, modify your system, or send any data anywhere.
+
+```bash
 # 3. Fill in your API keys
 # Edit .env with your LANGFUSE_* and OPENAI_API_KEY values
 
