@@ -61,6 +61,17 @@ Run the app, ask a question, then check your Langfuse dashboard. You should see 
 python -m app.main
 ```
 
+In Langfuse, go to **Tracing → Traces**. You'll see a list of traces — one per question you asked. Each row shows the trace name, when it ran, and a preview of the input.
+
+![Langfuse traces list](assets/langfuse-trace-ui.png)
+
+Click on a trace to open the detail view. You'll see:
+- **Input** — the exact arguments passed to `answer()` (the question and history)
+- **Output** — the string returned by `answer()`
+- **Metadata** — timing, tags, and any other attributes attached to the trace
+
+![Langfuse trace detail](assets/langfuse-trace-dialog.png)
+
 > **What happened?** `@observe` automatically captured the function name, its arguments as input, and its return value as output. It also recorded the start and end time.
 
 ---
