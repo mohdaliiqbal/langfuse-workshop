@@ -118,6 +118,10 @@ response = answer(question, history, session_id=session_id)
 
 Ask a few questions in one session. In Langfuse, go to **Sessions** — all questions from that run should be grouped together.
 
+![Langfuse session view](assets/langfuse-session.png)
+
+The session view shows every conversation turn in order, each with its own Input and Output. This is what a support team would use to replay an entire customer conversation — every question asked, every answer given, in sequence. Without session tracking, these would appear as unrelated individual traces with no way to connect them.
+
 ---
 
 ### Task 2.3 — Add user ID and trace metadata
