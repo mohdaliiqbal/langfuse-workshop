@@ -91,6 +91,10 @@ Then call `retrieve_context(question)` from inside `answer()` instead of calling
 
 Ask another question and check the trace. You should now see a **nested** span for retrieval inside the root trace.
 
+![Langfuse trace with retrieve_context span](assets/langfuse-trace-retrieve.png)
+
+Compared to the previous step, notice what's new: the left panel now shows a tree with two nodes — `answer` at the top and `retrieve_context` indented beneath it. Clicking `retrieve_context` shows its own Input (the question) and Output (the formatted docs text that was passed to the LLM). You can now see exactly what the retrieval step returned and how long it took, separately from the overall `answer` call.
+
 > **Key concept**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship between the spans.
 
 ---
