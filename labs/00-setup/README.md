@@ -84,8 +84,16 @@ You should get a helpful response. No Langfuse data will appear yet — that's w
 
 ## Step 6: Verify Langfuse Connection
 
+Make sure your virtual environment is active (you should see `(.venv)` in your terminal prompt). Then open a Python shell:
+
+```bash
+source .venv/bin/activate   # skip if already active from Step 5
+python
+```
+
+You'll see a `>>>` prompt. Paste in the following line by line:
+
 ```python
-# Run this in a Python shell to confirm your Langfuse credentials work
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -93,6 +101,8 @@ from langfuse import get_client
 langfuse = get_client()
 print(langfuse.auth_check())  # Should print True
 ```
+
+Type `exit()` or press `Ctrl+D` to close the shell when done.
 
 ---
 
