@@ -116,6 +116,12 @@ def call_llm(messages: list[dict]) -> str:
 
 Call `call_llm(messages)` from inside `answer()`.
 
+Ask another question and open the trace. You'll now see all three nodes in the left panel: `answer` → `retrieve_context` and `call_llm` side by side beneath it.
+
+![Langfuse trace with call_llm generation](assets/langfuse-trace-call-llm.png)
+
+Click on `call_llm`. This is where things get interesting — the Input shows the **full messages array** that was sent to the model: the system prompt, the retrieved documentation context, and the user's question all assembled together. The Output shows exactly what the model returned. This is the most valuable view for debugging — if the model gave a bad answer, you can see precisely what it was working with.
+
 > **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 2.
 
 ---
