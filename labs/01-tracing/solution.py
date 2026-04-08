@@ -5,7 +5,7 @@ Drop-in replacement for app/assistant.py
 
 import os
 from openai import OpenAI
-from langfuse import observe, get_client
+from langfuse import observe
 from app.knowledge_base import retrieve, format_context
 
 client = OpenAI()
