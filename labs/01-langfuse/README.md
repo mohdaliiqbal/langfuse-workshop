@@ -1,94 +1,110 @@
-# Lab 1: Langfuse UI Overview
+# Lab 1: Getting Started with Langfuse
 
-Before writing any code, let's get familiar with the Langfuse interface. Understanding the layout and key concepts will make the later labs much easier to follow — you'll know exactly where to look when traces start appearing.
-
----
-
-## Organizations and Projects
-
-When you sign in to Langfuse, you land inside an **Organization**. An organization is the top-level container — it represents your company or team and holds billing, members, and settings.
-
-Within an organization you create **Projects**. Each project is an isolated workspace with its own:
-- API keys
-- Traces and observations
-- Prompts
-- Datasets
-- Evaluation scores
-
-> **How to think about it**: Organization = company. Project = one application or environment (e.g. `my-app-production`, `my-app-staging`). Everything you'll build in this workshop lives inside a single project.
+In this lab you'll create a Langfuse account, set up an organization and project, and get your API keys. By the end you'll have everything needed to connect your application to Langfuse.
 
 ---
 
-## Main Navigation
+## Step 1: Sign Up
 
-<!-- Screenshot: full Langfuse UI with sidebar labels annotated -->
+Go to [cloud.langfuse.com](https://cloud.langfuse.com) and click **Sign Up** in the top right corner.
 
-The left sidebar is your main navigation. Here's what each section does:
+![Langfuse landing page — click Sign Up](assets/langfuse-com-landing-signup-button.png)
 
-### Observability
-
-| Section | What it shows |
-|---------|--------------|
-| **Tracing** | Every trace your application has produced — the core view for debugging |
-| **Sessions** | Traces grouped by conversation/session — for multi-turn apps |
-| **Users** | Traces grouped by user ID — for per-user debugging and usage tracking |
-
-### Prompt Management
-
-Manage, version, and deploy your LLM prompts without touching code. You'll use this in Lab 4.
-
-### Evaluation
-
-| Section | What it shows |
-|---------|--------------|
-| **Scores** | Quality signals attached to traces (user feedback, automated evals) |
-| **Annotation Queues** | Human review queues for labeling and spot-checking traces |
-| **Datasets** | Curated test sets for benchmarking your application |
+Create an account with your email or sign in with Google/GitHub.
 
 ---
 
-## The Tracing View
+## Step 2: Create an Organization
 
-<!-- Screenshot: Tracing list view -->
+After signing in you land on the **Organizations** page. An organization is the top-level container for your team — it holds members, billing, and one or more projects.
 
-This is where you'll spend most of your time in the early labs. Each row is one trace — one end-to-end request through your application. The columns show:
-- **Name** — the trace name (set by your code)
-- **Timestamp** — when it ran
-- **Input / Output** — a preview of what went in and came out
-- **Latency** — how long the full request took
-- **Cost** — estimated USD cost based on token usage
+![Organizations page after signup](assets/langfuse-home-landing-after-signup.png)
 
----
+Click **New Organization**. Give it a name (e.g. `workshop-org`) and select a type.
 
-## The Trace Detail View
+![Create organization form](assets/langfuse-create-org.png)
 
-<!-- Screenshot: Trace detail panel -->
-
-Click any trace to open the detail panel. This is where you inspect what actually happened:
-- The **timeline** on the left shows all spans and generations nested in the order they ran
-- Clicking a node shows its **Input**, **Output**, and **Metadata**
-- Generations show **model name**, **token counts**, and **cost**
+Click **Create**.
 
 ---
 
-## Project Settings & API Keys
+## Step 3: Invite Members (optional) and Create a Project
 
-<!-- Screenshot: Settings > API Keys -->
+Langfuse walks you through a 3-step setup wizard. Step 2 lets you invite team members — you can skip this for now by clicking **Next**.
 
-Go to **Settings → API Keys** to find your project's credentials. You need three values for your `.env` file:
-- `LANGFUSE_PUBLIC_KEY` — starts with `pk-lf-`
-- `LANGFUSE_SECRET_KEY` — starts with `sk-lf-`
-- `LANGFUSE_BASE_URL` — `https://cloud.langfuse.com` (EU) or `https://us.cloud.langfuse.com` (US)
+![Invite members step — click Next to proceed](assets/langfuse-click-next-create-project.png)
 
-These are scoped to this project — traces sent with these keys will only appear here.
+Step 3 creates your first **Project**. A project is an isolated workspace that holds all the traces, prompts, datasets, and scores for one application. Give it a name (e.g. `langfuse-workshop`) and click **Create**.
+
+![Create project form](assets/langfuse-create-project.png)
+
+> **Tip**: In production you'd typically have separate projects per environment — `my-app-production` and `my-app-staging` — so traces don't mix.
+
+---
+
+## Step 4: Navigate to Project Settings
+
+Once inside your project, scroll to the bottom of the left sidebar and click **Settings**.
+
+![Navigate to Settings in the sidebar](assets/langfuse-navigate-settings.png)
+
+This opens the **Project Settings** page where you can see your project name, host name, and debug information.
+
+![Project Settings page](assets/langfuse-view-project-settings.png)
+
+In the left settings menu, click **API Keys**.
+
+---
+
+## Step 5: Create an API Key
+
+On the **API Keys** page you'll see any existing keys. Click **Create new API key** in the top right.
+
+![API Keys page — click Create new API key](assets/langfuse-createapi-button.png)
+
+Give the key a note so you can identify it later (e.g. `langfuse-api`) and click **Create API keys**.
+
+![Create API Keys dialog](assets/langfuse-create-api.png)
+
+---
+
+## Step 6: Copy Your Keys
+
+The dialog shows your keys **once** — the Secret Key cannot be retrieved again after you close this dialog. Copy all three values into your `.env` file now.
+
+![API Keys dialog showing Secret Key, Public Key, and .env snippet](assets/langfuse-api-copy.png)
+
+Langfuse even provides a pre-formatted `.env` snippet at the bottom of the dialog. Copy it directly into your `.env` file:
+
+```env
+LANGFUSE_SECRET_KEY="sk-lf-..."
+LANGFUSE_PUBLIC_KEY="pk-lf-..."
+LANGFUSE_BASE_URL="https://us.cloud.langfuse.com"
+```
+
+> **EU vs US**: The `LANGFUSE_BASE_URL` will be `https://cloud.langfuse.com` for EU region or `https://us.cloud.langfuse.com` for US region. Use whichever region you signed up on.
 
 ---
 
 ## Checkpoint
 
-- [ ] You can identify your Organization name and Project name in the UI
-- [ ] You know where to find Tracing, Sessions, and Users in the sidebar
-- [ ] You have your API keys copied into `.env`
-- [ ] You can open a trace and navigate its spans (try clicking through the demo data if your project has any)
+- [ ] Langfuse account created
+- [ ] Organization created
+- [ ] Project created (e.g. `langfuse-workshop`)
+- [ ] API keys copied into `.env`
 
-Once you're comfortable navigating the UI, move on to **Lab 2: Basic Tracing** where you'll start generating your own traces.
+Once your `.env` is filled in, verify the connection works by running the check from Lab 0:
+
+```bash
+source .venv/bin/activate
+python
+```
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+from langfuse import get_client
+print(get_client().auth_check())  # Should print True
+```
+
+If you see `True`, you're connected and ready for **Lab 2: Basic Tracing**.
