@@ -40,9 +40,9 @@ Extend the instrumented assistant from Lab 1 to capture:
 
 ### Task 2.1 — Capture token usage on generations
 
-Currently the generation records input/output text but not token counts. Langfuse can display cost estimates, but only if it knows the token usage.
+Open `app/assistant.py`. Find the `call_llm()` function — this is where the OpenAI call happens. Currently it records input/output text but not token counts. Langfuse can display cost estimates, but only if it knows the token usage.
 
-Use `get_client()` to update the current observation after the LLM call:
+Update `call_llm()` to import `get_client` and call `update_current_observation()` after the OpenAI response comes back:
 
 ```python
 from langfuse import observe, get_client
