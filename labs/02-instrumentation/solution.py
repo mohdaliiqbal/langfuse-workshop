@@ -5,8 +5,8 @@ Drop-in replacement for app/assistant.py
 
 import os
 import uuid
-from openai import OpenAI
-from langfuse import observe, get_client, propagate_attributes
+from langfuse.openai import OpenAI  # Drop-in replacement: captures tokens, model, cost automatically
+from langfuse import observe, propagate_attributes
 from app.knowledge_base import retrieve, format_context
 
 client = OpenAI()
@@ -32,22 +32,11 @@ def retrieve_context(question: str) -> str:
 
 @observe(as_type="generation")
 def call_llm(messages: list[dict]) -> str:
-    langfuse = get_client()
-
+    # langfuse.openai wrapper automatically captures model, tokens, and cost
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
         messages=messages,
         temperature=0.3,
-    )
-
-    # Capture model details and token usage for cost tracking
-    langfuse.update_current_observation(
-        model=response.model,
-        usage_details={
-            "input": response.usage.prompt_tokens,
-            "output": response.usage.completion_tokens,
-            "total": response.usage.total_tokens,
-        }
     )
 
     return response.choices[0].message.content

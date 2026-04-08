@@ -40,35 +40,23 @@ Extend the instrumented assistant from Lab 1 to capture:
 
 ### Task 2.1 — Capture token usage on generations
 
-Open `app/assistant.py`. Find the `call_llm()` function — this is where the OpenAI call happens. Currently it records input/output text but not token counts. Langfuse can display cost estimates, but only if it knows the token usage.
+Open `app/assistant.py`. The `client = OpenAI()` line at the top is where the OpenAI client is created. Currently it records input/output text but not token counts. Langfuse can display cost estimates, but only if it knows the token usage.
 
-Update `call_llm()` to import `get_client` and call `update_current_observation()` after the OpenAI response comes back:
+The simplest way to enable this is Langfuse's **drop-in OpenAI replacement** — a one-line import change that wraps the OpenAI client and automatically captures token usage, model name, and cost for every call, with no other code changes needed.
+
+Replace the OpenAI import at the top of `app/assistant.py`:
 
 ```python
-from langfuse import observe, get_client
+# Before
+from openai import OpenAI
 
-@observe(as_type="generation")
-def call_llm(messages: list[dict]) -> str:
-    langfuse = get_client()
-
-    response = client.chat.completions.create(
-        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-        messages=messages,
-        temperature=0.3,
-    )
-
-    # Update the generation with model details and token usage
-    langfuse.update_current_observation(
-        model=response.model,
-        usage_details={
-            "input": response.usage.prompt_tokens,
-            "output": response.usage.completion_tokens,
-            "total": response.usage.total_tokens,
-        }
-    )
-
-    return response.choices[0].message.content
+# After
+from langfuse.openai import OpenAI
 ```
+
+That's it. The `call_llm()` function stays exactly as it is. Langfuse intercepts every `client.chat.completions.create()` call and records the model, token counts, and estimated cost automatically.
+
+> **Note**: This drop-in also works alongside `@observe`. The `@observe(as_type="generation")` decorator on `call_llm()` creates the span in the trace hierarchy, while the OpenAI wrapper fills in the token and cost details.
 
 Ask a question and verify token counts appear in the Langfuse generation detail view.
 
