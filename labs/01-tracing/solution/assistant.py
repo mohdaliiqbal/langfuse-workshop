@@ -41,10 +41,8 @@ def call_llm(messages: list[dict]) -> str:
 
 @observe()  # Root trace for the full answer pipeline
 def answer(question: str, history: list[dict] | None = None) -> str:
-    # Retrieval - creates a nested span automatically
     context = retrieve_context(question)
 
-    # Build messages
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     if history:
         messages.extend(history)
@@ -53,5 +51,4 @@ def answer(question: str, history: list[dict] | None = None) -> str:
         "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
     })
 
-    # LLM call - creates a nested generation automatically
     return call_llm(messages)

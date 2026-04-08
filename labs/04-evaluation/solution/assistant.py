@@ -1,11 +1,11 @@
 """
-Lab 3 Solution: Prompt Management
-Drop-in replacement for app/assistant.py
+Lab 4 Solution: assistant.py
+Returns (response, trace_id) so main.py can attach scores.
 """
 
 import os
 import uuid
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from langfuse import observe, get_client, propagate_attributes
 from app.knowledge_base import retrieve, format_context
 
@@ -13,10 +13,8 @@ client = OpenAI()
 
 
 def get_system_prompt():
-    """Fetch the system prompt from Langfuse prompt management."""
     langfuse = get_client()
-    prompt = langfuse.get_prompt("datastream-system-prompt", label="production")
-    return prompt
+    return langfuse.get_prompt("datastream-system-prompt", label="production")
 
 
 @observe()
@@ -25,7 +23,7 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 
 
-@observe(as_type="generation")
+@observe()
 def call_llm(messages: list[dict], prompt=None) -> str:
     langfuse = get_client()
 
@@ -35,15 +33,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
         temperature=0.3,
     )
 
-    langfuse.update_current_observation(
-        model=response.model,
-        prompt=prompt,  # Links this generation to the prompt version in Langfuse
-        usage_details={
-            "input": response.usage.prompt_tokens,
-            "output": response.usage.completion_tokens,
-            "total": response.usage.total_tokens,
-        }
-    )
+    langfuse.update_current_observation(prompt=prompt)
 
     return response.choices[0].message.content
 
@@ -54,15 +44,19 @@ def answer(
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> str:
+) -> tuple[str, str | None]:
+    """
+    Returns (response_text, trace_id) so the caller can attach scores.
+    """
+    langfuse = get_client()
+
     with propagate_attributes(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-3"],
+        tags=["workshop", "lab-4"],
         metadata={"app_version": "1.0.0"},
     ):
-        # Fetch prompt from Langfuse (cached after first call)
         prompt_obj = get_system_prompt()
         system_prompt = prompt_obj.compile(product_name="DataStream")
 
@@ -76,5 +70,7 @@ def answer(
             "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
         })
 
-        # Pass prompt_obj so the generation is linked to this prompt version
-        return call_llm(messages, prompt=prompt_obj)
+        response = call_llm(messages, prompt=prompt_obj)
+        trace_id = langfuse.get_current_trace_id()
+
+    return response, trace_id

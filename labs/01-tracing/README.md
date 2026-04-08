@@ -163,4 +163,4 @@ In your Langfuse project, go to **Traces**. Click into a trace and explore:
 
 ## Solution
 
-See [`solution.py`](./solution.py) for the complete instrumented `assistant.py`.
+See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant and [`solution/main.py`](./solution/main.py) for the updated entry point.

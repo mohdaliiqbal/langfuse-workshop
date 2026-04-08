@@ -1,5 +1,6 @@
 """
-Lab 4 Solution: Updated main.py with user feedback and background evaluation
+Lab 4 Solution: main.py
+Adds user feedback collection and background LLM-as-a-judge evaluation.
 """
 
 import uuid
@@ -11,8 +12,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 from langfuse import get_client
-from labs.lab_04_evaluation.solution import answer
-from labs.lab_04_evaluation.evaluator import evaluate_response
+from app.assistant import answer
+from labs.lab_04_evaluation.solution.evaluator import evaluate_response
 
 console = Console()
 
@@ -60,7 +61,7 @@ def main():
                 comment="User thumbs up/down from CLI",
             )
 
-        # Run LLM-as-a-judge evaluation in the background
+        # Run LLM-as-a-judge in the background so it doesn't slow down the user
         if trace_id:
             threading.Thread(
                 target=evaluate_response,

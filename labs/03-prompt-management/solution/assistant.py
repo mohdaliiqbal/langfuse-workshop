@@ -1,27 +1,21 @@
 """
-Lab 2 Solution: Rich Instrumentation
+Lab 3 Solution: Prompt Management
 Drop-in replacement for app/assistant.py
 """
 
 import os
 import uuid
-from langfuse.openai import OpenAI  # Drop-in replacement: captures tokens, model, cost automatically
-from langfuse import observe, propagate_attributes
+from langfuse.openai import OpenAI
+from langfuse import observe, get_client, propagate_attributes
 from app.knowledge_base import retrieve, format_context
 
 client = OpenAI()
 
-SYSTEM_PROMPT = """You are a helpful customer support assistant for DataStream, a real-time data pipeline platform.
 
-Your role is to help users with questions about DataStream's features, pricing, troubleshooting, and best practices.
-
-Guidelines:
-- Be concise and direct. Answer the question asked.
-- Use the provided documentation context when available.
-- If the answer is not in the context, say so honestly rather than guessing.
-- For technical issues, provide actionable steps.
-- Maintain a friendly, professional tone.
-"""
+def get_system_prompt():
+    """Fetch the system prompt from Langfuse prompt management."""
+    langfuse = get_client()
+    return langfuse.get_prompt("datastream-system-prompt", label="production")
 
 
 @observe()
@@ -30,14 +24,18 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 
 
-@observe()  # plain span — the openai wrapper creates the generation inside it
-def call_llm(messages: list[dict]) -> str:
-    # langfuse.openai wrapper automatically captures model, tokens, and cost
+@observe()  # plain span — openai wrapper creates the generation inside it
+def call_llm(messages: list[dict], prompt=None) -> str:
+    langfuse = get_client()
+
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
         messages=messages,
         temperature=0.3,
     )
+
+    # Link this generation to the specific prompt version used
+    langfuse.update_current_observation(prompt=prompt)
 
     return response.choices[0].message.content
 
@@ -53,12 +51,16 @@ def answer(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-2"],
+        tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
+        # Fetch prompt from Langfuse (cached after first call)
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
+
         context = retrieve_context(question)
 
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages = [{"role": "system", "content": system_prompt}]
         if history:
             messages.extend(history)
         messages.append({
@@ -66,4 +68,4 @@ def answer(
             "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
         })
 
-        return call_llm(messages)
+        return call_llm(messages, prompt=prompt_obj)

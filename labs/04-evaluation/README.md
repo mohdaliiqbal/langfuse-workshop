@@ -172,4 +172,4 @@ With scores, you can:
 
 ## Solution
 
-See [`solution.py`](./solution.py) for the updated `assistant.py` and [`evaluator.py`](./evaluator.py) for the evaluator.
+See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant, [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator, and [`solution/main.py`](./solution/main.py) for the updated entry point with feedback collection.
