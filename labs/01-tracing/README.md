@@ -57,6 +57,10 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 Run the app, ask a question, then check your Langfuse dashboard. You should see a trace appear.
 
+```bash
+python -m app.main
+```
+
 > **What happened?** `@observe` automatically captured the function name, its arguments as input, and its return value as output. It also recorded the start and end time.
 
 ---
