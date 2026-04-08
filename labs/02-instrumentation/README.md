@@ -58,7 +58,11 @@ That's it. The `call_llm()` function stays exactly as it is. Langfuse intercepts
 
 > **Note**: Because the OpenAI wrapper now creates the generation observation automatically, also change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()`. Keeping `as_type="generation"` would create a generation nested inside another generation. With the wrapper, `call_llm` becomes a regular span and the OpenAI call inside it becomes the generation.
 
-Ask a question and verify token counts appear in the Langfuse generation detail view.
+Ask a question and open the trace in Langfuse. Click into the generation node — you should now see rich metadata that wasn't there in Lab 1:
+
+![Instrumented LLM call with token counts and cost](assets/langfuse-llm-call-instrumentation.png)
+
+Notice what the OpenAI wrapper added automatically: the **model name**, **token counts** (input, output, total) in the top bar, and an estimated **cost in USD**. The Input section shows the exact messages array sent to the model and the Output shows the response — the same as before, but now with the cost data attached.
 
 ---
 
