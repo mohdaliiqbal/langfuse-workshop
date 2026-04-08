@@ -30,7 +30,7 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 
 
-@observe(as_type="generation")
+@observe()  # plain span — the openai wrapper creates the generation inside it
 def call_llm(messages: list[dict]) -> str:
     # langfuse.openai wrapper automatically captures model, tokens, and cost
     response = client.chat.completions.create(
