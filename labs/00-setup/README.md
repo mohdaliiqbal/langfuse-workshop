@@ -1,6 +1,6 @@
 # Lab 0: Setup
 
-Before you can start building, you need a running Langfuse instance and an OpenAI API key.
+Get the workshop running on your machine. This lab covers cloning the repo and bootstrapping the environment. Langfuse account setup is covered in **Lab 1**.
 
 ---
 
@@ -10,35 +10,11 @@ If you don't have one, create an account at [platform.openai.com](https://platfo
 
 ---
 
-## Step 2: Langfuse Account
-
-You have two options:
-
-### Option A: Langfuse Cloud (recommended for workshops)
-
-1. Go to [cloud.langfuse.com](https://cloud.langfuse.com) and create a free account.
-2. Create a new **project**.
-3. Go to **Settings → API Keys** and create a new key pair.
-4. Note your `Public Key`, `Secret Key`, and the host URL (`https://cloud.langfuse.com` for EU, `https://us.cloud.langfuse.com` for US).
-
-### Option B: Self-Hosted (Docker)
+## Step 2: Bootstrap the Project
 
 ```bash
-# Clone and start Langfuse locally
-git clone https://github.com/langfuse/langfuse.git
-cd langfuse
-docker compose up -d
-```
-
-The UI will be available at `http://localhost:3000`. Use `http://localhost:3000` as your `LANGFUSE_BASE_URL`.
-
----
-
-## Step 3: Bootstrap the Project
-
-```bash
-# Clone the workshop repo (if you haven't already)
-git clone <repo-url>
+# Clone the workshop repo
+git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
 cd langfuse-workshop
 
 # Run the setup script
@@ -46,30 +22,29 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-This will:
-- Create a Python virtual environment in `.venv/`
-- Install all dependencies
-- Copy `.env.example` to `.env`
+`setup.sh` does exactly four things — nothing more:
+1. Checks you have Python 3.10+
+2. Creates a virtual environment in `.venv/` (isolated, won't affect your system Python)
+3. Installs the dependencies listed in `requirements.txt` (`openai`, `langfuse`, `python-dotenv`, `rich`)
+4. Copies `.env.example` to `.env` if no `.env` exists yet
+
+It does **not** install anything globally, modify your system, or send any data anywhere.
 
 ---
 
-## Step 4: Configure Environment Variables
+## Step 3: Add your OpenAI key to `.env`
 
-Open `.env` and fill in your credentials:
+Open `.env` and fill in your OpenAI key. Leave the Langfuse fields for now — you'll get those in Lab 1.
 
 ```env
-LANGFUSE_PUBLIC_KEY=pk-lf-...
-LANGFUSE_SECRET_KEY=sk-lf-...
-LANGFUSE_BASE_URL=https://cloud.langfuse.com
-
 OPENAI_API_KEY=sk-...
 ```
 
 ---
 
-## Step 5: Verify Setup
+## Step 4: Verify the baseline app works
 
-Activate the virtual environment and run the baseline app:
+Activate the virtual environment and run the app:
 
 ```bash
 source .venv/bin/activate
@@ -78,37 +53,13 @@ python -m app.main
 
 Try asking: *"How do I get started with DataStream?"*
 
-You should get a helpful response. No Langfuse data will appear yet — that's what Lab 1 is for.
-
----
-
-## Step 6: Verify Langfuse Connection
-
-Make sure your virtual environment is active (you should see `(.venv)` in your terminal prompt). Then open a Python shell:
-
-```bash
-source .venv/bin/activate   # skip if already active from Step 5
-python
-```
-
-You'll see a `>>>` prompt. Paste in the following line by line:
-
-```python
-from dotenv import load_dotenv
-load_dotenv()
-
-from langfuse import get_client
-langfuse = get_client()
-print(langfuse.auth_check())  # Should print True
-```
-
-Type `exit()` or press `Ctrl+D` to close the shell when done.
+You should get a helpful response. No Langfuse data will appear yet — that comes after Lab 1.
 
 ---
 
 ## Checkpoint
 
-- [ ] `python -m app.main` starts and responds to questions
-- [ ] `langfuse.auth_check()` returns `True`
+- [ ] `./setup.sh` ran without errors
+- [ ] `python -m app.main` starts and responds to a question
 
-Once both pass, move on to **Lab 1**.
+Once both pass, move on to **Lab 1: Langfuse** to create your account and get your API keys.
