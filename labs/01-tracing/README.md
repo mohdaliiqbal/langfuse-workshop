@@ -34,7 +34,7 @@ Instrument `app/assistant.py` so that every question answered creates a trace in
 Open `app/assistant.py` and read through it before starting. Here's what each part does:
 
 - **`SYSTEM_PROMPT`** — the instructions given to the model on every request, defining its persona and behaviour
-- **`retrieve(question)` / `format_context(docs)`** — imported from `app/knowledge_base.py`; these do a simple keyword search over an in-memory set of DataStream docs and return the most relevant ones as a text block
+- **`retrieve(question)` / `format_context(docs)`** — imported from `app/knowledge_base.py`. Open that file and have a quick look: it contains a list of DataStream documentation entries (each with a title, content, and tags), and a `retrieve()` function that scores each entry by counting how many words from the query appear in it, returning the top matches. `format_context()` then joins those matches into a single text block that gets inserted into the prompt. Find `retrieve()` at the top of `app/knowledge_base.py` — it's the function that starts with `def retrieve(query: str, top_k: int = 3)`
 - **`answer(question, history)`** — the main function you'll be modifying; it retrieves context, builds the message list (system prompt + conversation history + user question + context), calls OpenAI, and returns the response string
 
 The flow is: **user question → retrieve docs → build messages → call LLM → return answer**. That's exactly the structure your trace will reflect.
