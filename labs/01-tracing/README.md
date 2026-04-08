@@ -29,6 +29,16 @@ Instrument `app/assistant.py` so that every question answered creates a trace in
 - A child span for the retrieval step
 - A generation for the LLM call
 
+### The app you're instrumenting
+
+Open `app/assistant.py` and read through it before starting. Here's what each part does:
+
+- **`SYSTEM_PROMPT`** — the instructions given to the model on every request, defining its persona and behaviour
+- **`retrieve(question)` / `format_context(docs)`** — imported from `app/knowledge_base.py`; these do a simple keyword search over an in-memory set of DataStream docs and return the most relevant ones as a text block
+- **`answer(question, history)`** — the main function you'll be modifying; it retrieves context, builds the message list (system prompt + conversation history + user question + context), calls OpenAI, and returns the response string
+
+The flow is: **user question → retrieve docs → build messages → call LLM → return answer**. That's exactly the structure your trace will reflect.
+
 ---
 
 ## Tasks
