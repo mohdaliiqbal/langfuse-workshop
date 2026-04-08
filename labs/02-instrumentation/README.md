@@ -64,6 +64,16 @@ Ask a question and open the trace in Langfuse. Click into the generation node �
 
 Notice what the OpenAI wrapper added automatically: the **model name**, **token counts** (input, output, total) in the top bar, and an estimated **cost in USD**. The Input section shows the exact messages array sent to the model and the Output shows the response — the same as before, but now with the cost data attached.
 
+> **Other model providers**: Langfuse offers the same drop-in integration pattern for most major providers and frameworks — not just OpenAI. For example:
+> - **Anthropic**: `from langfuse.anthropic import anthropic`
+> - **AWS Bedrock**: via the Langfuse Bedrock integration
+> - **Google Gemini / Vertex AI**: native Langfuse integrations available
+> - **LiteLLM**: `litellm.success_callback = ["langfuse"]` — one line to trace any of the 100+ models LiteLLM supports (Mistral, Groq, Cohere, Ollama, etc.)
+> - **LangChain / LangGraph**: pass `CallbackHandler` from `langfuse.callback`
+> - **LlamaIndex**: register the Langfuse handler once at startup
+>
+> The full list is at [langfuse.com/integrations](https://langfuse.com/integrations). For this workshop we use OpenAI directly, but the observability patterns you're learning apply identically across all of them.
+
 ---
 
 ### Task 2.2 — Add session tracking
