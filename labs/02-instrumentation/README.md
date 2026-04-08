@@ -144,6 +144,12 @@ def answer(question: str, history: list[dict] | None = None, session_id: str | N
 
 Update `app/main.py` to pass a `user_id` (e.g., `"workshop-user-1"`).
 
+After running the app, go to **Observability → Users** in Langfuse. You'll see your user appear with their first and last event timestamps and a total trace count.
+
+![Langfuse users view](assets/langfuse-user.png)
+
+In production, each of your actual users would appear here. You can click a user to see all their traces, filter by user to debug a specific complaint, or track how frequently a user is interacting with your app. This is the starting point for understanding the per-user experience.
+
 ---
 
 ### Task 2.4 — Name your traces
