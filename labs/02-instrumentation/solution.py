@@ -1,0 +1,80 @@
+"""
+Lab 2 Solution: Rich Instrumentation
+Drop-in replacement for app/assistant.py
+"""
+
+import os
+import uuid
+from openai import OpenAI
+from langfuse import observe, get_client, propagate_attributes
+from app.knowledge_base import retrieve, format_context
+
+client = OpenAI()
+
+SYSTEM_PROMPT = """You are a helpful customer support assistant for DataStream, a real-time data pipeline platform.
+
+Your role is to help users with questions about DataStream's features, pricing, troubleshooting, and best practices.
+
+Guidelines:
+- Be concise and direct. Answer the question asked.
+- Use the provided documentation context when available.
+- If the answer is not in the context, say so honestly rather than guessing.
+- For technical issues, provide actionable steps.
+- Maintain a friendly, professional tone.
+"""
+
+
+@observe()
+def retrieve_context(question: str) -> str:
+    docs = retrieve(question)
+    return format_context(docs)
+
+
+@observe(as_type="generation")
+def call_llm(messages: list[dict]) -> str:
+    langfuse = get_client()
+
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+
+    # Capture model details and token usage for cost tracking
+    langfuse.update_current_observation(
+        model=response.model,
+        usage_details={
+            "input": response.usage.prompt_tokens,
+            "output": response.usage.completion_tokens,
+            "total": response.usage.total_tokens,
+        }
+    )
+
+    return response.choices[0].message.content
+
+
+@observe()
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop", "lab-2"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
