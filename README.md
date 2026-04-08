@@ -11,11 +11,12 @@ You'll instrument a production-style customer support chatbot step by step, lear
 | Lab | Topic | What you learn |
 |-----|-------|----------------|
 | [00 - Setup](labs/00-setup/README.md) | Environment | Langfuse account, API keys, running the baseline app |
-| [01 - Tracing](labs/01-tracing/README.md) | Basic observability | `@observe` decorator, trace structure, exploring the UI |
-| [02 - Instrumentation](labs/02-instrumentation/README.md) | Rich traces | Token tracking, sessions, user IDs, metadata |
-| [03 - Prompt Management](labs/03-prompt-management/README.md) | Prompt versioning | Decouple prompts from code, variables, rollback |
-| [04 - Evaluation](labs/04-evaluation/README.md) | Quality measurement | User feedback scores, LLM-as-a-judge |
-| [05 - Datasets](labs/05-datasets/README.md) | Systematic testing | Golden datasets, experiments, A/B comparisons |
+| [01 - Langfuse UI](labs/01-langfuse/README.md) | UI orientation | Organizations, projects, navigation, trace detail view |
+| [02 - Tracing](labs/02-tracing/README.md) | Basic observability | `@observe` decorator, trace structure, exploring the UI |
+| [03 - Instrumentation](labs/03-instrumentation/README.md) | Rich traces | Token tracking, sessions, user IDs, metadata |
+| [04 - Prompt Management](labs/04-prompt-management/README.md) | Prompt versioning | Decouple prompts from code, variables, rollback |
+| [05 - Evaluation](labs/05-evaluation/README.md) | Quality measurement | User feedback scores, LLM-as-a-judge |
+| [06 - Datasets](labs/06-datasets/README.md) | Systematic testing | Golden datasets, experiments, A/B comparisons |
 
 ---
 
@@ -83,11 +84,12 @@ langfuse-workshop/
 │   └── knowledge_base.py         # In-memory docs + retrieval
 ├── labs/
 │   ├── 00-setup/README.md        # Environment setup
-│   ├── 01-tracing/               # Lab 1: @observe decorator
-│   ├── 02-instrumentation/       # Lab 2: tokens, sessions, metadata
-│   ├── 03-prompt-management/     # Lab 3: prompts in Langfuse
-│   ├── 04-evaluation/            # Lab 4: scoring & LLM-as-judge
-│   └── 05-datasets/              # Lab 5: datasets & experiments
+│   ├── 01-langfuse/              # Lab 1: Langfuse UI orientation
+│   ├── 02-tracing/               # Lab 2: @observe decorator
+│   ├── 03-instrumentation/       # Lab 3: tokens, sessions, metadata
+│   ├── 04-prompt-management/     # Lab 4: prompts in Langfuse
+│   ├── 05-evaluation/            # Lab 5: scoring & LLM-as-judge
+│   └── 06-datasets/              # Lab 6: datasets & experiments
 ├── .env.example                  # Environment variable template
 ├── requirements.txt
 └── setup.sh                      # One-command bootstrap
