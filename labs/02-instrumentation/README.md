@@ -65,10 +65,23 @@ Ask a question and open the trace in Langfuse. Click into the generation node �
 Notice what the OpenAI wrapper added automatically: the **model name**, **token counts** (input, output, total) in the top bar, and an estimated **cost in USD**. The Input section shows the exact messages array sent to the model and the Output shows the response — the same as before, but now with the cost data attached.
 
 > **Other model providers**: Langfuse offers the same drop-in integration pattern for most major providers and frameworks — not just OpenAI. For example:
-> - **Anthropic**: `from langfuse.anthropic import anthropic`
-> - **AWS Bedrock**: via the Langfuse Bedrock integration
+> - **Anthropic** *(interesting one)*: Anthropic exposes an OpenAI-compatible API, so you can reuse the exact same `from langfuse.openai import OpenAI` wrapper — just swap the `api_key`, `base_url`, and model name:
+>   ```python
+>   from langfuse.openai import OpenAI
+>
+>   client = OpenAI(
+>       api_key="sk-ant-...",                        # Anthropic API key
+>       base_url="https://api.anthropic.com/v1/",    # Anthropic endpoint
+>   )
+>   response = client.chat.completions.create(
+>       model="claude-opus-4-20250514",
+>       messages=[...],
+>   )
+>   ```
+>   No new SDK, no new integration — the same wrapper, three config changes.
+> - **AWS Bedrock**: wrap calls using the `@observe()` decorator with manual usage reporting
 > - **Google Gemini / Vertex AI**: native Langfuse integrations available
-> - **LiteLLM**: `litellm.success_callback = ["langfuse"]` — one line to trace any of the 100+ models LiteLLM supports (Mistral, Groq, Cohere, Ollama, etc.)
+> - **LiteLLM**: `litellm.callbacks = ["langfuse_otel"]` — one line to trace any of the 100+ models LiteLLM supports (Mistral, Groq, Cohere, Ollama, etc.)
 > - **LangChain / LangGraph**: pass `CallbackHandler` from `langfuse.callback`
 > - **LlamaIndex**: register the Langfuse handler once at startup
 >
