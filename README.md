@@ -4,6 +4,26 @@ A hands-on workshop for AI engineers covering LLM observability, prompt manageme
 
 ---
 
+## Workshop Modes
+
+This workshop supports two ways of working through the labs. Choose one before you start:
+
+### Human Mode
+Follow the `README.md` in each lab directory. Instructions are written for you to read and code manually, with screenshots showing what to expect at each step.
+
+### Agent Mode
+Use an AI coding assistant (Claude Code, Cursor, Codex, or similar) to guide you through the code changes. The assistant makes the changes, explains what it did, and tells you what to verify in the Langfuse UI.
+
+**To use agent mode:**
+1. Open your AI assistant in the workshop directory
+2. The assistant will automatically load `AGENTS.md` from the root (if using Claude Code) — or paste its contents manually as your first message
+3. For each lab, tell your assistant: *"start lab 2"* — or paste the contents of that lab's `AGENT.md` file
+4. The assistant will make changes one step at a time, explain each one, and prompt you to verify in Langfuse before continuing
+
+> Both modes cover the same labs and produce the same results — agent mode just has an AI doing the typing and narrating the changes as it goes.
+
+---
+
 ## What You'll Build
 
 You'll instrument a production-style customer support chatbot step by step, learning how Langfuse solves real problems at each stage:
