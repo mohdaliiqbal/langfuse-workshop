@@ -153,7 +153,23 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 ---
 
-### Task 3.3 — Update the prompt without touching code
+### Task 3.3 — Test prompt changes in the Playground
+
+Before committing a prompt change to `production`, you can test it directly in Langfuse without writing any code.
+
+1. In Langfuse, go to **Prompts** → `datastream-system-prompt` and click **Playground**.
+2. You'll see the prompt with the `{{product_name}}` variable. Fill it in with `DataStream` in the variables panel on the right.
+3. Type a test question in the **User** message field — e.g. *"What connectors do you support?"*
+4. Click **Run** — the model responds inline using your current prompt.
+5. Try editing the prompt text directly in the Playground (e.g. add a new guideline), run it again, and compare.
+
+> You can also open the Playground from any generation in a trace — click the generation, then **Open in Playground**. This loads the exact prompt and input that produced that response, so you can reproduce and iterate on it immediately.
+
+The Playground is where you prototype. Once you're happy with a change, save it as a new version from the Playground and it becomes available as a versioned prompt in Prompt Management.
+
+---
+
+### Task 3.4 — Update the prompt without touching code
 
 1. Go back to Langfuse → **Prompts** → `datastream-system-prompt`.
 2. Click **New version** and add a new guideline, e.g.:

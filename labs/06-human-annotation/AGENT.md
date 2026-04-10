@@ -1,0 +1,77 @@
+# Lab 6: Human Annotation — Agent Instructions
+
+> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 6" if your assistant has already loaded `AGENTS.md`.
+
+---
+
+## Your task
+
+Guide the attendee through Langfuse's human annotation workflows — Score Configs, ad-hoc trace annotation, and Annotation Queues. This lab is entirely UI-based: no code changes needed.
+
+---
+
+## Step 1 — Create Score Configs
+
+Tell the attendee to do the following in the Langfuse UI:
+
+1. Go to **Settings** → **Scores** → **+ Add score config**
+2. Create these two configs:
+
+   **Config 1:**
+   - Name: `response-quality`
+   - Type: **Numeric** (range 1–5)
+   - Description: *Overall quality — accuracy, helpfulness, clarity*
+
+   **Config 2:**
+   - Name: `answer-grounded`
+   - Type: **Boolean**
+   - Description: *Is the answer grounded in the documentation context?*
+
+Ask the attendee to confirm both configs are created.
+
+**Explain**: Score Configs are reusable rubric dimensions. Every annotation in the project — ad-hoc, queued, or experiment review — uses the same configs for consistency.
+
+---
+
+## Step 2 — Annotate a trace
+
+1. Go to **Tracing** → **Traces** and open any recent trace
+2. Click **Annotate** in the trace detail panel
+3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
+4. Add an optional comment, then click **Save**
+
+**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. The score is immediately visible on the trace and feeds into score analytics. Encourage them to rate a trace they think has a bad response — low scores become useful signal for dataset curation.
+
+---
+
+## Step 3 — Create and fill an Annotation Queue
+
+**Create the queue:**
+1. Go to **Evaluation** → **Annotation Queues** → **New Queue**
+2. Name: `workshop-review`, select both Score Configs, click **Create**
+
+**Add traces:**
+1. Go to **Tracing** → **Traces**
+2. Select 5–10 traces with the checkboxes
+3. Click **Actions** → **Add to queue** → `workshop-review`
+
+---
+
+## Step 4 — Work through the queue
+
+1. Go to **Evaluation** → **Annotation Queues** → `workshop-review` → **Start annotating**
+2. Score each trace and click **Complete + next**
+
+**Explain**: Queues are designed for batch review — a QA reviewer or subject matter expert works through them without needing to navigate the full trace list. Progress is tracked so multiple reviewers can divide the work.
+
+Also point out: for any trace with a clearly bad response, they can click **Add to dataset** → `datastream-support-benchmark` to turn it into a test case for Lab 7.
+
+---
+
+## Completion check
+
+- [ ] `response-quality` and `answer-grounded` Score Configs exist
+- [ ] At least one trace has manual annotation scores
+- [ ] `workshop-review` annotation queue exists with completed items
+
+Once confirmed, tell the attendee they're ready for **Lab 7: Offline Evals — Datasets & Experiments**.

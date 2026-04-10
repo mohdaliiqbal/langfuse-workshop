@@ -1,4 +1,4 @@
-# Lab 4: Scoring & Evaluation
+# Lab 5: Online Evals
 
 ## Concept
 
@@ -145,7 +145,28 @@ threading.Thread(
 In Langfuse:
 1. Go to **Traces** and filter by `score name = "llm-judge-quality"`. See which traces scored low.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
-3. Compare scores between different prompt versions (if you updated the prompt in Lab 3).
+3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
+
+---
+
+### Task 4.4 — Set up a no-code LLM-as-a-judge evaluator in the UI
+
+Your code-based evaluator in Task 4.2 runs via your own infrastructure. Langfuse also has **built-in evaluators** — you configure them once in the UI and they run automatically on every matching trace, with no code changes needed.
+
+**Prerequisites**: You need to connect an LLM to your Langfuse project first:
+1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
+2. Select **OpenAI**, enter your OpenAI API key, click **Save**
+
+**Create the evaluator**:
+1. Go to **Evaluation** → **Evaluators** → **+ Set up Evaluator**
+2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
+3. Set the target to **Live Observations**, filter by `trace name = support-question`
+4. Map variables: `input` → observation input, `output` → observation output
+5. Set sampling to `100%` for the workshop, click **Save**
+
+Run the app and ask a few questions. After a short delay, open a trace — alongside your code-based `llm-judge-quality` score, you'll see a new score from the Langfuse-hosted evaluator appear automatically.
+
+> **Code vs UI evaluators**: Your Task 4.2 evaluator gives full control — custom prompts, any scoring logic, runs synchronously. The UI evaluator is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you can update the rubric without a deployment. In practice, teams use both: UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
 ---
 
@@ -154,9 +175,10 @@ In Langfuse:
 Ask 5+ questions with mixed quality (simple questions, edge cases, questions the bot can't answer).
 
 - [ ] User feedback (y/n) creates a `user-feedback` score on the trace
-- [ ] Each trace automatically gets a `llm-judge-quality` score
+- [ ] Each trace automatically gets a `llm-judge-quality` score from your code evaluator
 - [ ] Low-scoring traces have a comment explaining why
 - [ ] Score analytics show in the Langfuse dashboard
+- [ ] A Langfuse-hosted evaluator is running and attaching scores automatically
 
 ---
 
@@ -173,3 +195,5 @@ With scores, you can:
 ## Solution
 
 See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant, [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator, and [`solution/main.py`](./solution/main.py) for the updated entry point with feedback collection.
+
+Next: **[Lab 6: Human Annotation](../06-human-annotation/README.md)**

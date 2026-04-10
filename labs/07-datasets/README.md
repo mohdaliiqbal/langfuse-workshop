@@ -1,4 +1,4 @@
-# Lab 5: Datasets & Experiments
+# Lab 7: Offline Evals — Datasets & Experiments
 
 ## Concept
 
@@ -31,7 +31,7 @@ This replaces "I think the new prompt is better" with "the new prompt scores 10%
 
 ## Tasks
 
-### Task 5.1 — Create a dataset
+### Task 7.1 — Create a dataset
 
 Create a file `labs/05-datasets/create_dataset.py` to populate a dataset in Langfuse:
 
@@ -108,7 +108,7 @@ Verify the dataset appears in Langfuse → **Datasets**.
 
 ---
 
-### Task 5.2 — Run an experiment
+### Task 7.2 — Run an experiment
 
 Create `labs/05-datasets/run_experiment.py`:
 
@@ -204,16 +204,53 @@ python labs/05-datasets/run_experiment.py
 
 ---
 
-### Task 5.3 — Compare two prompt versions
+### Task 7.3 — Compare two prompt versions
 
 Now update your system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different `EXPERIMENT_NAME`:
 
-1. In Langfuse, edit `datastream-system-prompt` — add or change something meaningful (e.g., require the assistant to always mention relevant pricing, or always suggest contacting support for complex issues).
-2. Publish the new version as `production`.
-3. In `run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`.
-4. Run the experiment again.
+1. In Langfuse, go to **Prompts** → `datastream-system-prompt` → **New version** — add or change something meaningful (e.g., require the assistant to always mention relevant pricing, or always suggest contacting support for complex issues). Check **Set the production label** and save.
+2. In `run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`.
+3. Run the experiment again.
 
 In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side.
+
+---
+
+### Task 7.4 — Run a no-code experiment from the UI
+
+You don't always need to write code to run an experiment. Langfuse can run a prompt directly against your dataset from the UI.
+
+**Prerequisites**: Your dataset must have items with keys that match your prompt's variables. The `datastream-support-benchmark` dataset has a `question` key, but `datastream-system-prompt` uses `product_name`. For this task, create a simpler prompt:
+
+1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, type **Chat**
+2. Add a system message: *"You are a helpful assistant for {{product_name}}."*
+3. Add a user message placeholder: `{{question}}`
+4. Set label `production` and click **Create prompt**
+
+**Run the experiment:**
+1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment**
+2. Select the `support-qa-prompt` prompt
+3. Map variables: `product_name` → `DataStream` (static), `question` → dataset item `question` key
+4. Optionally attach a Langfuse-hosted evaluator (e.g. Helpfulness)
+5. Click **Run** — Langfuse executes the prompt against every dataset item
+
+View the results in the **Runs** tab — each item shows the generated output and any scores. No Python required.
+
+> This is useful for quick prompt testing: iterate on the prompt in the Playground, then immediately validate it against the full dataset to catch regressions.
+
+---
+
+### Task 7.5 — Add a production trace to the dataset
+
+Datasets should grow over time with real failures. When you see a bad production trace, add it to the dataset so it becomes a permanent test case.
+
+1. Go to **Tracing** → **Traces** and open a trace where the assistant gave a wrong or unhelpful answer.
+2. Click **Add to dataset** in the trace detail panel.
+3. Select `datastream-support-benchmark` and click **Add**.
+
+The trace's input is now a dataset item. The next time you run an experiment, it will be tested — ensuring this failure can't silently regress.
+
+> This closes the loop: production failures → dataset items → experiment test cases → caught before deployment.
 
 ---
 
@@ -224,6 +261,8 @@ In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, yo
 - [ ] Each trace has an `answer-correctness` score
 - [ ] After changing the prompt, the second run shows different scores
 - [ ] The dataset runs view shows both experiments for comparison
+- [ ] A no-code UI experiment has been run against the dataset
+- [ ] At least one production trace has been added to the dataset from the UI
 
 ---
 
@@ -243,3 +282,5 @@ Production traces are also a great source of dataset items: when you see a trace
 ## Solution
 
 See [`create_dataset.py`](./create_dataset.py) and [`run_experiment.py`](./run_experiment.py).
+
+**Congratulations — you've completed the workshop!** 🎉

@@ -131,4 +131,34 @@ if trace_id:
 - [ ] Each trace has a `user-feedback` score and a `llm-judge-quality` score
 - [ ] Low-scoring traces have a comment explaining why
 
-Once confirmed, tell the attendee they're ready for **Lab 6: Datasets & Experiments**.
+## Step 4 — Set up a no-code UI evaluator
+
+Tell the attendee to do the following in Langfuse (no code needed):
+
+**First, connect an LLM:**
+1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
+2. Select **OpenAI**, enter their OpenAI API key, click **Save**
+
+**Create the evaluator:**
+1. Go to **Evaluation** → **Evaluators** → **+ Set up Evaluator**
+2. Select a managed evaluator — e.g. **Helpfulness** or **Hallucination**
+3. Set target to **Live Observations**, filter by `trace name = support-question`
+4. Map: `input` → observation input, `output` → observation output
+5. Sampling = `100%`, click **Save**
+
+**Run**: Ask a few questions.
+
+**Verify**: After a short delay (evaluators run async), open a trace — you should see a new score from the Langfuse evaluator alongside the code-based `llm-judge-quality` score.
+
+**Explain**: The UI evaluator is hosted and run by Langfuse — zero infra, auto-scales, rubric editable without a deployment. Code evaluators give full control for domain-specific logic. Production teams typically run both.
+
+---
+
+## Completion check
+
+- [ ] `answer()` returns `(response, trace_id)`
+- [ ] `app/evaluator.py` exists and `evaluate_response()` works
+- [ ] Each trace has a `user-feedback` score and a `llm-judge-quality` score
+- [ ] A Langfuse-hosted evaluator is running and attaching scores automatically
+
+Once confirmed, tell the attendee they're ready for **Lab 6: Human Annotation**.

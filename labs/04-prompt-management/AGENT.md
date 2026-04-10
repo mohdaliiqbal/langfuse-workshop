@@ -116,7 +116,25 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 ---
 
-## Step 3 — Update the prompt without touching code
+## Step 3 — Test prompt changes in the Playground
+
+Tell the attendee to do the following in the Langfuse UI:
+
+1. Go to **Prompts** → `datastream-system-prompt` → click **Playground**
+2. Fill in `product_name` = `DataStream` in the variables panel
+3. Add a user message: *"What connectors do you support?"*
+4. Click **Run** — see the model respond with the current prompt
+5. Edit the prompt text inline, run again, compare
+
+Also show them: open any generation in a recent trace, then click **Open in Playground** — this loads the exact prompt and messages that produced that response for immediate reproduction and iteration.
+
+**Explain**: The Playground is where you prototype changes before promoting them. When you're happy with an edit, save it as a new version from the Playground — no need to go back to the Prompt Management form.
+
+Ask the attendee to confirm they've run a test in the Playground before continuing.
+
+---
+
+## Step 4 — Update the prompt without touching code
 
 Guide the attendee to:
 
@@ -142,4 +160,4 @@ Guide the attendee to:
 - [ ] Generations show a linked prompt version in the trace detail
 - [ ] Editing the prompt in the UI changes the assistant's behaviour with no code change
 
-Once confirmed, tell the attendee they're ready for **Lab 5: Evaluation**.
+Once confirmed, tell the attendee they're ready for **Lab 5: Online Evals**.

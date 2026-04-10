@@ -90,11 +90,28 @@ response = answer(question, history, session_id=session_id, user_id=user_id)
 
 ---
 
+## Step 3 — Set the tracing environment
+
+**Change**: Add one line to the attendee's `.env` file:
+
+```bash
+LANGFUSE_TRACING_ENVIRONMENT=development
+```
+
+**Run**: Ask a question.
+
+**Verify in Langfuse**: Use the **Environment** filter at the top of the Traces table — select `development` and confirm only the workshop traces appear.
+
+**Explain**: In production you'd set `LANGFUSE_TRACING_ENVIRONMENT=production`. Same project, same prompts, same datasets — but traces from different environments are cleanly separated. This prevents dev noise from polluting production dashboards and score analytics.
+
+---
+
 ## Completion check
 
 - [ ] Generations show token counts and model name
 - [ ] Multiple questions from one run appear grouped in Sessions
 - [ ] `workshop-user-1` appears in the Users view
 - [ ] Traces are named `support-question`
+- [ ] Traces are filterable by `environment = development`
 
 Once confirmed, tell the attendee they're ready for **Lab 4: Prompt Management**.

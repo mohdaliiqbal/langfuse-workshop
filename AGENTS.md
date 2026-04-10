@@ -43,10 +43,11 @@ user question
 | 00 - Setup | Environment setup, no code changes |
 | 01 - Langfuse | Langfuse account, project, API keys — no code changes |
 | 02 - Tracing | Add `@observe` decorators to `assistant.py`, add `flush()` to `main.py` |
-| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name to `assistant.py` and `main.py` |
-| 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py` |
-| 05 - Evaluation | Add scoring: user feedback in `main.py`, LLM-as-judge in new `app/evaluator.py` |
-| 06 - Datasets | Run `labs/06-datasets/create_dataset.py` and `run_experiment.py` |
+| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name, environment to `assistant.py` and `main.py` |
+| 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py`; Playground (UI only) |
+| 05 - Online Evals | Add scoring: user feedback in `main.py`, LLM-as-judge in new `app/evaluator.py`; UI evaluator (UI only) |
+| 06 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |
+| 07 - Offline Evals | Run `labs/07-datasets/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
 
 Each lab builds directly on the previous one. The attendee keeps modifying `app/assistant.py` and `app/main.py` — they are never replaced wholesale.
 

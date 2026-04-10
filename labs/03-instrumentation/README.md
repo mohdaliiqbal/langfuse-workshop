@@ -173,6 +173,24 @@ This matters at scale — when you have thousands of traces from different featu
 
 ---
 
+### Task 2.5 — Separate environments
+
+In production you'll have development, staging, and production data all flowing into the same Langfuse project. Without environments they all mix together.
+
+Add one line to your `.env` file:
+
+```bash
+LANGFUSE_TRACING_ENVIRONMENT=development
+```
+
+That's it — Langfuse picks it up automatically. Every trace you send now carries an `environment` attribute.
+
+In the Langfuse UI, use the **Environment** filter (top of the Traces table) to show only `development` traces. When you deploy to production you'd set `LANGFUSE_TRACING_ENVIRONMENT=production` there and the two data streams stay completely separate — same project, same prompts, same datasets, different views.
+
+> This is a one-line change that saves a lot of confusion when you start running the same app in multiple environments.
+
+---
+
 ## Checkpoint
 
 Ask several questions across a session. In Langfuse:
@@ -182,6 +200,7 @@ Ask several questions across a session. In Langfuse:
 - [ ] Traces are grouped under a Session in the Sessions view
 - [ ] Traces show `user_id` and `tags` in the detail view
 - [ ] Traces are named `"support-question"` instead of `"answer"`
+- [ ] Traces are filterable by `environment = development` in the Traces table
 
 ---
 
