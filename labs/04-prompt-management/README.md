@@ -140,6 +140,10 @@ python -m app.main
 
 Open the trace in Langfuse and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`. Every generation now records exactly which prompt version produced it.
 
+![Prompt linked to generation in trace](./assets/langfuse-prompt-trace-link.png)
+
+The right panel shows the generation detail. Notice the **Prompt** field at the top — it shows the exact prompt name and version that produced this response. Langfuse also renders the compiled prompt text in the **Input** section, so you can see precisely what was sent to the model, including the filled-in `product_name` variable.
+
 This becomes powerful at scale: if quality drops, you can filter all traces by prompt version to pinpoint when it started.
 
 ---
