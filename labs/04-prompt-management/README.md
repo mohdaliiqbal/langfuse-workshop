@@ -61,12 +61,12 @@ Guidelines:
 
 ![Create new prompt form — fill in name, type, and content](./assets/langfuse-create-prompt-screen.png)
 
-6. In the **Labels** field, type `production` and press Enter to add it.
+6. The **"Use the 'production' label"** checkbox is checked by default — leave it as is.
 7. Click **Create prompt** — this creates version 1 with the `production` label attached.
 
 > Notice the `{{product_name}}` placeholder — that's a **variable** you'll compile at runtime.
 
-> **About labels**: Labels are how you signal which version is "live". The code calls `get_prompt(..., label="production")` which fetches whichever version currently has that label. Without a label, the fetch would fail. You can have multiple labels (`staging`, `production`, etc.) on different versions at the same time.
+> **About labels**: Labels are how you signal which version is "live". The code calls `get_prompt(..., label="production")` which fetches whichever version currently has that label. Langfuse defaults new prompts to the `production` label — you can have multiple labels (`staging`, `production`, etc.) on different versions at the same time.
 
 ---
 

@@ -34,7 +34,7 @@ Guidelines:
 - Maintain a friendly, professional tone.
 ```
 
-5. In the **Labels** field, type `production` and press Enter to add it
+5. The **"Use the 'production' label"** checkbox is checked by default — leave it as is
 6. Click **Create prompt** — this creates version 1 with the `production` label attached
 
 Ask the attendee to confirm when done before continuing.
