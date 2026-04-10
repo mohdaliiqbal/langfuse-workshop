@@ -104,7 +104,13 @@ Run it:
 python labs/05-datasets/create_dataset.py
 ```
 
-Verify the dataset appears in Langfuse → **Datasets**.
+Verify the dataset appears in Langfuse → **Datasets**:
+
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-datasets-list.png)
+
+Click into it to see the 8 test items:
+
+![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-items.png)
 
 ---
 
@@ -212,7 +218,9 @@ Now update your system prompt in Langfuse (create a new version with different i
 2. In `run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`.
 3. Run the experiment again.
 
-In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side.
+In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
+
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-experiment-runs.png)
 
 ---
 

@@ -48,12 +48,17 @@ Score Configs define the dimensions you'll evaluate on — like a rubric. You ne
 
 > Score Configs are reusable across all annotation workflows in the project — annotation queues, experiment reviews, and ad-hoc scoring all use the same configs.
 
+![Score Configs settings page showing response-quality and answer-grounded configs](./assets/langfuse-score-configs.png)
+
 ---
 
 ### Task 6.2 — Manually annotate a trace
 
 1. Go to **Tracing** → **Traces** and open any trace from your recent runs.
 2. Click **Annotate** in the trace detail panel.
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-trace-annotate.png)
+
 3. You'll see your Score Configs as annotation fields. Fill in:
    - `response-quality`: score 1–5
    - `answer-grounded`: true or false
@@ -75,6 +80,8 @@ Ad-hoc annotation works for spot checks. When you want to review a larger batch 
 2. Name it: `workshop-review`
 3. Select both Score Configs: `response-quality` and `answer-grounded`
 4. Click **Create**
+
+![Annotation Queues list showing workshop-review queue with both score configs](./assets/langfuse-annotation-queues.png)
 
 **Add traces to the queue:**
 1. Go to **Tracing** → **Traces**

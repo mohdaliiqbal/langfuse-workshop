@@ -147,6 +147,14 @@ In Langfuse:
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
 
+Open any trace — you'll see both the `user-feedback` boolean and the `llm-judge-quality` numeric score attached to it:
+
+![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-trace-with-scores.png)
+
+The **Scores** list gives you a full view of all scores across all traces:
+
+![Scores list page showing all score records](./assets/langfuse-scores-list.png)
+
 ---
 
 ### Task 4.4 — Set up a no-code LLM-as-a-judge evaluator in the UI
@@ -157,12 +165,16 @@ Your code-based evaluator in Task 4.2 runs via your own infrastructure. Langfuse
 1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
 2. Select **OpenAI**, enter your OpenAI API key, click **Save**
 
+![LLM Connections settings page with OpenAI connection configured](./assets/langfuse-llm-connections.png)
+
 **Create the evaluator**:
-1. Go to **Evaluation** → **Evaluators** → **+ Set up Evaluator**
+1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
 2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
 3. Set the target to **Live Observations**, filter by `trace name = support-question`
 4. Map variables: `input` → observation input, `output` → observation output
-5. Set sampling to `100%` for the workshop, click **Save**
+5. Set sampling to `100%` for the workshop, click **Execute**
+
+![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-llm-evaluators.png)
 
 Run the app and ask a few questions. After a short delay, open a trace — alongside your code-based `llm-judge-quality` score, you'll see a new score from the Langfuse-hosted evaluator appear automatically.
 
