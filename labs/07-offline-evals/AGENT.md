@@ -15,7 +15,7 @@ Guide the attendee through creating a golden benchmark dataset, running SDK-base
 Run the dataset creation script:
 
 ```bash
-python labs/07-datasets/create_dataset.py
+python labs/07-offline-evals/create_dataset.py
 ```
 
 **Verify in Langfuse**: Go to **Datasets** in the left sidebar. You should see `datastream-support-benchmark` with items. Click into it to see the questions and their expected answers.
@@ -29,7 +29,7 @@ python labs/07-datasets/create_dataset.py
 Run the experiment against the current prompt:
 
 ```bash
-python labs/07-datasets/run_experiment.py
+python labs/07-offline-evals/run_experiment.py
 ```
 
 **Verify in Langfuse**: Go to **Datasets** → `datastream-support-benchmark` → **Runs**. You should see `prompt-v1` with an average score and per-item results.
@@ -46,10 +46,10 @@ Guide the attendee to update their prompt in Langfuse:
 2. Make a meaningful change (e.g. add: "Always cite the specific feature or plan name when relevant.")
 3. Check **Set the production label** and save
 
-In `labs/07-datasets/run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`, then run:
+In `labs/07-offline-evals/run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`, then run:
 
 ```bash
-python labs/07-datasets/run_experiment.py
+python labs/07-offline-evals/run_experiment.py
 ```
 
 **Verify**: Both `prompt-v1` and `prompt-v2` appear in **Datasets** → **Runs**. Compare average scores and look for items where the score changed significantly.

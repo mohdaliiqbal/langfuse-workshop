@@ -47,7 +47,7 @@ user question
 | 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py`; Playground (UI only) |
 | 05 - Online Evals | Add scoring: user feedback in `main.py`, LLM-as-judge in new `app/evaluator.py`; UI evaluator (UI only) |
 | 06 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |
-| 07 - Offline Evals | Run `labs/07-datasets/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
+| 07 - Offline Evals | Run `labs/07-offline-evals/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
 
 Each lab builds directly on the previous one. The attendee keeps modifying `app/assistant.py` and `app/main.py` — they are never replaced wholesale.
 

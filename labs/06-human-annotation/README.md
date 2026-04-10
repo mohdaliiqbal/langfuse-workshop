@@ -119,4 +119,4 @@ With it, you can:
 
 ---
 
-Next: **[Lab 7: Offline Evals — Datasets & Experiments](../07-datasets/README.md)**
+Next: **[Lab 7: Offline Evals — Datasets & Experiments](../07-offline-evals/README.md)**
