@@ -125,7 +125,8 @@ Guide the attendee to:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. The `production` label carries over automatically. Click **Save** to create version 2.
+3. Check **"Set the production label"** — this is not checked by default.
+4. Click **Save new prompt version**.
 
 **Run**: Ask a question again without changing any code.
 

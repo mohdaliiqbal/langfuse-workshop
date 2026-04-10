@@ -160,10 +160,10 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
+3. Check **"Set the production label"** — this is not checked by default.
+4. Click **Save new prompt version**.
 
-![New version button on the prompt detail page](./assets/langfuse-prompt-version.png)
-
-3. The `production` label carries over to the new version automatically. Click **Save** to create version 2.
+![New version form — add guideline, check production label, save](./assets/langfuse-prompt-version-save.png)
 
 Now run the app again — without changing any code, the assistant's behaviour has changed.
 
