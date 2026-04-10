@@ -38,7 +38,10 @@ Edit & save v2      →   (code picks up new version automatically)
 ### Task 3.1 — Create the prompt in Langfuse
 
 1. In your Langfuse project, go to **Prompt Management**.
-2. Click **New Prompt**.
+2. Click **Create Prompt** (or **New Prompt** in the top right if you already have prompts).
+
+![Prompt Management landing page — click Create Prompt](./assets/langfuse-create-prompt.png)
+
 3. Name it: `datastream-system-prompt`
 4. Set the type to **Text**.
 5. Paste in this content:
@@ -55,6 +58,8 @@ Guidelines:
 - For technical issues, provide actionable steps.
 - Maintain a friendly, professional tone.
 ```
+
+![Create new prompt form — fill in name, type, and content](./assets/langfuse-create-prompt-screen.png)
 
 6. In the **Labels** field, type `production` and press Enter to add it.
 7. Click **Create prompt** — this creates version 1 with the `production` label attached.
