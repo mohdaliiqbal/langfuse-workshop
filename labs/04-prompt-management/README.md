@@ -87,16 +87,31 @@ def get_system_prompt():
 
 ```python
 @observe()
-def answer(question: str, ...) -> str:
-    with propagate_attributes(...):
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop", "lab-4"],
+        metadata={"app_version": "1.0.0"},
+    ):
         prompt_obj = get_system_prompt()
         system_prompt = prompt_obj.compile(product_name="DataStream")
 
         context = retrieve_context(question)
+
         messages = [{"role": "system", "content": system_prompt}]
         if history:
             messages.extend(history)
-        messages.append({"role": "user", "content": f"Documentation context:\n{context}\n\nQuestion: {question}"})
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
 
         return call_llm(messages, prompt=prompt_obj)
 ```

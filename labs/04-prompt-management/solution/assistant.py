@@ -46,7 +46,7 @@ def answer(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-3"],
+        tags=["workshop", "lab-4"],
         metadata={"app_version": "1.0.0"},
     ):
         # Fetch prompt from Langfuse (cached after first call)
