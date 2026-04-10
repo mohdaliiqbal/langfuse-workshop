@@ -68,25 +68,30 @@ Guidelines:
 
 ### Task 3.2 — Fetch the prompt in code
 
-In `app/assistant.py`, replace the hardcoded `SYSTEM_PROMPT` string with a call to Langfuse:
+In `app/assistant.py`, add `get_client` to your existing langfuse import line (you already have it from Lab 3):
 
 ```python
-from langfuse import get_client
-
-def get_system_prompt() -> str:
-    langfuse = get_client()
-    prompt = langfuse.get_prompt("datastream-system-prompt", label="production")
-    return prompt.compile(product_name="DataStream")
+from langfuse import observe, get_client, propagate_attributes
 ```
 
-Then in `answer()`, call `get_system_prompt()` instead of using `SYSTEM_PROMPT`:
+Then add a `get_system_prompt()` function above `answer()`:
+
+```python
+def get_system_prompt():
+    langfuse = get_client()
+    return langfuse.get_prompt("datastream-system-prompt", label="production")
+```
+
+In `answer()`, replace the hardcoded `SYSTEM_PROMPT` with a call to `get_system_prompt()`:
 
 ```python
 @observe()
 def answer(question: str, ...) -> str:
-    system_prompt = get_system_prompt()
-    ...
-    messages = [{"role": "system", "content": system_prompt}]
+    with propagate_attributes(...):
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
+        ...
+        messages = [{"role": "system", "content": system_prompt}]
 ```
 
 > **Performance note**: Langfuse caches prompts client-side, so `get_prompt()` is as fast as reading from memory after the first call. No network latency per request.
@@ -105,35 +110,30 @@ The assistant should respond exactly as before — the behaviour hasn't changed,
 
 Langfuse can link a specific prompt version to the generation that used it. This lets you filter traces by prompt version in the UI.
 
-When creating the generation, pass the prompt object:
+Since you're using `langfuse.openai`, the link is made by passing `langfuse_prompt=` directly to `client.chat.completions.create()`:
 
 ```python
-from langfuse import observe, get_client
-
-@observe()  # plain span — langfuse.openai creates the generation inside it
+@observe()
 def call_llm(messages: list[dict], prompt=None) -> str:
-    langfuse = get_client()
-
-    response = client.chat.completions.create(...)
-
-    langfuse.update_current_observation(prompt=prompt)  # links to prompt version
-
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+        langfuse_prompt=prompt,  # links this generation to the prompt version
+    )
     return response.choices[0].message.content
 ```
 
-Update the call chain to pass the prompt object through:
+Update `call_llm` to accept a `prompt` parameter, and update `answer()` to pass the prompt object through:
 
 ```python
-def get_system_prompt():
-    langfuse = get_client()
-    return langfuse.get_prompt("datastream-system-prompt", label="production")
-
 @observe()
 def answer(question: str, ...) -> str:
-    prompt_obj = get_system_prompt()
-    system_prompt = prompt_obj.compile(product_name="DataStream")
-    ...
-    return call_llm(messages, prompt=prompt_obj)
+    with propagate_attributes(...):
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
+        ...
+        return call_llm(messages, prompt=prompt_obj)
 ```
 
 Run the app and ask a question:
