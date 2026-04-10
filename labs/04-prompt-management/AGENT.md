@@ -43,15 +43,17 @@ Ask the attendee to confirm when done before continuing.
 
 ---
 
-## Step 2 — Fetch the prompt in code
+## Step 2 — Fetch, compile, and link the prompt in code
 
-**Change 1**: In `app/assistant.py`, add `get_client` to the existing langfuse import (already there from Lab 3):
+Make four changes to `app/assistant.py`:
+
+**Change 1** — Add `get_client` to the existing langfuse import (already there from Lab 3):
 
 ```python
 from langfuse import observe, get_client, propagate_attributes
 ```
 
-**Change 2**: Add a `get_system_prompt()` function and remove the hardcoded `SYSTEM_PROMPT` constant:
+**Change 2** — Add a `get_system_prompt()` function above `answer()`:
 
 ```python
 def get_system_prompt():
@@ -59,7 +61,7 @@ def get_system_prompt():
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 ```
 
-**Change 3**: Update `answer()` to fetch the prompt and pass it through to `call_llm`:
+**Change 3** — Update `answer()` to fetch and compile the prompt, and pass the prompt object to `call_llm`:
 
 ```python
 @observe()
@@ -74,7 +76,7 @@ def answer(question, history=None, session_id=None, user_id=None):
         return call_llm(messages, prompt=prompt_obj)
 ```
 
-**Change 4**: Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=` to the API call (this is how `langfuse.openai` links the generation to the prompt version):
+**Change 4** — Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=` to the API call:
 
 ```python
 @observe()
@@ -90,7 +92,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 **Run**: Ask a question.
 
-**Verify in Langfuse**: Open the trace, click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`. This links this generation to the exact prompt version that produced it.
+**Verify in Langfuse**: Open the trace, click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`.
 
 **Explain**: `prompt.compile(product_name="DataStream")` fills in the `{{product_name}}` variable. Passing `langfuse_prompt=prompt` to `client.chat.completions.create()` is how the `langfuse.openai` wrapper links the generation to the specific prompt version — enabling you to filter traces by version and measure quality per version.
 

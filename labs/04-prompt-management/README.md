@@ -1,4 +1,4 @@
-# Lab 3: Prompt Management
+# Lab 4: Prompt Management
 
 ## Concept
 
@@ -19,7 +19,7 @@ Langfuse UI         →   Your Code
 ─────────────           ──────────────────────────────────────────
 Create prompt       →   langfuse.get_prompt("system-prompt")
 Add variables       →   prompt.compile(product_name="DataStream")
-Label as production →   langfuse.get_prompt("system-prompt", label="production")
+Label as production →   fetched automatically by label="production"
 Edit & save v2      →   (code picks up new version automatically)
 ```
 
@@ -28,9 +28,8 @@ Edit & save v2      →   (code picks up new version automatically)
 ## What You'll Build
 
 1. Create the system prompt in Langfuse UI
-2. Fetch and use it in code instead of the hardcoded string
-3. Add a template variable to make the prompt reusable
-4. Update the prompt in the UI and see the change reflected without touching code
+2. Fetch it in code, compile the variable, and link it to the trace — all in one step
+3. Update the prompt in the UI and see the change reflected without touching code
 
 ---
 
@@ -66,15 +65,17 @@ Guidelines:
 
 ---
 
-### Task 3.2 — Fetch the prompt in code
+### Task 3.2 — Fetch, compile, and link the prompt
 
-In `app/assistant.py`, add `get_client` to your existing langfuse import line (you already have it from Lab 3):
+Make four changes to `app/assistant.py`:
+
+**1. Add `get_client` to your existing langfuse import:**
 
 ```python
 from langfuse import observe, get_client, propagate_attributes
 ```
 
-Then add a `get_system_prompt()` function above `answer()`:
+**2. Add a `get_system_prompt()` function above `answer()`:**
 
 ```python
 def get_system_prompt():
@@ -82,7 +83,7 @@ def get_system_prompt():
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 ```
 
-In `answer()`, replace the hardcoded `SYSTEM_PROMPT` with a call to `get_system_prompt()`:
+**3. Update `answer()` — replace the hardcoded `SYSTEM_PROMPT`, fetch and compile the prompt, and pass the prompt object to `call_llm`:**
 
 ```python
 @observe()
@@ -90,27 +91,17 @@ def answer(question: str, ...) -> str:
     with propagate_attributes(...):
         prompt_obj = get_system_prompt()
         system_prompt = prompt_obj.compile(product_name="DataStream")
-        ...
+
+        context = retrieve_context(question)
         messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            messages.extend(history)
+        messages.append({"role": "user", "content": f"Documentation context:\n{context}\n\nQuestion: {question}"})
+
+        return call_llm(messages, prompt=prompt_obj)
 ```
 
-> **Performance note**: Langfuse caches prompts client-side, so `get_prompt()` is as fast as reading from memory after the first call. No network latency per request.
-
-Run the app and ask a question:
-
-```bash
-python -m app.main
-```
-
-The assistant should respond exactly as before — the behaviour hasn't changed, only where the prompt comes from. In Langfuse, open the latest trace and click the `call_llm` generation. The Input should still show the compiled system prompt. Nothing looks different yet — that's the point. The next task is what makes this useful.
-
----
-
-### Task 3.3 — Link the prompt to the trace
-
-Langfuse can link a specific prompt version to the generation that used it. This lets you filter traces by prompt version in the UI.
-
-Since you're using `langfuse.openai`, the link is made by passing `langfuse_prompt=` directly to `client.chat.completions.create()`:
+**4. Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=`** — this is how `langfuse.openai` links the generation to the specific prompt version:
 
 ```python
 @observe()
@@ -124,17 +115,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
     return response.choices[0].message.content
 ```
 
-Update `call_llm` to accept a `prompt` parameter, and update `answer()` to pass the prompt object through:
-
-```python
-@observe()
-def answer(question: str, ...) -> str:
-    with propagate_attributes(...):
-        prompt_obj = get_system_prompt()
-        system_prompt = prompt_obj.compile(product_name="DataStream")
-        ...
-        return call_llm(messages, prompt=prompt_obj)
-```
+> **Performance note**: Langfuse caches prompts client-side, so `get_prompt()` is as fast as reading from memory after the first call. No network latency per request.
 
 Run the app and ask a question:
 
@@ -142,13 +123,13 @@ Run the app and ask a question:
 python -m app.main
 ```
 
-Open the trace in Langfuse and click the generation inside `call_llm`. You should now see a **Prompt** field showing `datastream-system-prompt @ version 1`. This is the link — every generation now records exactly which prompt version produced it.
+Open the trace in Langfuse and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`. Every generation now records exactly which prompt version produced it.
 
 This becomes powerful at scale: if quality drops, you can filter all traces by prompt version to pinpoint when it started.
 
 ---
 
-### Task 3.4 — Update the prompt without touching code
+### Task 3.3 — Update the prompt without touching code
 
 1. Go back to Langfuse → **Prompt Management** → `datastream-system-prompt`.
 2. Click **Edit** and add a new guideline, e.g.:
