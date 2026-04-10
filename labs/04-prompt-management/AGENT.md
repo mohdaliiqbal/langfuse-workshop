@@ -34,12 +34,12 @@ Guidelines:
 - Maintain a friendly, professional tone.
 ```
 
-5. Click **Save** (creates version 1)
-6. Click **Publish** and label it `production`
+5. In the **Labels** field, type `production` and press Enter to add it
+6. Click **Create prompt** — this creates version 1 with the `production` label attached
 
 Ask the attendee to confirm when done before continuing.
 
-**Explain**: `{{product_name}}` is a variable that gets filled in at runtime. Storing prompts in Langfuse means anyone — a PM, a content writer — can update the assistant's behaviour without touching code or triggering a deployment.
+**Explain**: Labels are how the code knows which version to fetch. `get_prompt(..., label="production")` fetches whatever version currently has the `production` label. Without setting this label, the fetch will fail. The `{{product_name}}` placeholder is a variable filled in at runtime — so PMs can edit the prompt content without knowing about product names in code.
 
 ---
 
@@ -98,7 +98,7 @@ Guide the attendee to:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. Save as a new version and publish it to `production`
+3. Save as a new version — confirm that the `production` label is applied to version 2 (Langfuse will prompt you to manage labels on save)
 
 **Run**: Ask a question again without changing any code.
 

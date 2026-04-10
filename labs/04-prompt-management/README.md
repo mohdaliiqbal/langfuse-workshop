@@ -57,10 +57,12 @@ Guidelines:
 - Maintain a friendly, professional tone.
 ```
 
-6. Click **Save**. This creates version 1.
-7. Click **Publish** and label it `production`.
+6. In the **Labels** field, type `production` and press Enter to add it.
+7. Click **Create prompt** — this creates version 1 with the `production` label attached.
 
 > Notice the `{{product_name}}` placeholder — that's a **variable** you'll compile at runtime.
+
+> **About labels**: Labels are how you signal which version is "live". The code calls `get_prompt(..., label="production")` which fetches whichever version currently has that label. Without a label, the fetch would fail. You can have multiple labels (`staging`, `production`, etc.) on different versions at the same time.
 
 ---
 
@@ -89,6 +91,14 @@ def answer(question: str, ...) -> str:
 
 > **Performance note**: Langfuse caches prompts client-side, so `get_prompt()` is as fast as reading from memory after the first call. No network latency per request.
 
+Run the app and ask a question:
+
+```bash
+python -m app.main
+```
+
+The assistant should respond exactly as before — the behaviour hasn't changed, only where the prompt comes from. In Langfuse, open the latest trace and click the `call_llm` generation. The Input should still show the compiled system prompt. Nothing looks different yet — that's the point. The next task is what makes this useful.
+
 ---
 
 ### Task 3.3 — Link the prompt to the trace
@@ -100,17 +110,13 @@ When creating the generation, pass the prompt object:
 ```python
 from langfuse import observe, get_client
 
-@observe(as_type="generation")
+@observe()  # plain span — langfuse.openai creates the generation inside it
 def call_llm(messages: list[dict], prompt=None) -> str:
     langfuse = get_client()
 
     response = client.chat.completions.create(...)
 
-    langfuse.update_current_observation(
-        model=response.model,
-        prompt=prompt,  # Links this generation to the prompt version
-        usage_details={...},
-    )
+    langfuse.update_current_observation(prompt=prompt)  # links to prompt version
 
     return response.choices[0].message.content
 ```
@@ -130,6 +136,16 @@ def answer(question: str, ...) -> str:
     return call_llm(messages, prompt=prompt_obj)
 ```
 
+Run the app and ask a question:
+
+```bash
+python -m app.main
+```
+
+Open the trace in Langfuse and click the generation inside `call_llm`. You should now see a **Prompt** field showing `datastream-system-prompt @ version 1`. This is the link — every generation now records exactly which prompt version produced it.
+
+This becomes powerful at scale: if quality drops, you can filter all traces by prompt version to pinpoint when it started.
+
 ---
 
 ### Task 3.4 — Update the prompt without touching code
@@ -139,7 +155,7 @@ def answer(question: str, ...) -> str:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. Save as a new version and **publish** it to `production`.
+3. Save — this creates version 2. Langfuse will ask you to confirm the labels for the new version; make sure `production` is applied.
 
 Now run the app again — without changing any code, the assistant's behaviour has changed.
 
