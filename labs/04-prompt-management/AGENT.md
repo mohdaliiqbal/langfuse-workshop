@@ -1,4 +1,4 @@
-# Lab 4: Prompt Management — Agent Instructions
+# Lab 4: Prompts — Agent Instructions
 
 > **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 4" if your assistant has already loaded `AGENTS.md`.
 
@@ -6,7 +6,7 @@
 
 ## Your task
 
-Guide the attendee through moving the hardcoded `SYSTEM_PROMPT` in `app/assistant.py` into Langfuse Prompt Management. This lab involves both UI steps and code changes.
+Guide the attendee through moving the hardcoded `SYSTEM_PROMPT` in `app/assistant.py` into Langfuse Prompts. This lab involves both UI steps and code changes.
 
 ---
 
@@ -14,7 +14,7 @@ Guide the attendee through moving the hardcoded `SYSTEM_PROMPT` in `app/assistan
 
 Tell the attendee to do the following in their Langfuse project (you cannot do this for them):
 
-1. Go to **Prompt Management** in the left sidebar
+1. Go to **Prompts** in the left sidebar (the menu item is called "Prompts")
 2. Click **New Prompt**
 3. Set:
    - **Name**: `datastream-system-prompt`
@@ -120,12 +120,12 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 Guide the attendee to:
 
-1. Go to **Prompt Management** → `datastream-system-prompt`
-2. Click **Edit** and add a new guideline, for example:
+1. Go to **Prompts** → `datastream-system-prompt`
+2. Click **New version** and add a new guideline, for example:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. Save as a new version — confirm that the `production` label is applied to version 2 (Langfuse will prompt you to manage labels on save)
+3. The `production` label carries over automatically. Click **Save** to create version 2.
 
 **Run**: Ask a question again without changing any code.
 

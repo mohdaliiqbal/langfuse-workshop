@@ -1,4 +1,4 @@
-# Lab 4: Prompt Management
+# Lab 4: Prompts
 
 ## Concept
 
@@ -37,10 +37,10 @@ Edit & save v2      →   (code picks up new version automatically)
 
 ### Task 3.1 — Create the prompt in Langfuse
 
-1. In your Langfuse project, go to **Prompt Management**.
+1. In your Langfuse project, go to **Prompts**.
 2. Click **Create Prompt** (or **New Prompt** in the top right if you already have prompts).
 
-![Prompt Management landing page — click Create Prompt](./assets/langfuse-create-prompt.png)
+![Prompts landing page — click Create Prompt](./assets/langfuse-create-prompt.png)
 
 3. Name it: `datastream-system-prompt`
 4. Set the type to **Text**.
@@ -155,12 +155,15 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 ### Task 3.3 — Update the prompt without touching code
 
-1. Go back to Langfuse → **Prompt Management** → `datastream-system-prompt`.
-2. Click **Edit** and add a new guideline, e.g.:
+1. Go back to Langfuse → **Prompts** → `datastream-system-prompt`.
+2. Click **New version** and add a new guideline, e.g.:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. Save — this creates version 2. Langfuse will ask you to confirm the labels for the new version; make sure `production` is applied.
+
+![New version button on the prompt detail page](./assets/langfuse-prompt-version.png)
+
+3. The `production` label carries over to the new version automatically. Click **Save** to create version 2.
 
 Now run the app again — without changing any code, the assistant's behaviour has changed.
 
