@@ -167,7 +167,11 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 Now run the app again — without changing any code, the assistant's behaviour has changed.
 
-In Langfuse, look at your traces — you'll see some linked to version 1 and new ones linked to version 2.
+In Langfuse, open the latest trace and click the generation inside `call_llm`. The **Prompt** field now shows `datastream-system-prompt @ version 2`.
+
+![Generation detail showing prompt version 2](./assets/langfuse-prompt-version-show.png)
+
+Your earlier traces remain linked to version 1 — the full history is preserved. This is how you track exactly which prompt version produced each response over time.
 
 ---
 
