@@ -1,6 +1,6 @@
 """
-Lab 5 Solution: Create the golden benchmark dataset in Langfuse.
-Run once: python labs/05-datasets/create_dataset.py
+Create the golden benchmark dataset in Langfuse.
+Run once: python labs/07-offline-evals/create_dataset.py
 """
 
 from dotenv import load_dotenv

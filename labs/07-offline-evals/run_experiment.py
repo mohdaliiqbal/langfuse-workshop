@@ -1,11 +1,11 @@
 """
-Lab 5 Solution: Run an experiment against the benchmark dataset.
+Run an experiment against the benchmark dataset.
 
 Usage:
-    python labs/05-datasets/run_experiment.py
-    python labs/05-datasets/run_experiment.py --name prompt-v2
+    python labs/07-offline-evals/run_experiment.py
+    python labs/07-offline-evals/run_experiment.py --name prompt-v2
 
-Change --name between runs to compare different versions.
+Change --name between runs to compare different versions in Langfuse.
 """
 
 import json
@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from openai import OpenAI
-from langfuse import get_client
+from langfuse import get_client, Evaluation
 from app.assistant import answer
 
 langfuse = get_client()
@@ -53,49 +53,40 @@ def judge(question: str, expected: str, actual: str) -> dict:
     return json.loads(result.choices[0].message.content)
 
 
+def run_task(*, item, **kwargs):
+    """Run the assistant against one dataset item."""
+    question = item.input["question"]
+    result = answer(question)
+    # answer() returns (response, trace_id) from Lab 5 onwards
+    if isinstance(result, tuple):
+        return result[0]
+    return result
+
+
+def evaluate_item(*, input, output, expected_output, **kwargs):
+    """Score the assistant's response against the expected answer using LLM-as-a-judge."""
+    evaluation = judge(input["question"], expected_output, output)
+    return Evaluation(
+        name="answer-correctness",
+        value=float(evaluation["score"]),
+        comment=evaluation.get("reason", ""),
+    )
+
+
 def run(experiment_name: str):
     print(f"Running experiment: {experiment_name}")
     print(f"Dataset: {DATASET_NAME}\n")
 
     dataset = langfuse.get_dataset(DATASET_NAME)
-    results = []
 
-    for item in dataset.items:
-        question = item.input["question"]
-        expected = item.expected_output
+    result = dataset.run_experiment(
+        name=experiment_name,
+        task=run_task,
+        evaluators=[evaluate_item],
+    )
 
-        with item.observe(run_name=experiment_name) as trace_id:
-            actual = answer(question)
-            evaluation = judge(question, expected, actual)
-
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="answer-correctness",
-                value=float(evaluation["score"]),
-                data_type="NUMERIC",
-                comment=evaluation.get("reason", ""),
-            )
-
-        results.append({
-            "question": question,
-            "score": evaluation["score"],
-            "correct": evaluation["contains_answer"],
-            "reason": evaluation.get("reason", ""),
-        })
-
-        status = "PASS" if evaluation["contains_answer"] else "FAIL"
-        print(f"  [{status}] [{evaluation['score']:.2f}] {question[:55]}")
-
-    avg_score = sum(r["score"] for r in results) / len(results)
-    pass_rate = sum(1 for r in results if r["correct"]) / len(results)
-
-    print(f"\n{'─' * 50}")
-    print(f"Experiment:    {experiment_name}")
-    print(f"Average score: {avg_score:.2f}")
-    print(f"Pass rate:     {pass_rate:.0%} ({sum(1 for r in results if r['correct'])}/{len(results)})")
+    print(result.format())
     print(f"\nView results: Langfuse → Datasets → {DATASET_NAME} → Runs")
-
-    langfuse.flush()
 
 
 if __name__ == "__main__":

@@ -71,9 +71,9 @@ The scores are now attached to the trace and will appear in the Scores tab and i
 
 ---
 
-### Task 6.3 — Create an Annotation Queue
+### Task 6.3 — Create an Annotation Queue and work through it
 
-Ad-hoc annotation works for spot checks. When you want to review a larger batch systematically — e.g. "review all traces from the last session" — use an Annotation Queue.
+Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a batch systematically — "review all traces from the last session" — use an **Annotation Queue**. A queue lets you work through items one by one without losing your place, and multiple teammates can work the same queue simultaneously.
 
 **Create the queue:**
 1. Go to **Evaluation** → **Annotation Queues** → **New Queue**
@@ -88,27 +88,24 @@ Ad-hoc annotation works for spot checks. When you want to review a larger batch 
 2. Select 5–10 traces using the checkboxes
 3. Click **Actions** → **Add to queue** → select `workshop-review`
 
----
-
-### Task 6.4 — Work through the queue
-
+**Work through the queue:**
 1. Go to **Evaluation** → **Annotation Queues** → `workshop-review`
 2. Click **Start annotating**
 3. For each trace, review the input and output, then fill in your scores
 4. Click **Complete + next** to move to the next item
 
-The queue tracks progress (X of Y completed). Multiple team members can work the same queue simultaneously.
+The queue shows progress (X of Y completed) as you work through it.
 
-> **Using annotations for dataset curation**: If you find a trace with a bad response — wrong answer, hallucination, or out of scope — add it to your dataset from the trace view. Click **Add to dataset** → select `datastream-support-benchmark`. This trace becomes a test case that your automated experiments in Lab 7 will catch going forward.
+> **Saving bad traces for later**: If you find a trace with a wrong or unhelpful response, remember that trace — in Lab 7 you'll add it to a dataset so it becomes a permanent test case.
 
 ---
 
 ## Checkpoint
 
-- [ ] Two Score Configs exist: `response-quality` (numeric) and `answer-grounded` (boolean)
-- [ ] At least one trace has manual annotation scores attached
-- [ ] `workshop-review` annotation queue exists with traces in it
-- [ ] At least one queue item is completed
+- [ ] Two Score Configs exist: `response-quality` (numeric 1–5) and `answer-grounded` (boolean)
+- [ ] At least one trace has manual annotation scores attached from Task 6.2
+- [ ] `workshop-review` annotation queue exists with 5+ traces in it
+- [ ] At least one queue item is marked completed
 
 ---
 

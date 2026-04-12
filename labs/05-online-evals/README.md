@@ -25,40 +25,85 @@ Once you have scores, you can filter traces by score, chart quality over time, a
 
 ## What You'll Build
 
-1. Add user feedback (thumbs up/down) as scores from the CLI
-2. Write a programmatic evaluator that scores every response automatically
-3. View score analytics in the Langfuse dashboard
+1. Add user feedback (thumbs up/down) as scores on traces
+2. Configure a no-code Langfuse-hosted evaluator that scores traces automatically
+3. Write a programmatic LLM-as-a-judge evaluator for custom scoring logic
+4. View score analytics in the Langfuse dashboard
 
 ---
 
 ## Tasks
 
-### Task 4.1 — Capture user feedback as scores
+### Task 5.1 — Capture user feedback as scores
 
-After each response, ask the user for feedback and record it as a score on the trace.
+The goal: after each response, ask the user "was this helpful?" and record their answer as a score on the trace. Scores let you filter, chart, and act on quality signals in the Langfuse dashboard.
 
-First, you need the trace ID of the current trace. Inside an `@observe`-decorated function, get it via `get_client()`:
+To attach a score to a trace you need the **trace ID**. You get it by calling `langfuse.get_current_trace_id()` inside the `@observe`-decorated `answer()` function and returning it to the caller.
+
+**Step 1 — Return the trace ID from `answer()`**
+
+Update `app/assistant.py` so `answer()` returns a `(response, trace_id)` tuple:
 
 ```python
-from langfuse import get_client
+from langfuse import observe, get_client, propagate_attributes
 
-def get_current_trace_id() -> str | None:
+@observe()
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> tuple[str, str | None]:
     langfuse = get_client()
-    return langfuse.get_current_trace_id()
+
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
+
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        response = call_llm(messages, prompt=prompt_obj)
+        trace_id = langfuse.get_current_trace_id()  # capture before context exits
+
+    return response, trace_id
 ```
 
-Update `app/main.py` to ask for feedback after each response and record it:
+**Step 2 — Collect feedback in `main.py` and record it as a score**
+
+Update `app/main.py` to unpack the tuple and prompt for feedback:
 
 ```python
 from langfuse import get_client
 
-# After printing the response:
-feedback = Prompt.ask("[dim]Was this helpful?[/dim] [bold](y/n/skip)[/bold]", default="skip")
+langfuse = get_client()
 
-if feedback in ("y", "n"):
-    langfuse = get_client()
-    trace_id = answer_trace_id  # You'll need to return this from answer()
+# Inside the chat loop, replace the answer() call:
+with console.status("[dim]Thinking...[/dim]"):
+    response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
 
+console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
+
+feedback = Prompt.ask(
+    "[dim]Was this helpful?[/dim]",
+    choices=["y", "n", "skip"],
+    default="skip",
+)
+
+if feedback in ("y", "n") and trace_id:
     langfuse.create_score(
         trace_id=trace_id,
         name="user-feedback",
@@ -68,17 +113,41 @@ if feedback in ("y", "n"):
     )
 ```
 
-> **Tip**: To get the trace ID after calling `answer()`, use `langfuse.get_current_trace_id()` inside `answer()` and return it alongside the response, or call it right after.
+Run the app, ask a question, and give feedback. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
 
 ---
 
-### Task 4.2 — Write a programmatic evaluator
+### Task 5.2 — Set up a no-code LLM-as-a-judge evaluator in the UI
 
-Programmatic evaluation runs automatically after every request. A common pattern is **LLM-as-a-judge**: use a fast/cheap model to score the quality of a response.
+Langfuse has **built-in evaluators** — you configure them once in the UI and they run automatically on every matching trace, with no code needed. This is the fastest way to get a quality signal on all your traffic.
+
+**Prerequisites**: Connect an LLM to your Langfuse project first:
+1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
+2. Select **OpenAI**, enter your OpenAI API key, click **Save**
+
+![LLM Connections settings page with OpenAI connection configured](./assets/langfuse-llm-connections.png)
+
+**Create the evaluator**:
+1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
+2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
+3. Set the target to **Live Observations**, filter by `trace name = support-question`
+4. Map variables: `input` → observation input, `output` → observation output
+5. Set sampling to `100%` for the workshop, click **Execute**
+
+![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-llm-evaluators.png)
+
+Run the app and ask a few questions. After a short delay, open a trace — you'll see a score from the Langfuse-hosted evaluator attached automatically.
+
+---
+
+### Task 5.3 — Write a programmatic evaluator
+
+The UI evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that query your own data. For that, you write the evaluator in code.
 
 Create a new file `app/evaluator.py`:
 
 ```python
+import json
 import os
 from openai import OpenAI
 from langfuse import get_client
@@ -112,7 +181,6 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
         temperature=0,
     )
 
-    import json
     evaluation = json.loads(result.choices[0].message.content)
 
     langfuse.create_score(
@@ -124,13 +192,13 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
     )
 ```
 
-Call `evaluate_response()` in `app/main.py` after each answer (in a background thread so it doesn't slow down the user experience):
+Call `evaluate_response()` in `app/main.py` after each answer. Run it in a background thread so it doesn't add latency for the user:
 
 ```python
 import threading
 from app.evaluator import evaluate_response
 
-# After getting the response:
+# After getting the response and trace_id:
 threading.Thread(
     target=evaluate_response,
     args=(trace_id, question, response),
@@ -138,47 +206,25 @@ threading.Thread(
 ).start()
 ```
 
+> **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
+
 ---
 
-### Task 4.3 — View score analytics
+### Task 5.4 — View score analytics
 
-In Langfuse:
-1. Go to **Traces** and filter by `score name = "llm-judge-quality"`. See which traces scored low.
+Now that you have scores flowing in from multiple sources, explore them in Langfuse:
+
+1. Go to **Traces** and filter by `score name = "llm-judge-quality"` — see which traces scored low and read the judge's reasoning in the comment.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
 
-Open any trace — you'll see both the `user-feedback` boolean and the `llm-judge-quality` numeric score attached to it:
+Open any trace — you'll see the `user-feedback` boolean, the `llm-judge-quality` numeric score from your code evaluator, and the Langfuse-hosted evaluator score all attached:
 
 ![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-trace-with-scores.png)
 
-The **Scores** list gives you a full view of all scores across all traces:
+The **Scores** list gives you a full view across all traces:
 
 ![Scores list page showing all score records](./assets/langfuse-scores-list.png)
-
----
-
-### Task 4.4 — Set up a no-code LLM-as-a-judge evaluator in the UI
-
-Your code-based evaluator in Task 4.2 runs via your own infrastructure. Langfuse also has **built-in evaluators** — you configure them once in the UI and they run automatically on every matching trace, with no code changes needed.
-
-**Prerequisites**: You need to connect an LLM to your Langfuse project first:
-1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
-2. Select **OpenAI**, enter your OpenAI API key, click **Save**
-
-![LLM Connections settings page with OpenAI connection configured](./assets/langfuse-llm-connections.png)
-
-**Create the evaluator**:
-1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
-2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
-3. Set the target to **Live Observations**, filter by `trace name = support-question`
-4. Map variables: `input` → observation input, `output` → observation output
-5. Set sampling to `100%` for the workshop, click **Execute**
-
-![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-llm-evaluators.png)
-
-Run the app and ask a few questions. After a short delay, open a trace — alongside your code-based `llm-judge-quality` score, you'll see a new score from the Langfuse-hosted evaluator appear automatically.
-
-> **Code vs UI evaluators**: Your Task 4.2 evaluator gives full control — custom prompts, any scoring logic, runs synchronously. The UI evaluator is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you can update the rubric without a deployment. In practice, teams use both: UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
 ---
 
@@ -187,10 +233,10 @@ Run the app and ask a few questions. After a short delay, open a trace — along
 Ask 5+ questions with mixed quality (simple questions, edge cases, questions the bot can't answer).
 
 - [ ] User feedback (y/n) creates a `user-feedback` score on the trace
-- [ ] Each trace automatically gets a `llm-judge-quality` score from your code evaluator
+- [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
+- [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on traces
 - [ ] Low-scoring traces have a comment explaining why
 - [ ] Score analytics show in the Langfuse dashboard
-- [ ] A Langfuse-hosted evaluator is running and attaching scores automatically
 
 ---
 

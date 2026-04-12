@@ -24,8 +24,10 @@ This replaces "I think the new prompt is better" with "the new prompt scores 10%
 ## What You'll Build
 
 1. Create a golden dataset of support questions with expected answers
-2. Run an experiment against the dataset
-3. Compare results between two prompt versions
+2. Run a coded experiment against the dataset (LLM-as-a-judge scores each response)
+3. Compare two prompt versions side by side in the Langfuse UI
+4. Run a no-code experiment directly from the Langfuse UI
+5. Add a production trace to the dataset to prevent that failure from ever regressing
 
 ---
 
@@ -33,82 +35,37 @@ This replaces "I think the new prompt is better" with "the new prompt scores 10%
 
 ### Task 7.1 — Create a dataset
 
-Create a file `labs/05-datasets/create_dataset.py` to populate a dataset in Langfuse:
+A dataset is a curated collection of `(input, expected_output)` pairs — your benchmark. The script `create_dataset.py` is already written. It creates the `datastream-support-benchmark` dataset in Langfuse and populates it with 10 support questions and their expected answers.
+
+Run it once:
+
+```bash
+python labs/07-offline-evals/create_dataset.py
+```
+
+The script calls two Langfuse APIs:
 
 ```python
-from dotenv import load_dotenv
-load_dotenv()
-
-from langfuse import get_client
-
-langfuse = get_client()
-
-DATASET_NAME = "datastream-support-benchmark"
-
 # Create the dataset
 langfuse.create_dataset(
-    name=DATASET_NAME,
+    name="datastream-support-benchmark",
     description="Golden set of DataStream support questions for benchmarking",
 )
 
-# Add test cases
-test_cases = [
-    {
-        "input": {"question": "How do I install DataStream?"},
-        "expected_output": "pip install datastream-cli",
-    },
-    {
-        "input": {"question": "What is the price of the Pro plan?"},
-        "expected_output": "$49/month",
-    },
-    {
-        "input": {"question": "What connectors does DataStream support?"},
-        "expected_output": "Kafka, PostgreSQL, MySQL, BigQuery, Snowflake",
-    },
-    {
-        "input": {"question": "I'm getting an AUTH_FAILED error, what should I do?"},
-        "expected_output": "Verify your API keys and permissions in Settings > Credentials",
-    },
-    {
-        "input": {"question": "How do I set up monitoring alerts?"},
-        "expected_output": "Settings > Alerts",
-    },
-    {
-        "input": {"question": "Is DataStream GDPR compliant?"},
-        "expected_output": "Yes, DataStream is SOC 2 Type II certified and GDPR compliant",
-    },
-    {
-        "input": {"question": "What is the API rate limit on the Free plan?"},
-        "expected_output": "100 requests/minute",
-    },
-    {
-        "input": {"question": "How do I create a pipeline?"},
-        "expected_output": "datastream init my-pipeline",
-    },
-]
-
-for case in test_cases:
-    langfuse.create_dataset_item(
-        dataset_name=DATASET_NAME,
-        input=case["input"],
-        expected_output=case["expected_output"],
-    )
-
-print(f"Created dataset '{DATASET_NAME}' with {len(test_cases)} items.")
-print("View it in Langfuse: Datasets → datastream-support-benchmark")
-```
-
-Run it:
-
-```bash
-python labs/05-datasets/create_dataset.py
+# Add each test case
+langfuse.create_dataset_item(
+    dataset_name="datastream-support-benchmark",
+    input={"question": "How do I install DataStream?"},
+    expected_output="Install using pip: pip install datastream-cli, then authenticate with datastream login",
+)
+# ... repeated for each test case
 ```
 
 Verify the dataset appears in Langfuse → **Datasets**:
 
 ![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-datasets-list.png)
 
-Click into it to see the 8 test items:
+Click into it to see the 10 test items:
 
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-items.png)
 
@@ -116,107 +73,63 @@ Click into it to see the 8 test items:
 
 ### Task 7.2 — Run an experiment
 
-Create `labs/05-datasets/run_experiment.py`:
-
-```python
-import json
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-from openai import OpenAI
-from langfuse import get_client, observe
-from app.assistant import answer  # Uses current prompt
-
-langfuse = get_client()
-oai = OpenAI()
-
-DATASET_NAME = "datastream-support-benchmark"
-EXPERIMENT_NAME = "prompt-v1"  # Change this for each run
-
-
-def score_response(question: str, expected: str, actual: str) -> float:
-    """Use LLM to judge if the actual response contains the expected information."""
-    result = oai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{
-            "role": "user",
-            "content": f"""Does the actual response correctly answer the question and contain the key information from the expected answer?
-
-Question: {question}
-Expected key info: {expected}
-Actual response: {actual}
-
-Respond with JSON: {{"contains_answer": true/false, "score": 0.0-1.0, "reason": "..."}}"""
-        }],
-        response_format={"type": "json_object"},
-        temperature=0,
-    )
-    return json.loads(result.choices[0].message.content)
-
-
-def run():
-    dataset = langfuse.get_dataset(DATASET_NAME)
-
-    results = []
-    for item in dataset.items:
-        question = item.input["question"]
-        expected = item.expected_output
-
-        # Run the assistant (creates a trace automatically)
-        with item.observe(run_name=EXPERIMENT_NAME) as trace_id:
-            actual = answer(question)
-
-            # Score the response
-            evaluation = score_response(question, expected, actual)
-
-            # Record the score on the trace
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="answer-correctness",
-                value=evaluation["score"],
-                data_type="NUMERIC",
-                comment=evaluation["reason"],
-            )
-
-            results.append({
-                "question": question,
-                "score": evaluation["score"],
-                "contains_answer": evaluation["contains_answer"],
-            })
-
-        print(f"  [{evaluation['score']:.2f}] {question[:60]}")
-
-    avg_score = sum(r["score"] for r in results) / len(results)
-    pass_rate = sum(1 for r in results if r["contains_answer"]) / len(results)
-
-    print(f"\nExperiment: {EXPERIMENT_NAME}")
-    print(f"Average score: {avg_score:.2f}")
-    print(f"Pass rate:     {pass_rate:.0%}")
-    print(f"\nView in Langfuse: Datasets → {DATASET_NAME} → Runs")
-
-    langfuse.flush()
-
-
-if __name__ == "__main__":
-    run()
-```
-
-Run the experiment:
+The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. Run it:
 
 ```bash
-python labs/05-datasets/run_experiment.py
+python labs/07-offline-evals/run_experiment.py
 ```
+
+Or pass a custom name:
+
+```bash
+python labs/07-offline-evals/run_experiment.py --name prompt-v1
+```
+
+**How the script works:** it uses `dataset.run_experiment()` — the Langfuse SDK's high-level experiment runner. You define two functions and let the SDK handle the rest: looping over dataset items, linking each execution to a dataset run, and collecting scores.
+
+```python
+from langfuse import get_client, Evaluation
+from app.assistant import answer
+
+langfuse = get_client()
+
+def run_task(*, item, **kwargs):
+    """Run the assistant against one dataset item."""
+    question = item.input["question"]
+    response, _ = answer(question)   # answer() returns (text, trace_id)
+    return response
+
+def evaluate_item(*, input, output, expected_output, **kwargs):
+    """Score the response using LLM-as-a-judge."""
+    evaluation = judge(input["question"], expected_output, output)
+    return Evaluation(
+        name="answer-correctness",
+        value=float(evaluation["score"]),
+        comment=evaluation.get("reason", ""),
+    )
+
+dataset = langfuse.get_dataset("datastream-support-benchmark")
+result = dataset.run_experiment(
+    name="prompt-v1",
+    task=run_task,
+    evaluators=[evaluate_item],
+)
+print(result.format())
+```
+
+The SDK runs each item, calls your evaluator, and creates a named **dataset run** in Langfuse automatically.
 
 ---
 
 ### Task 7.3 — Compare two prompt versions
 
-Now update your system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different `EXPERIMENT_NAME`:
+Now update your system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different name:
 
 1. In Langfuse, go to **Prompts** → `datastream-system-prompt` → **New version** — add or change something meaningful (e.g., require the assistant to always mention relevant pricing, or always suggest contacting support for complex issues). Check **Set the production label** and save.
-2. In `run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`.
-3. Run the experiment again.
+2. Run the experiment again with a new name:
+   ```bash
+   python labs/07-offline-evals/run_experiment.py --name prompt-v2
+   ```
 
 In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
 
@@ -264,7 +177,7 @@ The trace's input is now a dataset item. The next time you run an experiment, it
 
 ## Checkpoint
 
-- [ ] Dataset appears in Langfuse with 8 items
+- [ ] Dataset appears in Langfuse with 10 items
 - [ ] First experiment run creates traces linked to the dataset
 - [ ] Each trace has an `answer-correctness` score
 - [ ] After changing the prompt, the second run shows different scores
@@ -287,8 +200,9 @@ Production traces are also a great source of dataset items: when you see a trace
 
 ---
 
-## Solution
+## Scripts
 
-See [`create_dataset.py`](./create_dataset.py) and [`run_experiment.py`](./run_experiment.py).
+- [`create_dataset.py`](./create_dataset.py) — creates the benchmark dataset in Langfuse (run once)
+- [`run_experiment.py`](./run_experiment.py) — runs your app against the dataset and scores results
 
 **Congratulations — you've completed the workshop!** 🎉
