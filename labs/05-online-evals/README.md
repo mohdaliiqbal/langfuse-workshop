@@ -142,9 +142,33 @@ Run the app and ask a few questions. After a short delay, open a trace — you'l
 
 ### Task 5.3 — Write a programmatic evaluator
 
-The UI evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that query your own data. For that, you write the evaluator in code.
+The UI evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that call your own services. For that, you write the evaluator in code.
 
-Create a new file `app/evaluator.py`:
+Since Lab 4, we manage prompts in Langfuse — not hardcoded in source files. The evaluator prompt is no different: create it in Langfuse so you can iterate on the rubric without redeploying code.
+
+**Step 1 — Create the evaluator prompt in Langfuse**
+
+1. Go to **Prompts** → **New Prompt**
+2. Name: `evaluator-prompt`, Type: **Text**
+3. Paste this content:
+
+```
+You are evaluating the quality of a customer support response.
+
+Question: {{question}}
+Response: {{response}}
+
+Rate the response on a scale of 0.0 to 1.0 based on:
+- Accuracy: Is the information correct?
+- Helpfulness: Does it actually answer the question?
+- Clarity: Is it easy to understand?
+
+Respond with only a JSON object: {"score": <float>, "reason": "<one sentence>"}
+```
+
+4. Set label `production` and click **Create prompt**
+
+**Step 2 — Create `app/evaluator.py`**
 
 ```python
 import json
@@ -154,29 +178,18 @@ from langfuse import get_client
 
 client = OpenAI()
 
-EVALUATOR_PROMPT = """You are evaluating the quality of a customer support response.
-
-Question: {question}
-Response: {response}
-
-Rate the response on a scale of 0.0 to 1.0 based on:
-- Accuracy: Is the information correct?
-- Helpfulness: Does it actually answer the question?
-- Clarity: Is it easy to understand?
-
-Respond with only a JSON object: {{"score": <float>, "reason": "<one sentence>"}}"""
-
 
 def evaluate_response(trace_id: str, question: str, response: str) -> None:
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
+    # Fetch the prompt from Langfuse — same pattern as Lab 4
+    prompt_obj = langfuse.get_prompt("evaluator-prompt", label="production")
+    prompt_text = prompt_obj.compile(question=question, response=response)
+
     result = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{
-            "role": "user",
-            "content": EVALUATOR_PROMPT.format(question=question, response=response)
-        }],
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=[{"role": "user", "content": prompt_text}],
         response_format={"type": "json_object"},
         temperature=0,
     )
@@ -186,13 +199,15 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
     langfuse.create_score(
         trace_id=trace_id,
         name="llm-judge-quality",
-        value=evaluation["score"],
+        value=float(evaluation["score"]),
         data_type="NUMERIC",
-        comment=evaluation["reason"],
+        comment=evaluation.get("reason", ""),
     )
 ```
 
-Call `evaluate_response()` in `app/main.py` after each answer. Run it in a background thread so it doesn't add latency for the user:
+**Step 3 — Call the evaluator from `main.py`**
+
+Run it in a background thread so it doesn't add latency for the user:
 
 ```python
 import threading
@@ -206,7 +221,7 @@ threading.Thread(
 ).start()
 ```
 
-> **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
+> **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
 ---
 

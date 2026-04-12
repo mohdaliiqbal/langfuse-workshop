@@ -1,5 +1,6 @@
 """
-Lab 4 Solution: LLM-as-a-judge evaluator.
+Lab 5 Solution: LLM-as-a-judge evaluator.
+The judge prompt is managed in Langfuse (not hardcoded here).
 Called in a background thread after each response.
 """
 
@@ -10,37 +11,23 @@ from langfuse import get_client
 
 client = OpenAI()
 
-JUDGE_PROMPT = """You are evaluating the quality of a customer support response for a data pipeline product.
-
-Question asked by user:
-{question}
-
-Response given by the assistant:
-{response}
-
-Rate the response on a scale of 0.0 to 1.0 based on:
-- Accuracy: Is the information factually correct?
-- Helpfulness: Does it actually answer what was asked?
-- Clarity: Is it easy to understand and act on?
-
-Respond with JSON only:
-{{"score": <float between 0.0 and 1.0>, "reason": "<one concise sentence explaining the score>"}}"""
-
 
 def evaluate_response(trace_id: str, question: str, response: str) -> None:
     """
     Run LLM-as-a-judge evaluation and record the score in Langfuse.
-    Designed to be called in a background thread.
+    Fetches the evaluator prompt from Langfuse — iterate on the rubric
+    without redeploying code.
     """
     langfuse = get_client()
 
     try:
+        # Fetch the prompt from Langfuse (same pattern as Lab 4)
+        prompt_obj = langfuse.get_prompt("evaluator-prompt", label="production")
+        prompt_text = prompt_obj.compile(question=question, response=response)
+
         result = client.chat.completions.create(
             model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-            messages=[{
-                "role": "user",
-                "content": JUDGE_PROMPT.format(question=question, response=response)
-            }],
+            messages=[{"role": "user", "content": prompt_text}],
             response_format={"type": "json_object"},
             temperature=0,
         )
