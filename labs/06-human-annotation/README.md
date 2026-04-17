@@ -89,7 +89,10 @@ Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a ba
 3. Select both Score Configs: `response-quality` and `answer-grounded`
 4. Click **Create**
 
+_Note: in a team setting, you can assign annotation queues to specific users_
+
 ![Annotation Queues list showing workshop-review queue with both score configs](./assets/langfuse-annotation-new-queue-dialog.png)
+
 
 **Add traces to the queue:**
 1. Go to **Tracing** → **Traces**
@@ -107,7 +110,6 @@ Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a ba
 ![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-add-to-queue-confirmation.png)
 
 
-
 ### **Work through the queue:**
 1. Go to **Human Annotation** → **Annotation Queues** → `workshop-review`
 2. You should see all the added traces in the queue. 
@@ -121,7 +123,11 @@ Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a ba
 
 ![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-process-trace.png)
 
-5. Click **Mark Completed** to move to the next item
+5. Importantly, you can choose to provide corrected output 
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-corrected-output.png)
+
+6. Click **Mark Completed** to move to the next item
 
 The queue shows progress (X of Y completed) as you work through it.
 

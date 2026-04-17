@@ -10,7 +10,13 @@ Change --name between runs to compare different versions in Langfuse.
 
 import json
 import os
+import sys
 import argparse
+from pathlib import Path
+
+# Add project root to path so `app` module can be found
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from dotenv import load_dotenv
 load_dotenv()
 

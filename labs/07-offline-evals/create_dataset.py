@@ -3,6 +3,12 @@ Create the golden benchmark dataset in Langfuse.
 Run once: python labs/07-offline-evals/create_dataset.py
 """
 
+import sys
+from pathlib import Path
+
+# Add project root to path so .env and app module can be found
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,16 +18,9 @@ langfuse = get_client()
 
 DATASET_NAME = "datastream-support-benchmark"
 
-langfuse.create_dataset(
-    name=DATASET_NAME,
-    description="Golden set of DataStream support questions for benchmarking assistant quality",
-)
 
 test_cases = [
-    {
-        "input": {"question": "How do I install DataStream?"},
-        "expected_output": "Install using pip: pip install datastream-cli, then authenticate with datastream login",
-    },
+
     {
         "input": {"question": "What is the price of the Pro plan?"},
         "expected_output": "$49/month with up to 50M events and 10 pipelines",

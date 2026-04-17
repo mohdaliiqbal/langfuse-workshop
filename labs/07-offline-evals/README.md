@@ -35,7 +35,29 @@ This replaces "I think the new prompt is better" with "the new prompt scores 10%
 
 ### Task 7.1 — Create a dataset
 
-A dataset is a curated collection of `(input, expected_output)` pairs — your benchmark. The script `create_dataset.py` is already written. It creates the `datastream-support-benchmark` dataset in Langfuse and populates it with 10 support questions and their expected answers.
+A dataset is a curated collection of `(input, expected_output)` pairs — your benchmark. 
+
+### **Create new dataset:**
+1. Go to **Datasets** → **New dataset**
+2. You should see a dialog to provide dataset name and description. Leave everything else as default
+
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-create-dialog.png)
+
+3. Click the newly created dataset **datastream-support-benchmark**
+
+4. Go to items tab and click **Add manually**
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-add-item-dialog.png)
+
+5. Add input and expected output as shown in the image below
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-add-item-screen.png)
+
+6. You should see item in the item list.
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-one-item-list.png)
+
+_Manually adding many items would take time. You could upload items with CSV file as well, however, we have created a python script that will populate items using code._
+
+### **Create items using code - Python **
+The script `create_dataset.py` is already written. It populates *datastream-support-benchmark dataset* with 9 support questions and their expected answers.
 
 Run it once:
 
@@ -46,11 +68,11 @@ python labs/07-offline-evals/create_dataset.py
 The script calls two Langfuse APIs:
 
 ```python
-# Create the dataset
-langfuse.create_dataset(
-    name="datastream-support-benchmark",
-    description="Golden set of DataStream support questions for benchmarking",
-)
+# Initialize client, and dataset name
+from langfuse import get_client
+
+langfuse = get_client()
+DATASET_NAME = "datastream-support-benchmark"
 
 # Add each test case
 langfuse.create_dataset_item(
@@ -60,6 +82,10 @@ langfuse.create_dataset_item(
 )
 # ... repeated for each test case
 ```
+_Following is a a sample run_
+
+![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-python-run.png)
+
 
 Verify the dataset appears in Langfuse → **Datasets**:
 
@@ -69,9 +95,17 @@ Click into it to see the 10 test items:
 
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-items.png)
 
+Now are dataset is ready to run experiments.
+
 ---
 
 ### Task 7.2 — Run an experiment
+
+1. Navigate to Experiments tab in the Datasets screen
+![Dataset experiments tab](./assets/langfuse-dataset-experiments-tab.png)
+
+2. Click **Run experiment** button on the top right handside 
+![Dataset experiments tab](./assets/langfuse-dataset-run-experiment.png)
 
 The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. Run it:
 
