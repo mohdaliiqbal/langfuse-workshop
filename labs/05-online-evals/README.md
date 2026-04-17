@@ -219,21 +219,21 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-evaluator-helpfullness-comment.png)
 
-10. Having LLM evaluate the observation allows you to ensure that your application AI responses are complying to desired policies and objectives and any negative score e.g. `Not helpful` should be investigated by humans. Evaluation can be a great way to identify areas of improvement in your AI applications.
+10. Having LLM evaluate the observation allows you to ensure that your application AI responses are complying to desired policies and objectives. Any negative score e.g. `Not helpful` should be investigated by humans. Evaluation can be a great way to identify areas of improvement in your AI applications.
 ---
 
 
 
 ### Task 5.3 — Write a programmatic evaluator
 
-The UI evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that call your own services. For that, you write the evaluator in code.
+The Langfuse UI based evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that call your own services. For that, you write the evaluator in code.
 
-Since Lab 4, we manage prompts in Langfuse — not hardcoded in source files. The evaluator prompt is no different: create it in Langfuse so you can iterate on the rubric without redeploying code.
+Since Lab 4, we manage prompts in Langfuse — not hardcoded in source files. The evaluator prompt is no different: create it in Langfuse so you can iterate on the rubric without redeploying code. Hint: If you get code failures you can use solution files at the bottom.
 
 **Step 1 — Create the evaluator prompt in Langfuse**
 
 1. Go to **Prompts** → **New Prompt**
-2. Name: `evaluator-prompt`, Type: **Text**
+2. Name: `quality-evaluator-prompt`, Type: **Text**
 3. Paste this content:
 
 ```
@@ -252,7 +252,7 @@ Respond with only a JSON object: {"score": <float>, "reason": "<one sentence>"}
 
 4. Set label `production` and click **Create prompt**
 
-**Step 2 — Create `app/evaluator.py`**
+**Step 2 — Create a new file `app/evaluator.py`**
 
 ```python
 import json
@@ -268,7 +268,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
     langfuse = get_client()
 
     # Fetch the prompt from Langfuse — same pattern as Lab 4
-    prompt_obj = langfuse.get_prompt("evaluator-prompt", label="production")
+    prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
     prompt_text = prompt_obj.compile(question=question, response=response)
 
     result = client.chat.completions.create(
@@ -291,18 +291,70 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
 **Step 3 — Call the evaluator from `main.py`**
 
-Run it in a background thread so it doesn't add latency for the user:
+Lets replace our main() function in `main.py` with following code. This will run programmatic evaluation in a background thread so it doesn't add latency for the user:
 
 ```python
-import threading
-from app.evaluator import evaluate_response
 
-# After getting the response and trace_id:
-threading.Thread(
-    target=evaluate_response,
-    args=(trace_id, question, response),
-    daemon=True,
-).start()
+from app.evaluator import evaluate_response
+import threading
+
+
+def main():
+    console.print(Panel.fit(
+        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
+        "[dim]Type your question or 'quit' to exit[/dim]",
+        border_style="cyan"
+    ))
+
+    session_id = str(uuid.uuid4())
+    user_id = "workshop-user-1"
+    history = []
+    langfuse = get_client()
+
+    while True:
+        question = Prompt.ask("\n[bold green]You[/bold green]")
+
+        if question.lower() in ("quit", "exit", "q"):
+            console.print("[dim]Goodbye![/dim]")
+            break
+
+        if not question.strip():
+            continue
+
+        with console.status("[dim]Thinking...[/dim]"):
+            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
+
+        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
+
+        # Collect user feedback
+        feedback = Prompt.ask(
+            "[dim]Was this helpful?[/dim]",
+            choices=["y", "n", "skip"],
+            default="skip",
+        )
+
+        if feedback in ("y", "n") and trace_id:
+            langfuse.create_score(
+                trace_id=trace_id,
+                name="user-feedback",
+                value=1 if feedback == "y" else 0,
+                data_type="BOOLEAN",
+                comment="User thumbs up/down from CLI",
+            )
+
+        # Run LLM-as-a-judge in the background so it doesn't slow down the user
+        if trace_id:
+            threading.Thread(
+                target=evaluate_response,
+                args=(trace_id, question, response),
+                daemon=True,
+            ).start()
+
+        history.append({"role": "user", "content": question})
+        history.append({"role": "assistant", "content": response})
+
+    langfuse.flush()
+
 ```
 
 > **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.

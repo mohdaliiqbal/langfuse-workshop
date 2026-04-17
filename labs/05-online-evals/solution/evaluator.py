@@ -22,7 +22,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
     try:
         # Fetch the prompt from Langfuse (same pattern as Lab 4)
-        prompt_obj = langfuse.get_prompt("evaluator-prompt", label="production")
+        prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
         prompt_text = prompt_obj.compile(question=question, response=response)
 
         result = client.chat.completions.create(
