@@ -160,6 +160,17 @@ if __name__ == "__main__":
 
 Run the app, ask a question, and give feedback. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
 
+
+![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-score.png)
+
+Note that you can also filter traces by a certain value of a score 
+
+1. Expand the filter panel by clicking "Show filters" in the traces screen
+2. Scroll down to "Numeric Scores" and select "user-feedback" equals 1.
+3. You will see system will automatically filter the traces that have user-feedback = true
+
+![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-filter-userfeedback.png)
+
 ---
 
 ### Task 5.2 — Set up a no-code LLM-as-a-judge evaluator in the UI
