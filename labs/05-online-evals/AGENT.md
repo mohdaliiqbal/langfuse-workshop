@@ -1,4 +1,4 @@
-# Lab 5: Scoring & Evaluation — Agent Instructions
+# Lab 5: Online Evals — Agent Instructions
 
 > **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 5" if your assistant has already loaded `AGENTS.md`.
 
@@ -6,22 +6,55 @@
 
 ## Your task
 
-Guide the attendee through adding two quality signals to their app: user feedback scores from the CLI, and automated LLM-as-a-judge evaluation running in the background.
+Guide the attendee through adding three quality signals to their app: user feedback scores from the CLI, a no-code Langfuse-hosted evaluator, and a programmatic LLM-as-a-judge evaluator using a prompt managed in Langfuse.
 
 ---
 
 ## Step 1 — Return the trace ID from `answer()`
 
-To attach scores to a trace, you need its ID. Update `answer()` in `app/assistant.py` to return a `(response, trace_id)` tuple:
+To attach scores to a trace, you need its ID. Update `app/assistant.py`:
+
+**Add `get_client` to the existing import:**
+
+```python
+from langfuse import observe, get_client, propagate_attributes
+```
+
+**Replace the entire `answer()` function** with this version that returns `(response, trace_id)`:
 
 ```python
 @observe()
-def answer(question, history=None, session_id=None, user_id=None) -> tuple[str, str | None]:
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> tuple[str, str | None]:
     langfuse = get_client()
-    with propagate_attributes(...):
-        ...
+
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
+
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+
     return response, trace_id
 ```
 
@@ -29,37 +62,160 @@ def answer(question, history=None, session_id=None, user_id=None) -> tuple[str, 
 
 ---
 
-## Step 2 — Create the LLM-as-a-judge evaluator
+## Step 2 — Add user feedback to `main.py`
 
-Create a new file `app/evaluator.py`:
+Replace the full `main()` function in `app/main.py` with this version that unpacks the tuple, asks for feedback, and records it as a score:
 
 ```python
-import json, os
+from app.evaluator import evaluate_response
+import threading
+
+def main():
+    console.print(Panel.fit(
+        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
+        "[dim]Type your question or 'quit' to exit[/dim]",
+        border_style="cyan"
+    ))
+
+    session_id = str(uuid.uuid4())
+    user_id = "workshop-user-1"
+    history = []
+    langfuse = get_client()              # for recording scores
+
+    while True:
+        question = Prompt.ask("\n[bold green]You[/bold green]")
+
+        if question.lower() in ("quit", "exit", "q"):
+            console.print("[dim]Goodbye![/dim]")
+            break
+
+        if not question.strip():
+            continue
+
+        with console.status("[dim]Thinking...[/dim]"):
+            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
+
+        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
+
+        # Ask for feedback and record it as a score on the trace
+        feedback = Prompt.ask(
+            "[dim]Was this helpful?[/dim]",
+            choices=["y", "n", "skip"],
+            default="skip",
+        )
+
+        if feedback in ("y", "n") and trace_id:
+            langfuse.create_score(
+                trace_id=trace_id,
+                name="user-feedback",
+                value=1 if feedback == "y" else 0,
+                data_type="BOOLEAN",
+                comment="User thumbs up/down from CLI",
+            )
+
+        # Run LLM-as-a-judge in the background so it doesn't slow down the user
+        if trace_id:
+            threading.Thread(
+                target=evaluate_response,
+                args=(trace_id, question, response),
+                daemon=True,
+            ).start()
+
+        history.append({"role": "user", "content": question})
+        history.append({"role": "assistant", "content": response})
+
+    langfuse.flush()
+```
+
+Also ensure the import line at the top includes `get_client`:
+
+```python
+from langfuse import get_client
+```
+
+**Run**: Ask a question and give feedback (y/n).
+
+**Verify in Langfuse**: Open the trace — you should see a `user-feedback` score attached to it.
+
+**Explain**: With user feedback scores you can filter Langfuse traces by score value to find exactly which responses users found unhelpful.
+
+---
+
+## Step 3 — Set up a no-code UI evaluator
+
+Tell the attendee to do the following in Langfuse (no code needed):
+
+**First, connect an LLM:**
+1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
+2. Select **OpenAI**, enter their OpenAI API key, click **Save**
+
+**Create the evaluator:**
+1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
+2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
+3. Set target to **Live Observations**, filter by `trace name = support-question`
+4. Map variables: `input` → observation input (JsonPath: `$[1]["content"]`), `output` → observation output (JsonPath: `$["content"]`)
+5. Set sampling to `100%`, click **Execute**
+
+**Run**: Ask a few questions.
+
+**Verify**: After a short delay (evaluators run async), open a trace — you should see a new score from the Langfuse evaluator appearing automatically.
+
+**Explain**: The UI evaluator is hosted and run by Langfuse — zero infra, auto-scales, rubric editable without a deployment. It runs on every matching observation after the fact, so there's no latency impact on your users.
+
+---
+
+## Step 4 — Create a programmatic evaluator
+
+The UI evaluator covers standard dimensions. For domain-specific rubrics you write the evaluator in code. Since Lab 4 we manage prompts in Langfuse — apply the same pattern here so the rubric can be tuned without redeploying code.
+
+**First, create the evaluator prompt in Langfuse:**
+1. Go to **Prompts** → **New Prompt**
+2. Name: `quality-evaluator-prompt`, Type: **Text**
+3. Paste:
+   ```
+   You are evaluating the quality of a customer support response.
+
+   Question: {{question}}
+   Response: {{response}}
+
+   Rate the response on a scale of 0.0 to 1.0 based on:
+   - Accuracy: Is the information correct?
+   - Helpfulness: Does it actually answer the question?
+   - Clarity: Is it easy to understand?
+
+   Respond with only a JSON object: {"score": <float>, "reason": "<one sentence>"}
+   ```
+4. Set label `production` and click **Create prompt**
+
+**Then, create `app/evaluator.py`:**
+
+```python
+import json
+import os
 from openai import OpenAI
 from langfuse import get_client
 
 client = OpenAI()
 
-JUDGE_PROMPT = """You are evaluating the quality of a customer support response.
-
-Question: {question}
-Response: {response}
-
-Rate 0.0–1.0 on accuracy, helpfulness, and clarity.
-Respond with JSON only: {{"score": <float>, "reason": "<one sentence>"}}"""
 
 def evaluate_response(trace_id: str, question: str, response: str) -> None:
+    """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
+
     try:
+        # Fetch the prompt from Langfuse — same pattern as Lab 4
+        prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
+        prompt_text = prompt_obj.compile(question=question, response=response)
+
         result = client.chat.completions.create(
             model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-            messages=[{"role": "user", "content": JUDGE_PROMPT.format(
-                question=question, response=response
-            )}],
+            messages=[{"role": "user", "content": prompt_text}],
             response_format={"type": "json_object"},
             temperature=0,
         )
+
         evaluation = json.loads(result.choices[0].message.content)
+
         langfuse.create_score(
             trace_id=trace_id,
             name="llm-judge-quality",
@@ -71,94 +227,23 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
         print(f"Evaluation failed: {e}")
 ```
 
-**Explain**: This is LLM-as-a-judge — using a cheap/fast model to automatically score every response. We use `response_format={"type": "json_object"}` to get reliable structured output, and we catch exceptions so an evaluation failure never breaks the user experience.
-
----
-
-## Step 3 — Add feedback and background evaluation to `main.py`
-
-Update `app/main.py` to:
-1. Unpack the `(response, trace_id)` tuple from `answer()`
-2. Ask the user for feedback after each response
-3. Record the feedback as a score
-4. Kick off the LLM judge in a background thread
-
-```python
-import threading
-from langfuse import get_client
-from app.evaluator import evaluate_response
-
-# In the loop, replace the answer() call:
-response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-# User feedback
-feedback = Prompt.ask("[dim]Was this helpful?[/dim]", choices=["y", "n", "skip"], default="skip")
-if feedback in ("y", "n") and trace_id:
-    get_client().create_score(
-        trace_id=trace_id,
-        name="user-feedback",
-        value=1 if feedback == "y" else 0,
-        data_type="BOOLEAN",
-        comment="User thumbs up/down from CLI",
-    )
-
-# Background LLM evaluation
-if trace_id:
-    threading.Thread(
-        target=evaluate_response,
-        args=(trace_id, question, response),
-        daemon=True,
-    ).start()
-```
-
-**Run**: Ask 5+ questions with a mix of good and edge-case inputs. Rate some positively and some negatively.
+**Run**: Ask 5+ questions. The evaluator runs in the background thread wired up in Step 2.
 
 **Verify in Langfuse**:
-1. Open a trace — you should see two scores attached: `user-feedback` and `llm-judge-quality`
-2. Go to **Tracing** and filter by score name to find low-scoring traces
+1. Open a trace — you should see both `user-feedback` and `llm-judge-quality` scores
+2. Filter by score name to find low-scoring traces and read the judge's reasoning
 3. Go to **Scores** → **Analytics** to see score distributions
 
-**Explain**: With scores you can move from "I think quality is good" to "average quality score is 0.82 this week, down from 0.91 last week after the prompt change." This is how teams catch regressions before users do.
+**Explain**: The evaluator prompt lives in Langfuse, so a PM can refine the rubric without touching code — just update the prompt version and set the production label. The `try/except` ensures an evaluation failure never breaks the user experience.
 
 ---
 
 ## Completion check
 
 - [ ] `answer()` returns `(response, trace_id)`
-- [ ] `app/evaluator.py` exists and `evaluate_response()` works
-- [ ] Each trace has a `user-feedback` score and a `llm-judge-quality` score
-- [ ] Low-scoring traces have a comment explaining why
-
-## Step 4 — Set up a no-code UI evaluator
-
-Tell the attendee to do the following in Langfuse (no code needed):
-
-**First, connect an LLM:**
-1. Go to **Settings** → **LLM Connections** → **Add new LLM connection**
-2. Select **OpenAI**, enter their OpenAI API key, click **Save**
-
-**Create the evaluator:**
-1. Go to **Evaluation** → **Evaluators** → **+ Set up Evaluator**
-2. Select a managed evaluator — e.g. **Helpfulness** or **Hallucination**
-3. Set target to **Live Observations**, filter by `trace name = support-question`
-4. Map: `input` → observation input, `output` → observation output
-5. Sampling = `100%`, click **Save**
-
-**Run**: Ask a few questions.
-
-**Verify**: After a short delay (evaluators run async), open a trace — you should see a new score from the Langfuse evaluator alongside the code-based `llm-judge-quality` score.
-
-**Explain**: The UI evaluator is hosted and run by Langfuse — zero infra, auto-scales, rubric editable without a deployment. Code evaluators give full control for domain-specific logic. Production teams typically run both.
-
----
-
-## Completion check
-
-- [ ] `answer()` returns `(response, trace_id)`
-- [ ] `app/evaluator.py` exists and `evaluate_response()` works
-- [ ] Each trace has a `user-feedback` score and a `llm-judge-quality` score
-- [ ] A Langfuse-hosted evaluator is running and attaching scores automatically
+- [ ] User feedback (y/n) creates a `user-feedback` score on the trace
+- [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
+- [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on traces
+- [ ] `quality-evaluator-prompt` exists in Langfuse with the `production` label
 
 Once confirmed, tell the attendee they're ready for **Lab 6: Human Annotation**.

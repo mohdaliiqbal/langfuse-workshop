@@ -40,31 +40,28 @@ Ask the attendee to confirm both configs are created.
 3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
 4. Add an optional comment, then click **Save**
 
-**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. The score is immediately visible on the trace and feeds into score analytics. Encourage them to rate a trace they think has a bad response — low scores become useful signal for dataset curation.
+**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. Encourage them to rate a trace they think has a bad response — low scores become useful signal for dataset curation in Lab 7.
 
 ---
 
-## Step 3 — Create and fill an Annotation Queue
+## Step 3 — Create an Annotation Queue and work through it
 
 **Create the queue:**
-1. Go to **Evaluation** → **Annotation Queues** → **New Queue**
-2. Name: `workshop-review`, select both Score Configs, click **Create**
+1. Go to **Human Annotation** → **Annotation Queues** → **New Queue**
+2. Name: `workshop-review`, select both Score Configs (`response-quality` and `answer-grounded`), click **Create**
 
-**Add traces:**
+**Add traces to the queue:**
 1. Go to **Tracing** → **Traces**
-2. Select 5–10 traces with the checkboxes
-3. Click **Actions** → **Add to queue** → `workshop-review`
+2. Select 5–10 traces using the checkboxes
+3. Click **Actions** → **Add to queue** → select `workshop-review`
 
----
+**Work through the queue:**
+1. Go to **Human Annotation** → **Annotation Queues** → `workshop-review`
+2. Click **Process queue**
+3. For each trace, review the input and output, fill in your scores, and optionally provide a corrected output
+4. Click **Mark Completed** to move to the next item
 
-## Step 4 — Work through the queue
-
-1. Go to **Evaluation** → **Annotation Queues** → `workshop-review` → **Start annotating**
-2. Score each trace and click **Complete + next**
-
-**Explain**: Queues are designed for batch review — a QA reviewer or subject matter expert works through them without needing to navigate the full trace list. Progress is tracked so multiple reviewers can divide the work.
-
-Also point out: for any trace with a clearly bad response, they can click **Add to dataset** → `datastream-support-benchmark` to turn it into a test case for Lab 7.
+**Explain**: Queues are designed for batch review — a QA reviewer or subject matter expert works through them without needing to navigate the full trace list. Progress is tracked so multiple reviewers can divide the work. Any trace with a clearly wrong or unhelpful response is a candidate for Lab 7's dataset.
 
 ---
 
@@ -72,6 +69,7 @@ Also point out: for any trace with a clearly bad response, they can click **Add 
 
 - [ ] `response-quality` and `answer-grounded` Score Configs exist
 - [ ] At least one trace has manual annotation scores
-- [ ] `workshop-review` annotation queue exists with completed items
+- [ ] `workshop-review` annotation queue exists with 5+ traces
+- [ ] At least one queue item is marked completed
 
 Once confirmed, tell the attendee they're ready for **Lab 7: Offline Evals — Datasets & Experiments**.

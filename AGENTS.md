@@ -72,7 +72,7 @@ Each lab builds directly on the previous one. The attendee keeps modifying `app/
 
 ---
 
-## Langfuse SDK reference (Python SDK v3)
+## Langfuse SDK reference (Python SDK v4)
 
 ```python
 # Initialization (reads from .env automatically)
@@ -108,10 +108,16 @@ langfuse.get_current_trace_id()
 prompt = langfuse.get_prompt("prompt-name", label="production")
 compiled = prompt.compile(variable="value")
 
-# Datasets
-langfuse.create_dataset(name=...)
+# Datasets and experiments
 langfuse.create_dataset_item(dataset_name=..., input=..., expected_output=...)
 dataset = langfuse.get_dataset(name=...)
+
+from langfuse import Evaluation
+result = dataset.run_experiment(
+    name="experiment-name",
+    task=run_task,           # fn(*, item, **kwargs) -> output
+    evaluators=[eval_fn],    # fn(*, input, output, expected_output, **kwargs) -> Evaluation
+)
 
 # Always flush in short-lived scripts
 langfuse.flush()

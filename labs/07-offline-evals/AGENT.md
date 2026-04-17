@@ -18,7 +18,7 @@ Run the dataset creation script:
 python labs/07-offline-evals/create_dataset.py
 ```
 
-**Verify in Langfuse**: Go to **Datasets** in the left sidebar. You should see `datastream-support-benchmark` with items. Click into it to see the questions and their expected answers.
+**Verify in Langfuse**: Go to **Datasets** in the left sidebar. You should see `datastream-support-benchmark` with 9 items. Click into it to see the questions and their expected answers.
 
 **Explain**: A dataset is a curated set of input/expected-output pairs — your golden benchmark. These questions cover the main topics the assistant should handle. Any regression in quality will show up here before users notice it.
 
@@ -29,12 +29,12 @@ python labs/07-offline-evals/create_dataset.py
 Run the experiment against the current prompt:
 
 ```bash
-python labs/07-offline-evals/run_experiment.py
+python labs/07-offline-evals/run_experiment.py --name prompt-v1
 ```
 
 **Verify in Langfuse**: Go to **Datasets** → `datastream-support-benchmark` → **Runs**. You should see `prompt-v1` with an average score and per-item results.
 
-**Explain**: Each dataset item ran through the actual `answer()` function — these are real traces linked to the dataset run. Click any item to see the full trace, including the prompt version and model response.
+**Explain**: `dataset.run_experiment()` loops over every dataset item, runs your `run_task` function (which calls the real `answer()` function), then calls your `evaluate_item` function and returns an `Evaluation` object with the score. Each item becomes a real trace linked to the dataset run — click any item to see the full trace including the prompt version used.
 
 ---
 
@@ -46,15 +46,15 @@ Guide the attendee to update their prompt in Langfuse:
 2. Make a meaningful change (e.g. add: "Always cite the specific feature or plan name when relevant.")
 3. Check **Set the production label** and save
 
-In `labs/07-offline-evals/run_experiment.py`, change `EXPERIMENT_NAME = "prompt-v2"`, then run:
+Then run the experiment again with a different name — no file edits needed:
 
 ```bash
-python labs/07-offline-evals/run_experiment.py
+python labs/07-offline-evals/run_experiment.py --name prompt-v2
 ```
 
 **Verify**: Both `prompt-v1` and `prompt-v2` appear in **Datasets** → **Runs**. Compare average scores and look for items where the score changed significantly.
 
-**Explain**: This replaces "I think the new prompt is better" with a measurable, reproducible result.
+**Explain**: This replaces "I think the new prompt is better" with a measurable, reproducible result. The `--name` flag is how you label each run — use descriptive names like `prompt-v2`, `gpt-4o`, or `retrieval-v3` to make comparisons meaningful.
 
 ---
 
@@ -62,19 +62,21 @@ python labs/07-offline-evals/run_experiment.py
 
 Tell the attendee to do the following (no code):
 
+**Create a simple prompt:**
 1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, type **Chat**
-2. Add system message: *"You are a helpful assistant for {{product_name}}."*
-3. Add user message placeholder: `{{question}}`
+2. Add a system message: *"You are a helpful assistant for DataStream product."*
+3. Add a user message: `{{question}}`
 4. Set label `production`, click **Create prompt**
 
-Then:
+**Run the experiment:**
 1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment**
-2. Select `support-qa-prompt`
-3. Map: `product_name` → `DataStream` (static), `question` → dataset `question` key
-4. Optionally attach a Langfuse-hosted evaluator
-5. Click **Run**
+2. Select **Configure** under _via User Interface_
+3. Select the `support-qa-prompt` prompt
+4. Select the `datastream-support-benchmark` dataset
+5. Optionally attach a Langfuse-hosted evaluator (e.g. Helpfulness) and set input/output mapping
+6. Click **Run Experiment**
 
-**Explain**: No Python needed — Langfuse runs the prompt against every dataset item directly. Useful for quick validation during prompt iteration in the Playground.
+**Explain**: No Python needed — Langfuse runs the prompt against every dataset item directly. Useful for quick validation during prompt iteration in the Playground before writing the code evaluator.
 
 ---
 
@@ -90,9 +92,9 @@ Then:
 ## Completion check
 
 - [ ] Dataset `datastream-support-benchmark` has items in Langfuse
-- [ ] `prompt-v1` experiment run appears with scores
+- [ ] `prompt-v1` experiment run appears with `answer-correctness` scores
 - [ ] `prompt-v2` experiment run appears after the prompt change
-- [ ] Both runs can be compared side by side
+- [ ] Both runs can be compared side by side in the Runs tab
 - [ ] A no-code UI experiment has been run
 - [ ] At least one production trace has been added to the dataset
 
