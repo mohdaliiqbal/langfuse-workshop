@@ -29,30 +29,14 @@ oai = OpenAI()
 
 DATASET_NAME = "datastream-support-benchmark"
 
-JUDGE_PROMPT = """You are evaluating a customer support response for correctness.
-
-Question: {question}
-Expected key information: {expected}
-Actual response: {actual}
-
-Does the actual response correctly answer the question and contain the essential information from the expected answer?
-Partial credit is fine if the response is mostly correct.
-
-Respond with JSON only:
-{{"contains_answer": <true/false>, "score": <0.0 to 1.0>, "reason": "<one sentence>"}}"""
-
-
 def judge(question: str, expected: str, actual: str) -> dict:
+    """Score a response using an LLM judge. Prompt is managed in Langfuse."""
+    prompt_obj = langfuse.get_prompt("experiment-judge-prompt", label="production")
+    prompt_text = prompt_obj.compile(question=question, expected=expected, actual=actual)
+
     result = oai.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-        messages=[{
-            "role": "user",
-            "content": JUDGE_PROMPT.format(
-                question=question,
-                expected=expected,
-                actual=actual,
-            )
-        }],
+        messages=[{"role": "user", "content": prompt_text}],
         response_format={"type": "json_object"},
         temperature=0,
     )

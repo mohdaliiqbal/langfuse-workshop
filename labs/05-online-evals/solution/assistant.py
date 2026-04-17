@@ -1,5 +1,5 @@
 """
-Lab 4 Solution: assistant.py
+Lab 5 Solution: assistant.py
 Returns (response, trace_id) so main.py can attach scores.
 """
 
@@ -25,16 +25,12 @@ def retrieve_context(question: str) -> str:
 
 @observe()
 def call_llm(messages: list[dict], prompt=None) -> str:
-    langfuse = get_client()
-
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
         messages=messages,
         temperature=0.3,
+        langfuse_prompt=prompt,  # links this generation to the prompt version
     )
-
-    langfuse.update_current_observation(prompt=prompt)
-
     return response.choices[0].message.content
 
 

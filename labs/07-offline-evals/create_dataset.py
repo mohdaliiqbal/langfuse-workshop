@@ -18,6 +18,15 @@ langfuse = get_client()
 
 DATASET_NAME = "datastream-support-benchmark"
 
+# Guard against duplicates: exit early if items already exist
+try:
+    existing = langfuse.get_dataset(DATASET_NAME)
+    if existing.items:
+        print(f"Dataset '{DATASET_NAME}' already has {len(existing.items)} items.")
+        print("Run this script only once to avoid duplicates. Exiting.")
+        sys.exit(0)
+except Exception:
+    pass  # Dataset doesn't exist yet — proceed normally
 
 test_cases = [
 

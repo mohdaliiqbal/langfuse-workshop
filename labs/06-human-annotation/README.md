@@ -1,5 +1,7 @@
 # Lab 6: Human Annotation
 
+> **This lab is UI-only — no code changes are required.** Everything in this lab happens in the Langfuse dashboard.
+
 ## Concept
 
 Automated evaluators are fast and scalable, but they have blind spots. LLM judges can be confidently wrong, especially on domain-specific nuance, edge cases, or subtle quality issues. **Human annotation** is how you build ground truth.

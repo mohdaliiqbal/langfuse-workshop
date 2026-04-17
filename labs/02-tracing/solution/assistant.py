@@ -1,5 +1,5 @@
 """
-Lab 1 Solution: Basic Tracing
+Lab 2 Solution: Basic Tracing
 Drop-in replacement for app/assistant.py
 """
 
