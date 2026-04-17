@@ -55,6 +55,8 @@ Score Configs define the dimensions you'll evaluate on — like a rubric. You ne
 ### Task 6.2 — Manually annotate a trace
 
 1. Go to **Tracing** → **Traces** and open any trace from your recent runs.
+_Note: Scores can also be attached to sessions, observations in addition to traces_ 
+
 2. Click **Annotate** in the trace detail panel.
 
 ![Trace detail view with the Annotate button visible](./assets/langfuse-trace-annotate.png)
@@ -62,8 +64,12 @@ Score Configs define the dimensions you'll evaluate on — like a rubric. You ne
 3. You'll see your Score Configs as annotation fields. Fill in:
    - `response-quality`: score 1–5
    - `answer-grounded`: true or false
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-annotate.png)
 4. Optionally add a **comment** explaining your rating.
-5. Click **Save**.
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-comments.png)
+
 
 The scores are now attached to the trace and will appear in the Scores tab and in score analytics.
 
@@ -76,23 +82,46 @@ The scores are now attached to the trace and will appear in the Scores tab and i
 Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a batch systematically — "review all traces from the last session" — use an **Annotation Queue**. A queue lets you work through items one by one without losing your place, and multiple teammates can work the same queue simultaneously.
 
 **Create the queue:**
-1. Go to **Evaluation** → **Annotation Queues** → **New Queue**
+1. Go to **Human Annotation** → **Annotation Queues** → **New Queue**
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-new-queue.png)
+
 2. Name it: `workshop-review`
 3. Select both Score Configs: `response-quality` and `answer-grounded`
 4. Click **Create**
 
-![Annotation Queues list showing workshop-review queue with both score configs](./assets/langfuse-annotation-queues.png)
+![Annotation Queues list showing workshop-review queue with both score configs](./assets/langfuse-annotation-new-queue-dialog.png)
 
 **Add traces to the queue:**
 1. Go to **Tracing** → **Traces**
+
 2. Select 5–10 traces using the checkboxes
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-add-to-queue.png)
+
 3. Click **Actions** → **Add to queue** → select `workshop-review`
 
-**Work through the queue:**
-1. Go to **Evaluation** → **Annotation Queues** → `workshop-review`
-2. Click **Start annotating**
-3. For each trace, review the input and output, then fill in your scores
-4. Click **Complete + next** to move to the next item
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-add-to-queue-dialog.png)
+
+4. You should see a confirmation of addition.
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-add-to-queue-confirmation.png)
+
+
+
+### **Work through the queue:**
+1. Go to **Human Annotation** → **Annotation Queues** → `workshop-review`
+2. You should see all the added traces in the queue. 
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-trace-list.png)
+
+3. You can begin working on the queue by clicking **Process queue**
+
+
+4. For each trace, review the input and output, then fill in your scores
+
+![Trace detail view with the Annotate button visible](./assets/langfuse-annotation-process-trace.png)
+
+5. Click **Mark Completed** to move to the next item
 
 The queue shows progress (X of Y completed) as you work through it.
 
