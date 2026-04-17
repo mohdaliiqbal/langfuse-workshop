@@ -56,16 +56,16 @@ A dataset is a curated collection of `(input, expected_output)` pairs — your b
 
 _Manually adding many items would take time. You could upload items with CSV file as well, however, we have created a python script that will populate items using code._
 
-### **Create items using code - Python **
+#### **Create items using code - Python **
 The script `create_dataset.py` is already written. It populates *datastream-support-benchmark dataset* with 9 support questions and their expected answers.
 
-Run it once:
+1. Run it once:
 
 ```bash
 python labs/07-offline-evals/create_dataset.py
 ```
 
-The script calls two Langfuse APIs:
+_The script calls two Langfuse APIs:_
 
 ```python
 # Initialize client, and dataset name
@@ -87,11 +87,11 @@ _Following is a a sample run_
 ![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-dataset-python-run.png)
 
 
-Verify the dataset appears in Langfuse → **Datasets**:
+2. Verify the dataset appears in Langfuse → **Datasets**:
 
 ![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-datasets-list.png)
 
-Click into it to see the 10 test items:
+3. Click into it to see the 10 test items:
 
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-items.png)
 
@@ -101,13 +101,13 @@ Now are dataset is ready to run experiments.
 
 ### Task 7.2 — Run an experiment
 
-1. Navigate to Experiments tab in the Datasets screen
+1. Navigate to Experiments tab in the Datasets screen and Click **Run experiment** button on the top right handside 
 ![Dataset experiments tab](./assets/langfuse-dataset-experiments-tab.png)
 
-2. Click **Run experiment** button on the top right handside 
+2. As you can see you can run experiment via User Interface or via SDK/API. We will use API, in fact we have already created a script for it. 
 ![Dataset experiments tab](./assets/langfuse-dataset-run-experiment.png)
 
-The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. Run it:
+3. The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. You can run it to begin the experiment:
 
 ```bash
 python labs/07-offline-evals/run_experiment.py
@@ -119,7 +119,8 @@ Or pass a custom name:
 python labs/07-offline-evals/run_experiment.py --name prompt-v1
 ```
 
-**How the script works:** it uses `dataset.run_experiment()` — the Langfuse SDK's high-level experiment runner. You define two functions and let the SDK handle the rest: looping over dataset items, linking each execution to a dataset run, and collecting scores.
+### **How the script works:** 
+it uses `dataset.run_experiment()` — the Langfuse SDK's high-level experiment runner. You define two functions and let the SDK handle the rest: looping over dataset items, linking each execution to a dataset run, and collecting scores.
 
 ```python
 from langfuse import get_client, Evaluation
@@ -151,13 +152,17 @@ result = dataset.run_experiment(
 print(result.format())
 ```
 
-The SDK runs each item, calls your evaluator, and creates a named **dataset run** in Langfuse automatically.
+3. The SDK runs each item, calls your evaluator, and creates a named **dataset run** in Langfuse automatically.
 
+Followng is a sample output of experiment script
+
+
+![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-experiment-run.png)
 ---
 
 ### Task 7.3 — Compare two prompt versions
 
-Now update your system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different name:
+Now lets update system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different name:
 
 1. In Langfuse, go to **Prompts** → `datastream-system-prompt` → **New version** — add or change something meaningful (e.g., require the assistant to always mention relevant pricing, or always suggest contacting support for complex issues). Check **Set the production label** and save.
 2. Run the experiment again with a new name:
@@ -165,7 +170,7 @@ Now update your system prompt in Langfuse (create a new version with different i
    python labs/07-offline-evals/run_experiment.py --name prompt-v2
    ```
 
-In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
+3. In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-experiment-runs.png)
 
@@ -177,17 +182,40 @@ You don't always need to write code to run an experiment. Langfuse can run a pro
 
 **Prerequisites**: Your dataset must have items with keys that match your prompt's variables. The `datastream-support-benchmark` dataset has a `question` key, but `datastream-system-prompt` uses `product_name`. For this task, create a simpler prompt:
 
-1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, type **Chat**
-2. Add a system message: *"You are a helpful assistant for {{product_name}}."*
-3. Add a user message placeholder: `{{question}}`
+1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, clic **Chat**
+2. Add a system message: *"You are a helpful assistant for DataStream product."*
+3. In the prompt next: `{{question}}`
 4. Set label `production` and click **Create prompt**
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
 
-**Run the experiment:**
-1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment**
+You should see prompt created with production label attached. 
+
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-list.png)
+
+#### **Run the experiment:**
+1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment** and select **Configure** under _via User Interface_
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui.png)
 2. Select the `support-qa-prompt` prompt
-3. Map variables: `product_name` → `DataStream` (static), `question` → dataset item `question` key
-4. Optionally attach a Langfuse-hosted evaluator (e.g. Helpfulness)
-5. Click **Run** — Langfuse executes the prompt against every dataset item
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-experiment-prompt-select.png)
+
+3. Select the `datastream-support-benchmark` dataset
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-experiment-dataset-select.png)
+
+4. Optionally attach a Langfuse-hosted evaluator (e.g. Helpfulness). When you do set input and output mapping as specified in image below.
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-eval-mapping.png)
+
+5. Review the experiment detail and click **Run Experiment**
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-run-review.png)
+
+
+6. You should see the experiment in the experiment list. Give it a few minutes to kick off.
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui-run-list.png)
+
+7. Once the experiment is running or finished you will see all items processed in a list.
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui-run.png)
+
+8. You can click **Compare** in the top and select experiments to compare.
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-comparison.png)
 
 View the results in the **Runs** tab — each item shows the generated output and any scores. No Python required.
 
