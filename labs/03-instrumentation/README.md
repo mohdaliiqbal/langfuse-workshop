@@ -1,4 +1,4 @@
-# Lab 2: Rich Instrumentation
+# Lab 3: Rich Instrumentation
 
 ## Concept
 
@@ -28,17 +28,18 @@ Langfuse supports all of this through **trace attributes** and **propagated cont
 
 ## What You'll Build
 
-Extend the instrumented assistant from Lab 1 to capture:
+Extend the instrumented assistant from Lab 2 to capture:
 1. Token usage and model details on generations
 2. Session IDs so multi-turn conversations group together
 3. User IDs on every trace
-4. Custom metadata and version tags
+4. Custom metadata and trace names
+5. Environment tags to separate dev and production data
 
 ---
 
 ## Tasks
 
-### Task 2.1 — Capture token usage on generations
+### Task 3.1 — Capture token usage on generations
 
 Open `app/assistant.py`. The `client = OpenAI()` line at the top is where the OpenAI client is created. Currently it records input/output text but not token counts. Langfuse can display cost estimates, but only if it knows the token usage.
 
@@ -58,7 +59,7 @@ That's it. The `call_llm()` function stays exactly as it is. Langfuse intercepts
 
 > **Note**: Because the OpenAI wrapper now creates the generation observation automatically, also change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()`. Keeping `as_type="generation"` would create a generation nested inside another generation. With the wrapper, `call_llm` becomes a regular span and the OpenAI call inside it becomes the generation.
 
-Ask a question and open the trace in Langfuse. Click into the generation node — you should now see rich metadata that wasn't there in Lab 1:
+Ask a question and open the trace in Langfuse. Click into the generation node — you should now see rich metadata that wasn't there in Lab 2:
 
 ![Instrumented LLM call with token counts and cost](assets/langfuse-llm-call-instrumentation.png)
 
@@ -89,7 +90,7 @@ Notice what the OpenAI wrapper added automatically: the **model name**, **token 
 
 ---
 
-### Task 2.2 — Add session tracking
+### Task 3.2 — Add session tracking
 
 Right now each question creates an independent trace. But your app supports multi-turn conversations — logically, all turns of a conversation should be grouped.
 
@@ -124,7 +125,7 @@ The session view shows every conversation turn in order, each with its own Input
 
 ---
 
-### Task 2.3 — Add user ID and trace metadata
+### Task 3.3 — Add user ID and trace metadata
 
 In a real app you'd have authenticated users. Simulate this by hardcoding a user ID and passing it as trace metadata:
 
@@ -136,7 +137,7 @@ def answer(question: str, history: list[dict] | None = None, session_id: str | N
     with propagate_attributes(
         session_id=session_id,
         user_id=user_id,
-        tags=["workshop", "lab-2"],
+        tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
         ...
@@ -152,7 +153,7 @@ In production, each of your actual users would appear here. You can click a user
 
 ---
 
-### Task 2.4 — Name your traces
+### Task 3.4 — Name your traces
 
 By default, traces use the function name. Give the root trace a meaningful name using `trace_name`:
 
@@ -173,7 +174,7 @@ This matters at scale — when you have thousands of traces from different featu
 
 ---
 
-### Task 2.5 — Separate environments
+### Task 3.5 — Separate environments
 
 In production you'll have development, staging, and production data all flowing into the same Langfuse project. Without environments they all mix together.
 
@@ -186,6 +187,8 @@ LANGFUSE_TRACING_ENVIRONMENT=development
 That's it — Langfuse picks it up automatically. Every trace you send now carries an `environment` attribute.
 
 In the Langfuse UI, use the **Environment** filter (top of the Traces table) to show only `development` traces. When you deploy to production you'd set `LANGFUSE_TRACING_ENVIRONMENT=production` there and the two data streams stay completely separate — same project, same prompts, same datasets, different views.
+
+![Traces table filtered to development environment](assets/langfuse-env-dev.png)
 
 > This is a one-line change that saves a lot of confusion when you start running the same app in multiple environments.
 
