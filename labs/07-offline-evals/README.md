@@ -154,8 +154,7 @@ print(result.format())
 
 3. The SDK runs each item, calls your evaluator, and creates a named **dataset run** in Langfuse automatically.
 
-Followng is a sample output of experiment script
-
+_Followng is a sample output of experiment script_
 
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-experiment-run.png)
 ---
@@ -165,6 +164,7 @@ Followng is a sample output of experiment script
 Now lets update system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different name:
 
 1. In Langfuse, go to **Prompts** → `datastream-system-prompt` → **New version** — add or change something meaningful (e.g., require the assistant to always mention relevant pricing, or always suggest contacting support for complex issues). Check **Set the production label** and save.
+
 2. Run the experiment again with a new name:
    ```bash
    python labs/07-offline-evals/run_experiment.py --name prompt-v2
@@ -184,11 +184,14 @@ You don't always need to write code to run an experiment. Langfuse can run a pro
 
 1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, clic **Chat**
 2. Add a system message: *"You are a helpful assistant for DataStream product."*
+
 3. In the prompt next: `{{question}}`
+
 4. Set label `production` and click **Create prompt**
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
 
-You should see prompt created with production label attached. 
+5. You should see prompt created with production label attached. 
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-list.png)
 
@@ -196,6 +199,7 @@ You should see prompt created with production label attached.
 1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment** and select **Configure** under _via User Interface_
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui.png)
+
 2. Select the `support-qa-prompt` prompt
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-experiment-prompt-select.png)
