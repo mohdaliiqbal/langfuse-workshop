@@ -194,27 +194,35 @@ You should see prompt created with production label attached.
 
 #### **Run the experiment:**
 1. Go to **Datasets** → `datastream-support-benchmark` → **Run experiment** and select **Configure** under _via User Interface_
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui.png)
 2. Select the `support-qa-prompt` prompt
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-experiment-prompt-select.png)
 
 3. Select the `datastream-support-benchmark` dataset
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-experiment-dataset-select.png)
 
 4. Optionally attach a Langfuse-hosted evaluator (e.g. Helpfulness). When you do set input and output mapping as specified in image below.
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-eval-mapping.png)
 
 5. Review the experiment detail and click **Run Experiment**
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-ui-run-review.png)
 
 
 6. You should see the experiment in the experiment list. Give it a few minutes to kick off.
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui-run-list.png)
 
 7. Once the experiment is running or finished you will see all items processed in a list.
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-ui-run.png)
 
 8. You can click **Compare** in the top and select experiments to compare.
+
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-comparison.png)
 
 View the results in the **Runs** tab — each item shows the generated output and any scores. No Python required.
