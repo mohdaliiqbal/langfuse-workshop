@@ -367,6 +367,7 @@ Now that you have scores flowing in from multiple sources, explore them in Langf
 
 1. Go to **Traces** and filter by `score name = "llm-judge-quality"` — see which traces scored low and read the judge's reasoning in the comment.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
+![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-scores-analytics.png)
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
 
 Open any trace — you'll see the `user-feedback` boolean, the `llm-judge-quality` numeric score from your code evaluator, and the Langfuse-hosted evaluator score all attached:
