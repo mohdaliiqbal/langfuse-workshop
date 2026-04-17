@@ -1,5 +1,5 @@
 """
-Lab 4 Solution: main.py
+Lab 5 Solution: main.py
 Adds user feedback collection and background LLM-as-a-judge evaluation.
 """
 
@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from langfuse import get_client
 from app.assistant import answer
-from labs.lab_04_evaluation.solution.evaluator import evaluate_response
+from app.evaluator import evaluate_response
 
 console = Console()
 

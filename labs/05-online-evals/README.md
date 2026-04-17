@@ -82,35 +82,76 @@ def answer(
     return response, trace_id
 ```
 
-**Step 2 — Collect feedback in `main.py` and record it as a score**
+**Step 2 — Update `app/main.py` to collect feedback**
 
-Update `app/main.py` to unpack the tuple and prompt for feedback:
+Replace the full contents of `app/main.py` with the following:
 
 ```python
-from langfuse import get_client
+from dotenv import load_dotenv
+load_dotenv()
 
-langfuse = get_client()
+import uuid
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Prompt
+from langfuse import get_client          # NEW: for recording scores
+from app.assistant import answer
 
-# Inside the chat loop, replace the answer() call:
-with console.status("[dim]Thinking...[/dim]"):
-    response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
+console = Console()
 
-console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
 
-feedback = Prompt.ask(
-    "[dim]Was this helpful?[/dim]",
-    choices=["y", "n", "skip"],
-    default="skip",
-)
+def main():
+    console.print(Panel.fit(
+        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
+        "[dim]Type your question or 'quit' to exit[/dim]",
+        border_style="cyan"
+    ))
 
-if feedback in ("y", "n") and trace_id:
-    langfuse.create_score(
-        trace_id=trace_id,
-        name="user-feedback",
-        value=1 if feedback == "y" else 0,
-        data_type="BOOLEAN",
-        comment="User thumbs up/down from CLI",
-    )
+    session_id = str(uuid.uuid4())
+    user_id = "workshop-user-1"
+    history = []
+    langfuse = get_client()              # NEW: Langfuse client for scoring
+
+    while True:
+        question = Prompt.ask("\n[bold green]You[/bold green]")
+
+        if question.lower() in ("quit", "exit", "q"):
+            console.print("[dim]Goodbye![/dim]")
+            break
+
+        if not question.strip():
+            continue
+
+        with console.status("[dim]Thinking...[/dim]"):
+            # CHANGED: answer() now returns (response, trace_id)
+            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
+
+        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
+
+        # NEW: ask for feedback and record it as a score on the trace
+        feedback = Prompt.ask(
+            "[dim]Was this helpful?[/dim]",
+            choices=["y", "n", "skip"],
+            default="skip",
+        )
+
+        if feedback in ("y", "n") and trace_id:
+            langfuse.create_score(
+                trace_id=trace_id,
+                name="user-feedback",
+                value=1 if feedback == "y" else 0,
+                data_type="BOOLEAN",
+                comment="User thumbs up/down from CLI",
+            )
+
+        history.append({"role": "user", "content": question})
+        history.append({"role": "assistant", "content": response})
+
+    langfuse.flush()                     # NEW: ensure scores are sent before exit
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 Run the app, ask a question, and give feedback. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
