@@ -42,39 +42,48 @@ To attach a score to a trace you need the **trace ID**. You get it by calling `l
 
 **Step 1 — Return the trace ID from `answer()`**
 
-Make three targeted changes to `answer()` in `app/assistant.py`. Everything else stays exactly as it was from Lab 4.
-
-**Change 1** — add `langfuse = get_client()` and update the return type:
+Update the import at the top of `app/assistant.py` to include `get_client`:
 
 ```python
-# ensure get_client is in your import at the top of the file:
 from langfuse import observe, get_client, propagate_attributes
+```
 
+Then replace the entire `answer()` function with this:
+
+```python
 @observe()
 def answer(
     question: str,
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:   # CHANGED: was -> str
-    langfuse = get_client()    # NEW: needed to call get_current_trace_id()
+) -> tuple[str, str | None]:
+    langfuse = get_client()
 
-    with propagate_attributes(...):
-        # ... all your existing Lab 4 code stays here unchanged ...
-```
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        prompt_obj = get_system_prompt()
+        system_prompt = prompt_obj.compile(product_name="DataStream")
 
-**Change 2** — inside the `with propagate_attributes` block, capture the response instead of returning directly:
+        context = retrieve_context(question)
 
-```python
-        # CHANGED: was  return call_llm(messages, prompt=prompt_obj)
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
         response = call_llm(messages, prompt=prompt_obj)
-        trace_id = langfuse.get_current_trace_id()  # NEW: capture before context exits
-```
+        trace_id = langfuse.get_current_trace_id()
 
-**Change 3** — return the tuple after the `with` block closes:
-
-```python
-    return response, trace_id  # NEW: was return inside the with block
+    return response, trace_id
 ```
 
 **Step 2 — Update `app/main.py` to collect feedback**
