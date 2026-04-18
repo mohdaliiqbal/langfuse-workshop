@@ -143,3 +143,9 @@ Each lab contains a `README.md` with step-by-step instructions and a `solution.p
 **Dataset** — A curated set of test cases used to benchmark your application.
 
 **Experiment** — A run of your app against a dataset, producing comparable results.
+
+---
+
+## Going Further with Claude Code
+
+If you're using Claude Code and want to keep building with Langfuse after the workshop, use the **Langfuse skill** (`@langfuse` in Claude Code). It gives Claude live access to Langfuse documentation — useful for exploring features not covered here, upgrading SDK versions, setting up new integrations, or debugging unfamiliar errors without leaving your editor.
