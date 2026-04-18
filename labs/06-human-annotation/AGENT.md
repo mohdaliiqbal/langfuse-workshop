@@ -4,72 +4,103 @@
 
 ---
 
+## Before we start
+
+Tell the attendee:
+
+> "This lab is entirely UI-based — no code changes. Please open the lab README in your browser to follow along with screenshots:
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/06-human-annotation/README.md**
+>
+> I'll guide you through each step in the Langfuse UI and reference the task numbers for screenshots."
+
+---
+
 ## Your task
 
-Guide the attendee through Langfuse's human annotation workflows — Score Configs, ad-hoc trace annotation, and Annotation Queues. This lab is entirely UI-based: no code changes needed.
+You are teaching Lab 6 as a live instructor. Guide the attendee through each UI step, explain the concept, and ask them to confirm before moving on. No code changes needed.
 
 ---
 
 ## Step 1 — Create Score Configs
 
-Tell the attendee to do the following in the Langfuse UI:
+**Announce**: Before annotating anything, we define the dimensions to score on — like setting up a rubric before grading. We'll create two Score Configs.
 
-1. Go to **Settings** → **Scores** → **+ Add score config**
-2. Create these two configs:
+**Direct the attendee** to do the following in Langfuse:
 
-   **Config 1:**
+1. Go to **Settings** → **Score Configs** → **Add New Score Config**
+2. Create two configs:
+
+   **Config 1 — Response Quality**
    - Name: `response-quality`
    - Type: **Numeric** (range 1–5)
-   - Description: *Overall quality — accuracy, helpfulness, clarity*
+   - Description: *Overall quality of the response — accuracy, helpfulness, and clarity*
 
-   **Config 2:**
+   **Config 2 — Answer Grounded**
    - Name: `answer-grounded`
    - Type: **Boolean**
-   - Description: *Is the answer grounded in the documentation context?*
+   - Description: *Is the answer grounded in the provided documentation context?*
 
-Ask the attendee to confirm both configs are created.
+📸 **See Task 6.1 in the lab README** for a screenshot of the completed Score Configs list.
 
-**Explain**: Score Configs are reusable rubric dimensions. Every annotation in the project — ad-hoc, queued, or experiment review — uses the same configs for consistency.
+**Explain**: Score Configs are reusable rubric dimensions — every annotation workflow in the project (ad-hoc, queued, experiment review) uses the same configs. Defining them once means your annotation data is consistent across all methods and can be charted together in analytics.
+
+**✋ Check in**: "Have you created both Score Configs? Can you see them listed in Settings → Score Configs?"
 
 ---
 
 ## Step 2 — Annotate a trace
 
-1. Go to **Tracing** → **Traces** and open any recent trace
-2. Click **Annotate** in the trace detail panel
-3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
-4. Add an optional comment, then click **Save**
+**Announce**: Now that the rubric exists, we'll use it to rate a real observation from your app.
 
-**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. Encourage them to rate a trace they think has a bad response — low scores become useful signal for dataset curation in Lab 7.
+**Direct the attendee** to:
+
+1. Go to **Tracing** and open any recent observation
+2. Click **Annotate** in the observation detail panel
+3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
+4. Optionally add a comment → click **Save**
+
+📸 **See Task 6.2 in the lab README** for screenshots of the Annotate button and the annotation panel.
+
+**Explain**: This is how a domain expert or PM contributes quality signals without touching code. Scores are immediately queryable — filter Tracing by `score: response-quality < 3` to surface all low-quality observations directly, no need to keep mental notes about specific traces.
+
+**✋ Check in**: "Have you annotated an observation? Can you see the scores attached to it in the Scores tab?"
 
 ---
 
 ## Step 3 — Create an Annotation Queue and work through it
 
+**Announce**: Ad-hoc annotation works for spot checks. Annotation Queues let you review a batch systematically — multiple teammates can work the same queue simultaneously without duplicating effort.
+
 **Create the queue:**
 1. Go to **Human Annotation** → **Annotation Queues** → **New Queue**
-2. Name: `workshop-review`, select both Score Configs (`response-quality` and `answer-grounded`), click **Create**
+2. Name: `workshop-review`
+3. Select both Score Configs: `response-quality` and `answer-grounded`
+4. Click **Create**
 
-**Add traces to the queue:**
-1. Go to **Tracing** → **Traces**
-2. Select 5–10 traces using the checkboxes
+📸 **See Task 6.3 in the lab README** for screenshots of creating the queue and adding traces to it.
+
+**Add observations to the queue:**
+1. Go to **Tracing**
+2. Select 5–10 observations using the checkboxes
 3. Click **Actions** → **Add to queue** → select `workshop-review`
 
 **Work through the queue:**
 1. Go to **Human Annotation** → **Annotation Queues** → `workshop-review`
 2. Click **Process queue**
-3. For each trace, review the input and output, fill in your scores, and optionally provide a corrected output
-4. Click **Mark Completed** to move to the next item
+3. For each observation: review the input and output, fill in your scores, optionally provide a corrected output
+4. Click **Mark Completed** to advance to the next item
 
-**Explain**: Queues are designed for batch review — a QA reviewer or subject matter expert works through them without needing to navigate the full trace list. Progress is tracked so multiple reviewers can divide the work. Any trace with a clearly wrong or unhelpful response is a candidate for Lab 7's dataset.
+**Explain**: Queues solve the team coordination problem. Without them, two reviewers working the same trace list will overlap and skip items. A queue assigns each item atomically — trackable progress, no duplicated effort. After working through the queue, filter Tracing by `score: response-quality < 3` to find low-quality observations to add to a dataset in Lab 7.
+
+**✋ Check in**: "Have you processed at least one queue item and marked it completed? What score did you give it?"
 
 ---
 
 ## Completion check
 
-- [ ] `response-quality` and `answer-grounded` Score Configs exist
-- [ ] At least one trace has manual annotation scores
-- [ ] `workshop-review` annotation queue exists with 5+ traces
+- [ ] `response-quality` and `answer-grounded` Score Configs exist in Settings
+- [ ] At least one observation has manual annotation scores
+- [ ] `workshop-review` annotation queue exists with 5+ observations
 - [ ] At least one queue item is marked completed
 
-Once confirmed, tell the attendee they're ready for **Lab 7: Offline Evals — Datasets & Experiments**.
+"You've added the human calibration layer to your eval system. Ready for Lab 7: Offline Evals — Datasets & Experiments?"

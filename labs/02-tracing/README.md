@@ -61,16 +61,22 @@ Run the app, ask a question, then check your Langfuse dashboard. You should see 
 python -m app.main
 ```
 
-In Langfuse, go to **Tracing → Traces**. You'll see a list of traces — one per question you asked. Each row shows the trace name, when it ran, and a preview of the input.
+In Langfuse, go to **Tracing** — you'll land on the **observations table**, where every individual operation your app performs appears as its own row. This is Langfuse's primary view: each decorated function call is an observation you can query directly.
 
-![Langfuse traces list](assets/langfuse-trace-ui.png)
+> **Set up a saved view (do this once now):** The observations table shows everything — LLM calls, retrieval steps, root spans, all mixed together. To keep the workshop tidy, filter the table to just your root `answer()` calls:
+> 1. Open the filter sidebar and add: `name = "answer"`
+> 2. Click **Save view** and name it `Workshop – answer calls`
+>
+> From here on, use this saved view to jump straight to your data with one click.
 
-Click on a trace to open the detail view. You'll see:
+![Langfuse observations table](assets/langfuse-trace-ui.png)
+
+Click on any row to open the detail view. You'll see:
 - **Input** — the exact arguments passed to `answer()` (the question and history)
 - **Output** — the string returned by `answer()`
-- **Metadata** — timing, tags, and any other attributes attached to the trace
+- **Metadata** — timing, tags, and any other attributes attached to the observation
 
-![Langfuse trace detail](assets/langfuse-trace-dialog.png)
+![Langfuse observation detail](assets/langfuse-trace-dialog.png)
 
 > **What happened?** `@observe` automatically captured the function name, its arguments as input, and its return value as output. It also recorded the start and end time.
 
