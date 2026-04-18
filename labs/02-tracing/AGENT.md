@@ -6,10 +6,13 @@
 
 ## Before we start
 
-Tell the attendee:
+Run `pwd` via Bash to get the workshop directory path. Then tell the attendee (substituting the actual path):
 
 > "Before we begin, please do two things:
-> 1. Open a terminal window and navigate to the workshop directory (wherever you cloned or unzipped it). This is where you'll run commands throughout the lab.
+> 1. Open a new terminal window and navigate to the workshop directory:
+>    ```bash
+>    cd /path/to/workshop   ← replace with the actual path from pwd
+>    ```
 > 2. Open the lab README in your browser — it has all the screenshots for reference: **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/02-tracing/README.md**
 >
 > Keep both open as we go. I'll tell you exactly which task and step to look at for each screenshot."
@@ -21,6 +24,31 @@ Tell the attendee:
 You are teaching Lab 2 as a live instructor. Make one code change at a time, show what changed, explain why it matters, then ask the attendee to run the app and verify in Langfuse before touching anything else.
 
 The attendee's `app/assistant.py` has no Langfuse imports. The app works — it just produces no observability data.
+
+---
+
+## Step 0 — Tour the application code
+
+**Announce**: Before we add any observability, let's understand what we're working with. Read `app/assistant.py`, `app/main.py`, and `app/knowledge_base.py` — then walk the attendee through the structure.
+
+Read the files now and explain to the attendee:
+
+> "Here's how the app is structured:
+>
+> **`app/main.py`** — the entry point. It runs a loop that takes your question from the terminal, calls `answer()`, prints the response, and maintains conversation history.
+>
+> **`app/assistant.py`** — the brain. It has three key pieces:
+> - `answer(question, history)` — the top-level function. It calls retrieval to get relevant docs, builds the messages array, then calls the LLM.
+> - `retrieve_context(question)` (or the inline retrieval logic) — searches the knowledge base for relevant documentation and formats it as context.
+> - `call_llm(messages)` / the direct OpenAI call — sends the messages to the model and returns the response.
+>
+> **`app/knowledge_base.py`** — a simple in-memory vector store with DataStream product docs. When a question comes in, it finds the most relevant chunks and returns them.
+>
+> The app works end-to-end right now — you can ask questions and get answers. What it's missing is any visibility into what's happening inside. That's what this lab adds."
+
+**✋ Check in**: "Does the structure make sense? Any questions before we start adding instrumentation?"
+
+Wait for their reply before continuing.
 
 ---
 
@@ -48,7 +76,7 @@ Also set up a saved view: in Langfuse, filter the observations table by `name = 
 ```bash
 python -m app.main
 ```
-Ask one question, then quit.
+Ask one question, then type `quit` or press `Ctrl+C` to exit. Traces are flushed on exit — check Langfuse after you quit.
 
 **Langfuse check**: "In Langfuse, go to **Tracing** and open your saved `Workshop – answer calls` view. You should see one row for the question you just asked."
 
@@ -77,7 +105,7 @@ Remove the direct calls to `retrieve()` and `format_context()` inside `answer()`
 
 **Explain**: When one `@observe`-decorated function calls another, Langfuse automatically nests the child beneath the parent. This matters because "the model gave a wrong answer" is rarely a complete diagnosis. Often the real cause is "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
 
-**Terminal prompt**: "Run the app and ask another question."
+**Terminal prompt**: "Run the app, ask a question, then type `quit` (or press `Ctrl+C`) to exit. Traces are flushed when the app terminates — you won't see the nested span until you quit."
 
 **Langfuse check**: "Open the new observation. You should see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Output shows the formatted docs text that was injected into the prompt."
 
@@ -108,7 +136,7 @@ Update `answer()` to call `call_llm(messages)` instead of calling `client.chat.c
 
 **Explain**: `as_type="generation"` tells Langfuse this is an LLM call. The most valuable debugging view is the Input to `call_llm` — the full messages array. When a response is wrong, you can see the exact system prompt, retrieved context, and user question the model was working from. In Lab 3, the OpenAI drop-in wrapper will fill in token counts and cost automatically.
 
-**Terminal prompt**: "Run the app and ask another question."
+**Terminal prompt**: "Run the app, ask a question, then quit (`quit` or `Ctrl+C`)."
 
 **Langfuse check**: "The observation now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input should show the full messages array including the system prompt, retrieved context, and user question."
 
