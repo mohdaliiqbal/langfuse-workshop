@@ -14,7 +14,7 @@ Guide the attendee through Langfuse's human annotation workflows — Score Confi
 
 Tell the attendee to do the following in the Langfuse UI:
 
-1. Go to **Settings** → **Scores** → **+ Add score config**
+1. Go to **Settings** → **Score Configs** → **Add New Score Config**
 2. Create these two configs:
 
    **Config 1:**
@@ -40,7 +40,7 @@ Ask the attendee to confirm both configs are created.
 3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
 4. Add an optional comment, then click **Save**
 
-**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. Encourage them to rate a trace they think has a bad response — low scores become useful signal for dataset curation in Lab 7.
+**Explain**: This is how a domain expert or PM can contribute quality signals without touching code. Scores are immediately queryable — in **Tracing**, filter by `score: response-quality < 3` to surface all low-scoring observations. That's more reliable than trying to remember a specific bad trace from earlier.
 
 ---
 
@@ -61,7 +61,7 @@ Ask the attendee to confirm both configs are created.
 3. For each trace, review the input and output, fill in your scores, and optionally provide a corrected output
 4. Click **Mark Completed** to move to the next item
 
-**Explain**: Queues are designed for batch review — a QA reviewer or subject matter expert works through them without needing to navigate the full trace list. Progress is tracked so multiple reviewers can divide the work. Any trace with a clearly wrong or unhelpful response is a candidate for Lab 7's dataset.
+**Explain**: Queues solve the coordination problem in team annotation. Without them, two reviewers working through the same trace list will overlap, skip items, or lose their place. A queue assigns each item atomically — no duplicated effort, trackable progress, and multiple people can work simultaneously without stepping on each other. Once the queue is complete, filter **Tracing** by `score: response-quality < 3` to find candidates for Lab 7's dataset — no need to remember which specific traces scored badly.
 
 ---
 

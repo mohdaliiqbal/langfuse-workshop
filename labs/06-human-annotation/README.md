@@ -35,7 +35,7 @@ Human scores serve multiple purposes:
 
 Score Configs define the dimensions you'll evaluate on — like a rubric. You need at least one before you can annotate.
 
-1. Go to **Settings** → **Scores** → **+ Add score config**
+1. Go to **Settings** → **Score Configs** → **Add New Score Config**
 2. Create two configs:
 
    **Config 1 — Response Quality**
@@ -75,7 +75,7 @@ _Note: Scores can also be attached to sessions, observations in addition to trac
 
 The scores are now attached to the trace and will appear in the Scores tab and in score analytics.
 
-> Try annotating a trace you'd consider a failure (wrong answer, hallucinated content, off-topic response). Give it a low `response-quality` score. This is the start of your error analysis — you can later filter to low-scoring traces and add them to a dataset.
+> Scores are immediately queryable: in **Tracing**, add a filter `score: response-quality < 3` to surface all low-quality observations directly — no need to keep mental notes about specific traces.
 
 ---
 
@@ -133,7 +133,7 @@ _Note: in a team setting, you can assign annotation queues to specific users_
 
 The queue shows progress (X of Y completed) as you work through it.
 
-> **Saving bad traces for later**: If you find a trace with a wrong or unhelpful response, remember that trace — in Lab 7 you'll add it to a dataset so it becomes a permanent test case.
+> **Turning failures into test cases**: After completing the queue, go to **Tracing** and filter by `score: response-quality < 3`. Select the low-scoring observations and add them to a dataset from the Actions menu — this is covered in Lab 7.
 
 ---
 

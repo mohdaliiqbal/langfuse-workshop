@@ -26,9 +26,11 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 **Run**: `python -m app.main` — ask one question, then quit.
 
-**Verify in Langfuse**: Go to **Tracing → Traces**. A new trace named `answer` should appear. Click it — you'll see the question as Input and the response as Output.
+**Verify in Langfuse**: Go to **Tracing** — you'll see the **observations table**, Langfuse's primary view in v4. An observation named `answer` should appear. Click it — you'll see the question as Input and the response as Output.
 
-**Explain to the attendee**: Every call to `answer()` now creates a trace in Langfuse. The decorator captured the function arguments as input and the return value as output automatically, with no other code changes.
+**Set up a saved view (do this once now)**: The observations table shows all operations. To focus on just the root `answer()` calls throughout the workshop, add a filter `name = "answer"` in the filter sidebar and click **Save view**, naming it `Workshop – answer calls`. This saves you from re-filtering every session.
+
+**Explain**: Every call to `answer()` now creates an observation in Langfuse. The decorator captured the function arguments as input and the return value as output automatically. This is your observability foundation: without it, a wrong answer is a black box; with it, you can see exactly what prompt, context, and history the model received.
 
 ---
 
@@ -47,9 +49,9 @@ Update `answer()` to call `retrieve_context(question)` and remove the direct cal
 
 **Run**: Ask another question.
 
-**Verify in Langfuse**: Open the new trace. You should now see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Input is the question and its Output is the formatted docs text that was injected into the prompt.
+**Verify in Langfuse**: Open the observation. You should now see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Input is the question and its Output is the formatted docs text that was injected into the prompt.
 
-**Explain**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship. You can now see exactly what the retrieval step returned — useful for debugging cases where the model got bad context.
+**Explain**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship. This matters because "the model gave a wrong answer" is rarely a complete diagnosis — often it's "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
 
 ---
 
@@ -70,9 +72,9 @@ def call_llm(messages: list[dict]) -> str:
 
 **Run**: Ask another question.
 
-**Verify in Langfuse**: The trace now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input shows the **full messages array** sent to the model (system prompt, retrieved context, user question). This is the most important debugging view: if the model gave a wrong answer, you can see exactly what it was working with.
+**Verify in Langfuse**: The observation now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input shows the **full messages array** sent to the model (system prompt, retrieved context, user question). This is the most important debugging view: if the model gave a wrong answer, you can see exactly what it was working with.
 
-**Explain**: `as_type="generation"` marks this as an LLM call rather than a generic span. Langfuse will later use this to display model name, token counts, and cost.
+**Explain**: `as_type="generation"` marks this as an LLM call rather than a generic span. Langfuse uses this to display model name, token counts, and cost estimates. In production this is how you track spend per feature, per user, or per prompt version — not by guessing from billing dashboards but by querying observations directly.
 
 ---
 

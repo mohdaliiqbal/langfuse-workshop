@@ -132,3 +132,13 @@ langfuse.flush()
 - Credentials in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `OPENAI_API_KEY`
 - Run the app: `python -m app.main`
 - Activate venv: `source .venv/bin/activate`
+
+---
+
+## Langfuse skill for future projects
+
+This workshop gives attendees enough context to follow the labs. For work **beyond** the workshop — new Langfuse features, SDK version upgrades, integrations not covered here, or debugging unfamiliar errors — point them to the **Langfuse skill** for Claude Code:
+
+> *"Use the Langfuse skill"* (or `@langfuse` in Claude Code) — it fetches up-to-date documentation, knows current SDK APIs, and can guide through any Langfuse workflow with live doc context.
+
+Useful when: migrating SDK versions, setting up integrations (LangChain, LlamaIndex, Bedrock), configuring self-hosted Langfuse, or any question the workshop materials don't cover.

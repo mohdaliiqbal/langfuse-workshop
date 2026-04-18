@@ -58,7 +58,7 @@ def answer(
     return response, trace_id
 ```
 
-**Explain**: `get_current_trace_id()` returns the ID of the trace currently in scope. We capture it before the `propagate_attributes` context closes, then return it alongside the response so `main.py` can use it to attach scores.
+**Explain**: `get_current_trace_id()` returns the ID of the observation currently in scope. We capture it before the `propagate_attributes` context closes, then return it alongside the response so `main.py` can use it to attach scores. Without an ID there's no way to connect a score back to the specific request that produced it — every score would be a floating data point with no context.
 
 ---
 
@@ -137,7 +137,7 @@ from langfuse import get_client
 
 **Verify in Langfuse**: Open the trace — you should see a `user-feedback` score attached to it.
 
-**Explain**: With user feedback scores you can filter Langfuse traces by score value to find exactly which responses users found unhelpful.
+**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges can score format and coherence; only the user knows if the answer actually solved their problem. Even a small fraction of rated responses reveals patterns: which topics confuse users, which phrasings get thumbs-down, which edge cases the model handles poorly.
 
 ---
 
@@ -152,15 +152,19 @@ Tell the attendee to do the following in Langfuse (no code needed):
 **Create the evaluator:**
 1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
 2. Pick a managed evaluator — e.g. **Helpfulness** or **Hallucination**
-3. Set target to **Live Observations**, filter by `trace name = support-question`
-4. Map variables: `input` → observation input (JsonPath: `$[1]["content"]`), `output` → observation output (JsonPath: `$["content"]`)
+3. Set target to **Live Observations**, add filters:
+   - `trace name = support-question`
+   - `environment = any of [development]` (use **any of**, not "none of")
+4. Map variables:
+   - `input` → observation input, JsonPath: `$[1]["content"]` (user question)
+   - `output` → observation output, JsonPath: `$["content"]` — the double-quotes are required
 5. Set sampling to `100%`, click **Execute**
 
 **Run**: Ask a few questions.
 
 **Verify**: After a short delay (evaluators run async), open a trace — you should see a new score from the Langfuse evaluator appearing automatically.
 
-**Explain**: The UI evaluator is hosted and run by Langfuse — zero infra, auto-scales, rubric editable without a deployment. It runs on every matching observation after the fact, so there's no latency impact on your users.
+**Explain**: The UI evaluator runs asynchronously — after your app responds to the user, Langfuse picks up the observation and scores it in the background. That means zero latency impact for the user and no infra to manage. The rubric (which managed evaluator you chose, what threshold counts as "helpful") can be changed in the UI without touching code or redeploying anything — useful when a PM wants to tighten the definition of "hallucination" mid-sprint.
 
 ---
 
@@ -234,7 +238,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 2. Filter by score name to find low-scoring traces and read the judge's reasoning
 3. Go to **Scores** → **Analytics** to see score distributions
 
-**Explain**: The evaluator prompt lives in Langfuse, so a PM can refine the rubric without touching code — just update the prompt version and set the production label. The `try/except` ensures an evaluation failure never breaks the user experience.
+**Explain**: Keeping the evaluator prompt in Langfuse means your scoring rubric isn't locked in a deployment cycle. A PM or domain expert can tighten the definition of "correct" — without a code review or git commit — by editing `quality-evaluator-prompt` and promoting the new version to `production`. The code picks it up on the next call. The `try/except` wrapper ensures an evaluation failure is silent from the user's perspective: a broken judge is annoying, but it should never interrupt a real support conversation.
 
 ---
 
