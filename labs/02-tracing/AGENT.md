@@ -4,17 +4,31 @@
 
 ---
 
+## Before we start
+
+Tell the attendee:
+
+> "Before we begin, please do two things:
+> 1. Open a terminal window and navigate to the workshop directory (wherever you cloned or unzipped it). This is where you'll run commands throughout the lab.
+> 2. Open the lab README in your browser — it has all the screenshots for reference: **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/02-tracing/README.md**
+>
+> Keep both open as we go. I'll tell you exactly which task and step to look at for each screenshot."
+
+---
+
 ## Your task
 
-Guide the attendee through adding basic Langfuse tracing to `app/assistant.py` and `app/main.py`. Make changes one step at a time, explaining each one and verifying it in the Langfuse UI before moving on.
+You are teaching Lab 2 as a live instructor. Make one code change at a time, show what changed, explain why it matters, then ask the attendee to run the app and verify in Langfuse before touching anything else.
 
-The attendee's `app/assistant.py` currently has no Langfuse imports. The app works — it just produces no observability data.
+The attendee's `app/assistant.py` has no Langfuse imports. The app works — it just produces no observability data.
 
 ---
 
 ## Step 1 — Observe the root function
 
-**Change**: Add `@observe()` to the `answer()` function in `app/assistant.py`.
+**Announce**: We'll start by wrapping `answer()` with `@observe()`. This one decorator is all it takes to create a trace in Langfuse for every question the user asks.
+
+**Make the change** — add the import and decorator to `app/assistant.py`:
 
 ```python
 from langfuse import observe
@@ -24,19 +38,33 @@ def answer(question: str, history: list[dict] | None = None) -> str:
     ...
 ```
 
-**Run**: `python -m app.main` — ask one question, then quit.
+**Show the diff**: Point out the two new lines — the import at the top and `@observe()` above the function.
 
-**Verify in Langfuse**: Go to **Tracing** — you'll see the **observations table**, Langfuse's primary view in v4. An observation named `answer` should appear. Click it — you'll see the question as Input and the response as Output.
+**Explain**: `@observe()` intercepts the function call and records its name, inputs (the question and history), return value (the response), and timing — automatically. Without this, a wrong answer is a black box. With it, you can open Langfuse and see exactly what the model received and returned.
 
-**Set up a saved view (do this once now)**: The observations table shows all operations. To focus on just the root `answer()` calls throughout the workshop, add a filter `name = "answer"` in the filter sidebar and click **Save view**, naming it `Workshop – answer calls`. This saves you from re-filtering every session.
+Also set up a saved view: in Langfuse, filter the observations table by `name = "answer"` and save it as `Workshop – answer calls`. This gives you a one-click shortcut throughout the workshop.
 
-**Explain**: Every call to `answer()` now creates an observation in Langfuse. The decorator captured the function arguments as input and the return value as output automatically. This is your observability foundation: without it, a wrong answer is a black box; with it, you can see exactly what prompt, context, and history the model received.
+**Terminal prompt**: "In your terminal window, run:"
+```bash
+python -m app.main
+```
+Ask one question, then quit.
+
+**Langfuse check**: "In Langfuse, go to **Tracing** and open your saved `Workshop – answer calls` view. You should see one row for the question you just asked."
+
+📸 **See Task 2.1 in the lab README** for a screenshot of the observations table and the detail view when you click an observation.
+
+**✋ Check in**: "Can you see the observation in the table? Click it — what does the Input field show?"
+
+Wait for their answer before continuing.
 
 ---
 
 ## Step 2 — Add a span for retrieval
 
-**Change**: Extract the retrieval logic into a new `retrieve_context()` function decorated with `@observe()`. Call it from `answer()` instead of calling `retrieve()` and `format_context()` directly.
+**Announce**: The trace shows the full `answer()` call, but we can't see what the retrieval step returned. We'll extract it into its own observed function so it becomes a separate, inspectable node.
+
+**Make the change** — add a new `retrieve_context()` function and update `answer()` to call it:
 
 ```python
 @observe()
@@ -45,19 +73,25 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 ```
 
-Update `answer()` to call `retrieve_context(question)` and remove the direct calls to `retrieve()` and `format_context()`.
+Remove the direct calls to `retrieve()` and `format_context()` inside `answer()` and replace with `retrieve_context(question)`.
 
-**Run**: Ask another question.
+**Explain**: When one `@observe`-decorated function calls another, Langfuse automatically nests the child beneath the parent. This matters because "the model gave a wrong answer" is rarely a complete diagnosis. Often the real cause is "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
 
-**Verify in Langfuse**: Open the observation. You should now see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Input is the question and its Output is the formatted docs text that was injected into the prompt.
+**Terminal prompt**: "Run the app and ask another question."
 
-**Explain**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship. This matters because "the model gave a wrong answer" is rarely a complete diagnosis — often it's "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
+**Langfuse check**: "Open the new observation. You should see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Output shows the formatted docs text that was injected into the prompt."
+
+📸 **See Task 2.2 in the lab README** for a screenshot of the nested span tree.
+
+**✋ Check in**: "Do you see the nested span? What context did the retrieval return?"
 
 ---
 
 ## Step 3 — Track the LLM call as a generation
 
-**Change**: Extract the OpenAI call into a `call_llm()` function decorated with `@observe(as_type="generation")`. Call it from `answer()`.
+**Announce**: LLM calls are special — Langfuse has a dedicated `generation` type that tracks model name, token usage, and cost. We'll extract the OpenAI call into its own function and mark it as a generation.
+
+**Make the change** — add a `call_llm()` function and update `answer()` to call it:
 
 ```python
 @observe(as_type="generation")
@@ -70,17 +104,25 @@ def call_llm(messages: list[dict]) -> str:
     return response.choices[0].message.content
 ```
 
-**Run**: Ask another question.
+Update `answer()` to call `call_llm(messages)` instead of calling `client.chat.completions.create()` directly.
 
-**Verify in Langfuse**: The observation now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input shows the **full messages array** sent to the model (system prompt, retrieved context, user question). This is the most important debugging view: if the model gave a wrong answer, you can see exactly what it was working with.
+**Explain**: `as_type="generation"` tells Langfuse this is an LLM call. The most valuable debugging view is the Input to `call_llm` — the full messages array. When a response is wrong, you can see the exact system prompt, retrieved context, and user question the model was working from. In Lab 3, the OpenAI drop-in wrapper will fill in token counts and cost automatically.
 
-**Explain**: `as_type="generation"` marks this as an LLM call rather than a generic span. Langfuse uses this to display model name, token counts, and cost estimates. In production this is how you track spend per feature, per user, or per prompt version — not by guessing from billing dashboards but by querying observations directly.
+**Terminal prompt**: "Run the app and ask another question."
+
+**Langfuse check**: "The observation now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input should show the full messages array including the system prompt, retrieved context, and user question."
+
+📸 **See Task 2.3 in the lab README** for a screenshot of the three-node tree and the `call_llm` Input view.
+
+**✋ Check in**: "Do you see all three nodes? Click `call_llm` — can you read the system prompt in its Input?"
 
 ---
 
 ## Step 4 — Flush on exit
 
-**Change**: Add `flush()` to `app/main.py` so all traces are sent before the process exits.
+**Announce**: One line ensures traces are fully sent before the process exits.
+
+**Make the change** — add to `app/main.py`, at the end of `main()` after the while loop:
 
 ```python
 from langfuse import get_client
@@ -89,17 +131,19 @@ from langfuse import get_client
 get_client().flush()
 ```
 
-**Explain**: Langfuse sends data in the background. In a short-lived script, the process can exit before all events are dispatched. `flush()` blocks until everything is sent.
+**Explain**: Langfuse batches and sends trace data asynchronously. `flush()` blocks until all pending events are dispatched. Without it, you'll occasionally see incomplete or missing traces when the script exits quickly — especially noticeable in the offline evals lab where scripts finish in seconds.
+
+**Terminal prompt**: "Run the app, ask 2–3 questions, then quit. All observations should appear complete."
+
+**✋ Check in**: "Are all your observations showing up with full input and output? Does anything look cut off?"
 
 ---
 
 ## Completion check
 
-Ask the attendee to run the app, ask 2-3 questions, then check Langfuse:
-
-- [ ] Each question creates a new trace
-- [ ] Each trace shows `answer` → `retrieve_context` + `call_llm` in the tree
+- [ ] Each question creates a new observation in the `Workshop – answer calls` saved view
+- [ ] Each observation has `answer` → `retrieve_context` + `call_llm` as nested nodes
 - [ ] Clicking `call_llm` shows the full messages array as Input
-- [ ] All traces appear after quitting the app
+- [ ] All observations appear after quitting the app
 
-Once confirmed, tell the attendee they're ready for **Lab 3: Rich Instrumentation**.
+"Great work — you've added the foundation of observability to the app. Every step from here builds on these three decorated functions. Ready for Lab 3: Rich Instrumentation?"

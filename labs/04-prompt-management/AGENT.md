@@ -4,22 +4,34 @@
 
 ---
 
-## Your task
+## Before we start
 
-Guide the attendee through moving the hardcoded `SYSTEM_PROMPT` in `app/assistant.py` into Langfuse Prompts. This lab involves both UI steps and code changes.
+Tell the attendee:
+
+> "Please make sure you have a terminal open in the workshop directory, and open the lab README in your browser:
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/04-prompt-management/README.md**
+>
+> This lab mixes UI steps (you do in Langfuse) and code changes (I'll make). I'll tell you which to do at each step."
 
 ---
 
-## Step 1 — Create the prompt in Langfuse UI
+## Your task
 
-Tell the attendee to do the following in their Langfuse project (you cannot do this for them):
+You are teaching Lab 4 as a live instructor. This lab combines UI steps and code changes. Make one change at a time, explain why, then wait for the attendee to confirm.
 
-1. Go to **Prompts** in the left sidebar (the menu item is called "Prompts")
-2. Click **New Prompt**
-3. Set:
-   - **Name**: `datastream-system-prompt`
-   - **Type**: Text
-4. Paste this content:
+The goal: move the hardcoded `SYSTEM_PROMPT` into Langfuse Prompts, so it can be edited by anyone — without a code change or deployment.
+
+---
+
+## Step 1 — Create the prompt in Langfuse
+
+**Announce**: Before writing any code, the prompt needs to exist in Langfuse. This is a UI-only step.
+
+**Direct the attendee** to do the following in their Langfuse project:
+
+1. Go to **Prompts** → click **New Prompt** (or **Create Prompt**)
+2. Name it: `datastream-system-prompt`, Type: **Text**
+3. Paste this content:
 
 ```
 You are a helpful customer support assistant for {{product_name}}, a real-time data pipeline platform.
@@ -34,35 +46,37 @@ Guidelines:
 - Maintain a friendly, professional tone.
 ```
 
-5. The **"Use the 'production' label"** checkbox is checked by default — leave it as is
-6. Click **Create prompt** — this creates version 1 with the `production` label attached
+4. Leave **"Use the 'production' label"** checked (default) → click **Create prompt**
 
-Ask the attendee to confirm when done before continuing.
+**Explain**: `{{product_name}}` is a variable — filled in at runtime by your code. This means a PM can change the product name or add a new guideline without touching the codebase. Labels are how the code knows which version to fetch: `get_prompt(..., label="production")` always returns whichever version currently carries the `production` label.
 
-**Explain**: Labels are how the code knows which version to fetch. `get_prompt(..., label="production")` fetches whatever version currently has the `production` label. Without setting this label, the fetch will fail. The `{{product_name}}` placeholder is a variable filled in at runtime — so PMs can edit the prompt content without knowing about product names in code.
+📸 **See Task 4.1 in the lab README** for screenshots of the prompt creation form.
+
+**✋ Check in**: "Have you created `datastream-system-prompt` in Langfuse? Can you see it in the Prompts list with the `production` label?"
+
+Wait for confirmation before making any code changes.
 
 ---
 
 ## Step 2 — Fetch, compile, and link the prompt in code
 
-Make four changes to `app/assistant.py`:
+**Announce**: Now we wire the code to fetch the prompt from Langfuse instead of using the hardcoded string.
 
-**Change 1** — Add `get_client` to the existing langfuse import (already there from Lab 3):
+**Make these four changes** to `app/assistant.py`:
 
+**1. Update the import** (add `get_client`):
 ```python
 from langfuse import observe, get_client, propagate_attributes
 ```
 
-**Change 2** — Add a `get_system_prompt()` function above `answer()`:
-
+**2. Add a `get_system_prompt()` helper** above `answer()`:
 ```python
 def get_system_prompt():
     langfuse = get_client()
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 ```
 
-**Change 3** — Update `answer()` to fetch and compile the prompt, and pass the prompt object to `call_llm`:
-
+**3. Update `answer()`** to fetch, compile, and pass the prompt object:
 ```python
 @observe()
 def answer(
@@ -94,8 +108,7 @@ def answer(
         return call_llm(messages, prompt=prompt_obj)
 ```
 
-**Change 4** — Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=` to the API call:
-
+**4. Update `call_llm()`** to accept and pass through the prompt object:
 ```python
 @observe()
 def call_llm(messages: list[dict], prompt=None) -> str:
@@ -108,49 +121,61 @@ def call_llm(messages: list[dict], prompt=None) -> str:
     return response.choices[0].message.content
 ```
 
-**Run**: Ask a question.
+**Explain**: `prompt.compile(product_name="DataStream")` fills in the `{{product_name}}` variable. Passing `langfuse_prompt=prompt` to the OpenAI call is how the wrapper links the generation to the specific prompt version — enabling you to filter all traces by prompt version. This is how you answer: "did quality change after I updated the prompt last Tuesday?"
 
-**Verify in Langfuse**: Open the trace, click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`.
+**Terminal prompt**: "Run the app and ask a question."
 
-**Explain**: `prompt.compile(product_name="DataStream")` fills in the `{{product_name}}` variable. Passing `langfuse_prompt=prompt` to `client.chat.completions.create()` is how the `langfuse.openai` wrapper links the generation to the specific prompt version — enabling you to filter traces by version and measure quality per version.
+**Langfuse check**: "Open the trace and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`."
+
+📸 **See Task 4.2 in the lab README** for a screenshot of the linked prompt version on the generation.
+
+**✋ Check in**: "Do you see the linked prompt version on the generation? What version number does it show?"
 
 ---
 
 ## Step 3 — Test prompt changes in the Playground
 
-Tell the attendee to do the following in the Langfuse UI:
+**Announce**: Before committing any change to `production`, test it in the Langfuse Playground — no code deployment needed.
+
+**Direct the attendee** to:
 
 1. Go to **Prompts** → `datastream-system-prompt` → click **Playground**
-2. Fill in `product_name` = `DataStream` in the variables panel
-3. Add a user message: *"What connectors do you support?"*
-4. Click **Run** — see the model respond with the current prompt
-5. Edit the prompt text inline, run again, compare
+2. Fill in `product_name = DataStream` in the variables panel
+3. Add a user message: *"What connectors do you support?"* → click **Run**
+4. Edit the prompt text inline and run again to compare
 
-Also show them: open any generation in a recent trace, then click **Open in Playground** — this loads the exact prompt and messages that produced that response for immediate reproduction and iteration.
+Also show: open any recent generation → click **Open in Playground** — this loads the exact prompt and messages from that response for immediate reproduction.
 
-**Explain**: The Playground is where you prototype changes before promoting them. When you're happy with an edit, save it as a new version from the Playground — no need to go back to the Prompt Management form.
+**Explain**: The Playground is your iteration environment. You prototype a change, test it on real inputs from production, and only promote it when you're confident. Changes here don't affect the running app until you explicitly save and label them — engineers own the deployment pipeline, everyone else owns the prompt content.
 
-Ask the attendee to confirm they've run a test in the Playground before continuing.
+📸 **See Task 4.3 in the lab README** for a screenshot of the Playground in use.
+
+**✋ Check in**: "Have you run a test in the Playground? Did the response change when you edited the prompt text?"
 
 ---
 
 ## Step 4 — Update the prompt without touching code
 
-Guide the attendee to:
+**Announce**: This is the payoff — edit the prompt in Langfuse and watch the app's behaviour change with zero code changes.
 
-1. Go to **Prompts** → `datastream-system-prompt`
-2. Click **New version** and add a new guideline, for example:
+**Direct the attendee** to:
+
+1. Go to **Prompts** → `datastream-system-prompt` → **New version**
+2. Add a guideline, for example:
    ```
    - Always end your response with "Is there anything else I can help you with?"
    ```
-3. Check **"Set the production label"** — this is not checked by default.
-4. Click **Save new prompt version**.
+3. Check **"Set the production label"** (not checked by default) → **Save new prompt version**
 
-**Run**: Ask a question again without changing any code.
+**Terminal prompt**: "Run the app — without changing any code — and ask a question."
 
-**Verify**: The assistant's response now ends with the new sign-off. In Langfuse, the new trace's generation shows `version 2` of the prompt.
+**Langfuse check**: "Open the latest trace's generation. The **Prompt** field should now show `version 2`. Does the assistant's response end with the new sign-off?"
 
-**Explain**: The code didn't change — only the prompt in Langfuse did. This is the separation of concerns: engineers own the code, product teams own the prompt content.
+📸 **See Task 4.4 in the lab README** for screenshots of saving a new version and the generation showing version 2.
+
+**✋ Check in**: "Did the response change without a code change? What version does the generation show?"
+
+**Explain**: The code is unchanged. The only thing that changed was a field in the Langfuse UI — live immediately. Your earlier traces remain linked to version 1 — the full version history is preserved. If the new prompt causes a quality regression you can promote version 1 back to `production` in one click.
 
 ---
 
@@ -158,6 +183,6 @@ Guide the attendee to:
 
 - [ ] `get_prompt("datastream-system-prompt")` works without error
 - [ ] Generations show a linked prompt version in the trace detail
-- [ ] Editing the prompt in the UI changes the assistant's behaviour with no code change
+- [ ] Editing the prompt in the UI changes the assistant's behaviour without a code change
 
-Once confirmed, tell the attendee they're ready for **Lab 5: Online Evals**.
+"You've decoupled prompts from code. Ready for Lab 5: Online Evals?"
