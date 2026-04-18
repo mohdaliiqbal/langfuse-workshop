@@ -35,7 +35,7 @@ Edit & save v2      →   (code picks up new version automatically)
 
 ## Tasks
 
-### Task 3.1 — Create the prompt in Langfuse
+### Task 4.1 — Create the prompt in Langfuse
 
 1. In your Langfuse project, go to **Prompts**.
 2. Click **Create Prompt** (or **New Prompt** in the top right if you already have prompts).
@@ -70,7 +70,7 @@ Guidelines:
 
 ---
 
-### Task 3.2 — Fetch, compile, and link the prompt
+### Task 4.2 — Fetch, compile, and link the prompt
 
 Make four changes to `app/assistant.py`:
 
@@ -153,7 +153,7 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 ---
 
-### Task 3.3 — Test prompt changes in the Playground
+### Task 4.3 — Test prompt changes in the Playground
 
 Before committing a prompt change to `production`, you can test it directly in Langfuse without writing any code.
 
@@ -169,7 +169,7 @@ The Playground is where you prototype. Once you're happy with a change, save it 
 
 ---
 
-### Task 3.4 — Update the prompt without touching code
+### Task 4.4 — Update the prompt without touching code
 
 1. Go back to Langfuse → **Prompts** → `datastream-system-prompt`.
 2. Click **New version** and add a new guideline, e.g.:

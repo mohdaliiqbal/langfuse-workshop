@@ -1,5 +1,5 @@
 """
-Lab 3 Solution: Prompt Management
+Lab 4 Solution: Prompt Management
 Drop-in replacement for app/assistant.py
 """
 

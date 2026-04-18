@@ -1,5 +1,5 @@
 """
-Lab 1 Solution: main.py
+Lab 2 Solution: main.py
 Copy this over app/main.py — adds flush() so all traces are sent before exit.
 """
 

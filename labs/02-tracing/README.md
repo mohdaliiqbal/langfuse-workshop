@@ -1,4 +1,4 @@
-# Lab 1: Basic Tracing
+# Lab 2: Basic Tracing
 
 ## Concept
 
@@ -43,7 +43,7 @@ The flow is: **user question → retrieve docs → build messages → call LLM �
 
 ## Tasks
 
-### Task 1.1 — Add the `@observe` decorator to `answer()`
+### Task 2.1 — Add the `@observe` decorator to `answer()`
 
 Open `app/assistant.py`. Import and apply `@observe` to the `answer` function.
 
@@ -76,7 +76,7 @@ Click on a trace to open the detail view. You'll see:
 
 ---
 
-### Task 1.2 — Add a span for retrieval
+### Task 2.2 — Add a span for retrieval
 
 The trace shows the full `answer()` call, but we want to see the retrieval step separately. Wrap the retrieval logic in its own `@observe`-decorated function.
 
@@ -99,7 +99,7 @@ Compared to the previous step, notice what's new: the left panel now shows a tre
 
 ---
 
-### Task 1.3 — Track the LLM call as a generation
+### Task 2.3 — Track the LLM call as a generation
 
 LLM calls are special — Langfuse has a dedicated type for them called a **generation** that tracks model name, token usage, and cost. Wrap the OpenAI call in an `@observe(as_type="generation")` decorated function.
 
@@ -122,11 +122,11 @@ Ask another question and open the trace. You'll now see all three nodes in the l
 
 Click on `call_llm`. This is where things get interesting — the Input shows the **full messages array** that was sent to the model: the system prompt, the retrieved documentation context, and the user's question all assembled together. The Output shows exactly what the model returned. This is the most valuable view for debugging — if the model gave a bad answer, you can see precisely what it was working with.
 
-> **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 2.
+> **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 3.
 
 ---
 
-### Task 1.4 — Flush on exit
+### Task 2.4 — Flush on exit
 
 In a long-running server, Langfuse sends data in the background. In a short-lived script, you need to flush manually to ensure all events are sent before the process exits.
 

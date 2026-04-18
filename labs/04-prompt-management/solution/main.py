@@ -1,6 +1,6 @@
 """
-Lab 3 Solution: main.py
-Same as Lab 2 — no changes needed in main.py for prompt management.
+Lab 4 Solution: main.py
+Same as Lab 3 — no changes needed in main.py for prompt management.
 """
 
 import uuid

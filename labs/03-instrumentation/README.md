@@ -75,7 +75,7 @@ Notice what the OpenAI wrapper added automatically: the **model name**, **token 
 >       base_url="https://api.anthropic.com/v1/",    # Anthropic endpoint
 >   )
 >   response = client.chat.completions.create(
->       model="claude-opus-4-20250514",
+>       model="claude-opus-4-6",
 >       messages=[...],
 >   )
 >   ```

@@ -91,7 +91,7 @@ _Following is a a sample run_
 
 ![Datasets list showing the datastream-support-benchmark dataset](./assets/langfuse-datasets-list.png)
 
-3. Click into it to see the 10 test items:
+3. Click into it to see the 9 test items:
 
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-items.png)
 
@@ -100,6 +100,30 @@ Now are dataset is ready to run experiments.
 ---
 
 ### Task 7.2 — Run an experiment
+
+Before running the experiment, create the LLM judge prompt in Langfuse — consistent with the prompt management pattern from Lab 4, so the rubric can be tuned without touching code.
+
+**Create `experiment-judge-prompt` in Langfuse:**
+1. Go to **Prompts** → **New Prompt**, name it `experiment-judge-prompt`, type **Text**
+2. Paste this content:
+
+```
+You are evaluating a customer support response for correctness.
+
+Question: {{question}}
+Expected key information: {{expected}}
+Actual response: {{actual}}
+
+Does the actual response correctly answer the question and contain the essential information from the expected answer?
+Partial credit is fine if the response is mostly correct.
+
+Respond with JSON only:
+{"contains_answer": <true/false>, "score": <0.0 to 1.0>, "reason": "<one sentence>"}
+```
+
+3. Set label `production` and click **Create prompt**
+
+---
 
 1. Navigate to Experiments tab in the Datasets screen and Click **Run experiment** button on the top right handside 
 ![Dataset experiments tab](./assets/langfuse-dataset-experiments-tab.png)
@@ -185,7 +209,7 @@ You don't always need to write code to run an experiment. Langfuse can run a pro
 1. Go to **Prompts** → **New Prompt**, name it `support-qa-prompt`, clic **Chat**
 2. Add a system message: *"You are a helpful assistant for DataStream product."*
 
-3. In the prompt next: `{{question}}`
+3. In the user message field, add: `{{question}}`
 
 4. Set label `production` and click **Create prompt**
 
@@ -251,7 +275,7 @@ The trace's input is now a dataset item. The next time you run an experiment, it
 
 ## Checkpoint
 
-- [ ] Dataset appears in Langfuse with 10 items
+- [ ] Dataset appears in Langfuse with 9 items
 - [ ] First experiment run creates traces linked to the dataset
 - [ ] Each trace has an `answer-correctness` score
 - [ ] After changing the prompt, the second run shows different scores

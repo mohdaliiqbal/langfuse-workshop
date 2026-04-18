@@ -1,5 +1,5 @@
 """
-Lab 2 Solution: main.py
+Lab 3 Solution: main.py
 Copy this over app/main.py — adds session_id and user_id tracking.
 """
 
