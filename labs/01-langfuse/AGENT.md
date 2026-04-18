@@ -72,7 +72,7 @@ Wait for the attendee to share their keys.
 
 ## Step 5 — Write keys to `.env`
 
-Once the attendee shares their credentials, write them into `.env`:
+Once the attendee shares their credentials, write them into `.env` using the values they provided:
 
 ```env
 LANGFUSE_PUBLIC_KEY=pk-lf-...
@@ -80,10 +80,13 @@ LANGFUSE_SECRET_KEY=sk-lf-...
 LANGFUSE_BASE_URL=https://cloud.langfuse.com
 ```
 
+**Explain**: The `.env` file stores credentials locally — never committed to git. The `LANGFUSE_BASE_URL` must match the region you signed up in (EU: `cloud.langfuse.com`, US: `us.cloud.langfuse.com`).
+
 ---
 
 ## Step 6 — Verify the connection
 
+**Terminal prompt**: "In your terminal, run:"
 ```bash
 python -c "
 from dotenv import load_dotenv; load_dotenv()
@@ -93,7 +96,11 @@ print('Langfuse connection:', 'OK' if result else 'FAILED')
 "
 ```
 
-If it prints `FAILED`, check the `LANGFUSE_BASE_URL` — the most common mistake is using the EU URL when signed up on US, or vice versa.
+**✋ Check in**: "Does it print `Langfuse connection: OK`?"
+
+If it prints `FAILED`, the most common mistake is using the EU URL when signed up on US, or vice versa — check the `LANGFUSE_BASE_URL` in `.env`.
+
+Wait for confirmation before declaring the lab complete.
 
 ---
 
