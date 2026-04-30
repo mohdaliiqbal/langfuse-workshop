@@ -2,6 +2,7 @@
 DataStream Support Assistant - CLI entry point
 """
 
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -14,6 +15,19 @@ console = Console()
 
 
 def main():
+    if not os.getenv("OPENAI_API_KEY"):
+        console.print(Panel.fit(
+            "[bold red]OPENAI_API_KEY is not set[/bold red]\n"
+            "[dim]Add it to your .env file, then restart the app.[/dim]\n\n"
+            "Press [bold]Ctrl+C[/bold] to exit.",
+            border_style="red"
+        ))
+        try:
+            input()
+        except KeyboardInterrupt:
+            pass
+        return
+
     console.print(Panel.fit(
         "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
         "[dim]Type your question or 'quit' to exit[/dim]",
