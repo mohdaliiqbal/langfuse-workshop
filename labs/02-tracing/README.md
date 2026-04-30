@@ -41,6 +41,16 @@ The flow is: **user question → retrieve docs → build messages → call LLM �
 
 ---
 
+## Install Langfuse
+
+Before writing any code, install the Langfuse SDK into your virtual environment:
+
+```bash
+pip install langfuse
+```
+
+---
+
 ## Tasks
 
 ### Task 2.1 — Add the `@observe` decorator to `answer()`

@@ -155,15 +155,17 @@ In production, each of your actual users would appear here. You can click a user
 
 ### Task 3.4 — Name your traces
 
-By default, traces use the function name. Give the root trace a meaningful name using `trace_name`:
+By default, traces use the function name. Give the root trace a meaningful name by setting `name=` on the decorator **and** `trace_name` in `propagate_attributes` — the new Langfuse UI uses the observation name as the primary label:
 
 ```python
-with propagate_attributes(
-    trace_name="support-question",
-    session_id=session_id,
-    user_id=user_id,
-):
-    ...
+@observe(name="support-question")
+def answer(...):
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id,
+        user_id=user_id,
+    ):
+        ...
 ```
 
 Ask a question and open the trace. The name `support-question` now appears at the top of the trace detail dialog instead of `answer`.

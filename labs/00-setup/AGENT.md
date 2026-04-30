@@ -30,6 +30,8 @@ Ask the attendee for their OpenAI API key and write it into `.env`:
 OPENAI_API_KEY=sk-...
 ```
 
+Ask the attendee to visit https://platform.openai.com/api-keys to generate api keys.
+
 Leave the `LANGFUSE_*` fields blank for now — those are covered in Lab 1.
 
 ---

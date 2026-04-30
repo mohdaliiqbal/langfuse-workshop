@@ -133,28 +133,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 ---
 
-## Step 3 — Test prompt changes in the Playground
-
-**Announce**: Before committing any change to `production`, test it in the Langfuse Playground — no code deployment needed.
-
-**Direct the attendee** to:
-
-1. Go to **Prompts** → `datastream-system-prompt` → click **Playground**
-2. Fill in `product_name = DataStream` in the variables panel
-3. Add a user message: *"What connectors do you support?"* → click **Run**
-4. Edit the prompt text inline and run again to compare
-
-Also show: open any recent generation → click **Open in Playground** — this loads the exact prompt and messages from that response for immediate reproduction.
-
-**Explain**: The Playground is your iteration environment. You prototype a change, test it on real inputs from production, and only promote it when you're confident. Changes here don't affect the running app until you explicitly save and label them — engineers own the deployment pipeline, everyone else owns the prompt content.
-
-📸 **See Task 4.3 in the lab README** for a screenshot of the Playground in use.
-
-**✋ Check in**: "Have you run a test in the Playground? Did the response change when you edited the prompt text?"
-
----
-
-## Step 4 — Update the prompt without touching code
+## Step 3 — Update the prompt without touching code
 
 **Announce**: This is the payoff — edit the prompt in Langfuse and watch the app's behaviour change with zero code changes.
 
@@ -171,7 +150,7 @@ Also show: open any recent generation → click **Open in Playground** — this 
 
 **Langfuse check**: "Open the latest trace's generation. The **Prompt** field should now show `version 2`. Does the assistant's response end with the new sign-off?"
 
-📸 **See Task 4.4 in the lab README** for screenshots of saving a new version and the generation showing version 2.
+📸 **See Task 4.3 in the lab README** for screenshots of saving a new version and the generation showing version 2.
 
 **✋ Check in**: "Did the response change without a code change? What version does the generation show?"
 

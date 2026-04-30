@@ -25,7 +25,7 @@ chmod +x setup.sh
 `setup.sh` does exactly four things — nothing more:
 1. Checks you have Python 3.10+
 2. Creates a virtual environment in `.venv/` (isolated, won't affect your system Python)
-3. Installs the dependencies listed in `requirements.txt` (`openai`, `langfuse`, `python-dotenv`, `rich`)
+3. Installs the dependencies listed in `requirements.txt` (`openai`, `python-dotenv`, `rich`)
 4. Copies `.env.example` to `.env` if no `.env` exists yet
 
 It does **not** install anything globally, modify your system, or send any data anywhere.

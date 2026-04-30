@@ -1,6 +1,11 @@
 """
-Core assistant logic - no Langfuse instrumentation yet.
-Users will add observability in the labs.
+The brain of the app. One function — answer() — contains three key pieces of logic:
+  - Retrieval (lines 31-32): calls retrieve() and format_context() from the knowledge base to get relevant docs
+  - Message assembly (lines 35-43): builds the messages array — system prompt + history + user question with context
+  - LLM call (lines 46-50): sends the messages to OpenAI and returns the response
+
+In Lab 2 you'll extract the retrieval and LLM call into their own functions (retrieve_context, call_llm)
+so Langfuse can trace each step separately.
 """
 
 import os
@@ -23,21 +28,11 @@ Guidelines:
 
 
 def answer(question: str, history: list[dict] | None = None) -> str:
-    """
-    Answer a user question using retrieved context and conversation history.
-
-    Args:
-        question: The user's question
-        history: List of previous messages in the format [{"role": ..., "content": ...}]
-
-    Returns:
-        The assistant's response
-    """
-    # Retrieve relevant docs
+    # Retrieve relevant docs from the knowledge base
     docs = retrieve(question)
     context = format_context(docs)
 
-    # Build message list
+    # Build the messages array: system prompt + conversation history + user question with context
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     if history:
@@ -48,7 +43,7 @@ def answer(question: str, history: list[dict] | None = None) -> str:
         "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
     })
 
-    # Call the LLM
+    # Call the LLM and return the response
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
         messages=messages,
