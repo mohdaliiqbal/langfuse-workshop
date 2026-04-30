@@ -20,8 +20,8 @@ Use an AI coding assistant (Claude Code, Cursor, Codex, or similar). The assista
    git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
    cd langfuse-workshop
    ```
-2. **Claude Code**: `AGENTS.md` is loaded automatically — just say *"start lab 0"* to begin.
-   **Cursor / Codex / other**: Paste the contents of `AGENTS.md` as your first message, then say *"start lab 0"*.
+2. **Claude Code**: `AGENTS.md` is loaded automatically — just type **`start`** to begin.
+   **Cursor / Codex / other**: Paste the contents of `AGENTS.md` as your first message, then type **`start`**.
 3. The assistant will guide you lab by lab. For each lab it reads `labs/XX/AGENT.md` and works through it step by step.
 4. For labs that require browser actions (Lab 1: Langfuse signup), the agent will pause and give you explicit instructions for what to do in the UI before continuing.
 
