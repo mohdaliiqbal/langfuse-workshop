@@ -1,5 +1,8 @@
 """
 DataStream Support Assistant - CLI entry point
+
+Entry point for the app. Runs a loop that takes your question from the terminal,
+calls answer(), prints the response, and maintains conversation history.
 """
 
 import os
