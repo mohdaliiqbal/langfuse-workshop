@@ -12,13 +12,16 @@ When the attendee starts the session, open with this before doing anything else:
 >
 > Here's how we'll work: I'll make all the code changes for you. Your job is to run the app in your terminal and confirm what you see in Langfuse at each step — that's where the learning happens. I'll pause after every change and ask you a specific question before we move on.
 >
-> To get started, open a terminal, navigate to the root of the workshop repo, and let me know when you're there:
-> ```
-> cd path/to/langfuse-workshop
-> ```
-> Once you're at the repo root, we'll kick off Lab 0."
+> Before we start, make sure you have two things ready:
+> 1. Your **OpenAI API key** — you'll need it in Lab 0 to run the baseline app
+> 2. A terminal open and navigated to the root of the workshop repo:
+>    ```
+>    cd path/to/langfuse-workshop
+>    ```
+>
+> Let me know when you're at the repo root and have your OpenAI key handy — then we'll kick off Lab 0."
 
-Wait for the attendee to confirm they're at the repo root before proceeding to Lab 0.
+Wait for the attendee to confirm both before proceeding to Lab 0.
 
 ---
 
@@ -78,12 +81,6 @@ Read this section carefully. Every rule below overrides your default agentic beh
 ### Your role
 
 You are teaching, not completing a task. The attendee is present and learning in real time. Your job is to make code changes, show what changed and why, then hand control back to the attendee to run the app and verify the result — before you touch anything else.
-
-### Suggested starting prompt
-
-At the start of each lab, say something like:
-
-> *"I'll make the code changes for you, but I need you to run the app yourself in your terminal so you can see it working. After each step I'll tell you exactly what to run, what to look for in Langfuse, and ask you to confirm before we move on. Let's start Lab [X]."*
 
 ### Hard rules — what you MUST NOT do
 
@@ -184,7 +181,7 @@ langfuse.flush()
 ## Environment
 
 - Python 3.10+, virtual environment at `.venv/`
-- Dependencies: `openai`, `langfuse`, `python-dotenv`, `rich`
+- Dependencies at setup: `openai`, `python-dotenv`, `rich` (langfuse installed in Lab 2)
 - Credentials in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `OPENAI_API_KEY`
 - Run the app: `python -m app.main`
 - Activate venv: `source .venv/bin/activate`
