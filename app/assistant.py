@@ -1,10 +1,11 @@
 """
-The brain of the app. Three key pieces:
-  - answer()           top-level function: calls retrieval, builds the messages array, calls the LLM
-  - retrieve_context() calls retrieve() and format_context() from the knowledge base to get relevant docs
-  - call_llm()         sends the messages to the model and returns the response
+The brain of the app. One function — answer() — contains three key pieces of logic:
+  - Retrieval (lines 31-32): calls retrieve() and format_context() from the knowledge base to get relevant docs
+  - Message assembly (lines 35-43): builds the messages array — system prompt + history + user question with context
+  - LLM call (lines 46-50): sends the messages to OpenAI and returns the response
 
-No Langfuse instrumentation yet — you'll add that in Lab 2.
+In Lab 2 you'll extract the retrieval and LLM call into their own functions (retrieve_context, call_llm)
+so Langfuse can trace each step separately.
 """
 
 import os
