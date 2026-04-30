@@ -27,7 +27,22 @@ The attendee's `app/assistant.py` has no Langfuse imports. The app works — it 
 
 ---
 
-## Step 0 — Tour the application code
+## Step 0 — Install Langfuse
+
+**Announce**: Before we write any code, we need to install the Langfuse SDK.
+
+**Terminal prompt**: "In your terminal, run:"
+```bash
+pip install langfuse
+```
+
+**✋ Check in**: "Did it install without errors?"
+
+Wait for confirmation before continuing.
+
+---
+
+## Step 1 — Tour the application code
 
 **Announce**: Before we add any observability, let's understand what we're working with. Read `app/assistant.py`, `app/main.py`, and `app/knowledge_base.py` — then walk the attendee through the structure.
 
@@ -52,7 +67,7 @@ Wait for their reply before continuing.
 
 ---
 
-## Step 1 — Observe the root function
+## Step 2 — Observe the root function
 
 **Announce**: We'll start by wrapping `answer()` with `@observe()`. This one decorator is all it takes to create a trace in Langfuse for every question the user asks.
 
@@ -88,7 +103,7 @@ Wait for their answer before continuing.
 
 ---
 
-## Step 2 — Add a span for retrieval
+## Step 3 — Add a span for retrieval
 
 **Announce**: The trace shows the full `answer()` call, but we can't see what the retrieval step returned. We'll extract it into its own observed function so it becomes a separate, inspectable node.
 
@@ -115,7 +130,7 @@ Remove the direct calls to `retrieve()` and `format_context()` inside `answer()`
 
 ---
 
-## Step 3 — Track the LLM call as a generation
+## Step 4 — Track the LLM call as a generation
 
 **Announce**: LLM calls are special — Langfuse has a dedicated `generation` type that tracks model name, token usage, and cost. We'll extract the OpenAI call into its own function and mark it as a generation.
 
@@ -146,7 +161,7 @@ Update `answer()` to call `call_llm(messages)` instead of calling `client.chat.c
 
 ---
 
-## Step 4 — Flush on exit
+## Step 5 — Flush on exit
 
 **Announce**: One line ensures traces are fully sent before the process exits.
 
