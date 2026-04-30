@@ -142,20 +142,22 @@ response = answer(question, history, session_id=session_id, user_id=user_id)
 
 **Announce**: By default, traces are named after the function (`answer`). A meaningful name makes them identifiable at scale across multiple pipelines.
 
-**Make the change** — add `trace_name` to `propagate_attributes`:
+**Make the change** — add `name=` to the `@observe()` decorator on `answer()`, and add `trace_name` to `propagate_attributes`:
 
 ```python
-with propagate_attributes(
-    trace_name="support-question",
-    session_id=session_id,
-    user_id=user_id,
-    tags=["workshop", "lab-3"],
-    metadata={"app_version": "1.0.0"},
-):
-    ...
+@observe(name="support-question")
+def answer(...):
+    with propagate_attributes(
+        trace_name="support-question",
+        session_id=session_id,
+        user_id=user_id,
+        tags=["workshop", "lab-3"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        ...
 ```
 
-**Explain**: When you later add other pipelines (a summariser, a billing assistant, a search endpoint), filtering the observations table by `trace_name = "support-question"` shows each pipeline's performance separately. This prevents one noisy pipeline from drowning out quality signals from others.
+**Explain**: `name=` on the decorator sets the observation name shown in the UI. `trace_name` in `propagate_attributes` sets the trace-level name. Both need to match — the new Langfuse UI shows the observation name as the primary label. When you later add other pipelines (a summariser, a billing assistant, a search endpoint), filtering by `name = "support-question"` shows each pipeline's performance separately.
 
 **Terminal prompt**: "Run the app and ask a question."
 
