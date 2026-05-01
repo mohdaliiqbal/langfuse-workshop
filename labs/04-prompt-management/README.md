@@ -74,13 +74,13 @@ Guidelines:
 
 Make four changes to `app/assistant.py`:
 
-**1. Add `get_client` to your existing langfuse import:**
+**1. Add `get_client` to your existing langfuse import** — `app/assistant.py`, top of file:
 
 ```python
 from langfuse import observe, get_client, propagate_attributes
 ```
 
-**2. Add a `get_system_prompt()` function above `answer()`:**
+**2. Add a `get_system_prompt()` function above `answer()`** — `app/assistant.py`:
 
 ```python
 def get_system_prompt():
@@ -88,7 +88,7 @@ def get_system_prompt():
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 ```
 
-**3. Update `answer()` — replace the hardcoded `SYSTEM_PROMPT`, fetch and compile the prompt, and pass the prompt object to `call_llm`:**
+**3. Replace `answer()` entirely** — `app/assistant.py`:
 
 ```python
 @observe()
@@ -121,7 +121,7 @@ def answer(
         return call_llm(messages, prompt=prompt_obj)
 ```
 
-**4. Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=`** — this is how `langfuse.openai` links the generation to the specific prompt version:
+**4. Update `call_llm()` to accept the prompt and pass it as `langfuse_prompt=`** — `app/assistant.py`:
 
 ```python
 @observe()

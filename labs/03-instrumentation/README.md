@@ -45,19 +45,36 @@ Open `app/assistant.py`. The `client = OpenAI()` line at the top is where the Op
 
 The simplest way to enable this is Langfuse's **drop-in OpenAI replacement** — a one-line import change that wraps the OpenAI client and automatically captures token usage, model name, and cost for every call, with no other code changes needed.
 
-Replace the OpenAI import at the top of `app/assistant.py`:
+Make two changes to `app/assistant.py`:
 
+**File: `app/assistant.py`** — replace the OpenAI import at the top:
 ```python
-# Before
+# Before:
 from openai import OpenAI
 
-# After
-from langfuse.openai import OpenAI
+# After:
+from langfuse.openai import OpenAI  # drop-in: auto-captures tokens, model, cost
 ```
 
-That's it. The `call_llm()` function stays exactly as it is. Langfuse intercepts every `client.chat.completions.create()` call and records the model, token counts, and estimated cost automatically.
+Then change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()`:
 
-> **Note**: Because the OpenAI wrapper now creates the generation observation automatically, also change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()`. Keeping `as_type="generation"` would create a generation nested inside another generation. With the wrapper, `call_llm` becomes a regular span and the OpenAI call inside it becomes the generation.
+```python
+# Before:
+@observe(as_type="generation")
+def call_llm(messages: list[dict]) -> str:
+
+# After:
+@observe()  # plain span — the OpenAI wrapper creates the generation inside it
+def call_llm(messages: list[dict]) -> str:
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+    return response.choices[0].message.content
+```
+
+> **Why remove `as_type="generation"`?** The OpenAI wrapper now creates the generation observation automatically inside `call_llm`. Keeping `as_type="generation"` on the decorator would create a duplicate nested generation. With the wrapper, `call_llm` is a regular span and the OpenAI call inside it becomes the generation.
 
 Ask a question and open the trace in Langfuse. Click into the generation node — you should now see rich metadata that wasn't there in Lab 2:
 
@@ -94,26 +111,43 @@ Notice what the OpenAI wrapper added automatically: the **model name**, **token 
 
 Right now each question creates an independent trace. But your app supports multi-turn conversations — logically, all turns of a conversation should be grouped.
 
-Langfuse uses a `session_id` for this. Pass it via `propagate_attributes`:
+Langfuse uses a `session_id` for this. Pass it via `propagate_attributes`.
 
+**File: `app/assistant.py`** — add `uuid` and `propagate_attributes` to imports, then replace `answer()`:
 ```python
+# Add to imports at the top:
 import uuid
-from langfuse import observe, propagate_attributes
+from langfuse import observe, get_client, propagate_attributes
 
 @observe()
-def answer(question: str, history: list[dict] | None = None, session_id: str | None = None) -> str:
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+) -> str:
     with propagate_attributes(session_id=session_id or str(uuid.uuid4())):
         context = retrieve_context(question)
-        ...
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
-Update `app/main.py` to generate a session ID at startup and pass it through:
-
+**File: `app/main.py`** — generate a session ID once at startup and pass it to `answer()` on every turn:
 ```python
+# Add at the top of the file:
 import uuid
+
+# Inside main(), before the while loop:
 session_id = str(uuid.uuid4())
 
-# In the loop:
+# In the loop, update the answer() call:
 response = answer(question, history, session_id=session_id)
 ```
 
@@ -127,23 +161,44 @@ The session view shows every conversation turn in order, each with its own Input
 
 ### Task 3.3 — Add user ID and trace metadata
 
-In a real app you'd have authenticated users. Simulate this by hardcoding a user ID and passing it as trace metadata:
+In a real app you'd have authenticated users. Simulate this by hardcoding a user ID and passing it as trace metadata.
 
+**File: `app/assistant.py`** — expand `propagate_attributes` in `answer()` with user ID, tags, and metadata:
 ```python
-from langfuse import observe, propagate_attributes
-
 @observe()
-def answer(question: str, history: list[dict] | None = None, session_id: str | None = None, user_id: str | None = None) -> str:
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
     with propagate_attributes(
-        session_id=session_id,
+        session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
         tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
-        ...
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
-Update `app/main.py` to pass a `user_id` (e.g., `"workshop-user-1"`).
+**File: `app/main.py`** — add a user ID and pass it to `answer()`:
+```python
+# Inside main(), before the while loop:
+user_id = "workshop-user-1"
+
+# In the loop, update the answer() call:
+response = answer(question, history, session_id=session_id, user_id=user_id)
+```
 
 After running the app, go to **Observability → Users** in Langfuse. You'll see your user appear with their first and last event timestamps and a total trace count.
 
@@ -155,17 +210,35 @@ In production, each of your actual users would appear here. You can click a user
 
 ### Task 3.4 — Name your traces
 
-By default, traces use the function name. Give the root trace a meaningful name by setting `name=` on the decorator **and** `trace_name` in `propagate_attributes` — the new Langfuse UI uses the observation name as the primary label:
+By default, traces use the function name. Give the root trace a meaningful name by setting `name=` on the decorator **and** `trace_name` in `propagate_attributes` — the new Langfuse UI uses the observation name as the primary label.
 
+**File: `app/assistant.py`** — update the decorator and `propagate_attributes`:
 ```python
-@observe(name="support-question")
-def answer(...):
+@observe(name="support-question")  # sets the observation name shown in the UI
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
     with propagate_attributes(
-        trace_name="support-question",
-        session_id=session_id,
+        trace_name="support-question",  # sets the trace-level name
+        session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
+        tags=["workshop", "lab-3"],
+        metadata={"app_version": "1.0.0"},
     ):
-        ...
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
 Ask a question and open the trace. The name `support-question` now appears at the top of the trace detail dialog instead of `answer`.

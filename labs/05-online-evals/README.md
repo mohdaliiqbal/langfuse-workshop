@@ -42,7 +42,7 @@ To attach a score to a trace you need the **trace ID**. You get it by calling `l
 
 **Step 1 — Return the trace ID from `answer()`**
 
-Update the import at the top of `app/assistant.py` to include `get_client`:
+**File: `app/assistant.py`** — update the import at the top to include `get_client`:
 
 ```python
 from langfuse import observe, get_client, propagate_attributes
@@ -88,7 +88,7 @@ def answer(
 
 **Step 2 — Update `app/main.py` to collect feedback**
 
-Replace the full contents of `app/main.py` with the following:
+**File: `app/main.py`** — replace the full contents with the following:
 
 ```python
 from dotenv import load_dotenv
@@ -262,6 +262,7 @@ Respond with only a JSON object: {"score": <float>, "reason": "<one sentence>"}
 
 **Step 2 — Create a new file `app/evaluator.py`**
 
+**File: `app/evaluator.py`** (create this file):
 ```python
 import json
 import os
@@ -299,7 +300,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
 **Step 3 — Call the evaluator from `main.py`**
 
-Lets replace our main() function in `main.py` with following code. This will run programmatic evaluation in a background thread so it doesn't add latency for the user:
+**File: `app/main.py`** — replace the `main()` function with the following (adds the background thread evaluator call):
 
 ```python
 
