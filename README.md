@@ -17,7 +17,7 @@ Use an AI coding assistant (Claude Code, Cursor, Codex, or similar). The assista
 **To use agent mode:**
 1. Clone the repo and open the workshop directory in your AI assistant:
    ```bash
-   git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
+   git clone https://github.com/mohdaliiqbal/langfuse-workshop.git
    cd langfuse-workshop
    ```
 2. **Claude Code**: `AGENTS.md` is loaded automatically — just type **`start`** to begin.
@@ -59,7 +59,7 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ## Prerequisites
 
-- Python 3.10+
+- [uv](https://docs.astral.sh/uv/) (installs Python 3.14 automatically)
 - An OpenAI API key
 - A Langfuse account (free at [cloud.langfuse.com](https://cloud.langfuse.com), or run locally with Docker)
 
@@ -69,7 +69,7 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ```bash
 # 1. Clone this repo
-git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
+git clone https://github.com/mohdaliiqbal/langfuse-workshop.git
 cd langfuse-workshop
 
 # 2. Bootstrap the project
@@ -77,11 +77,9 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-`setup.sh` does exactly four things — nothing more:
-1. Checks you have Python 3.10+
-2. Creates a virtual environment in `.venv/` (isolated, won't affect your system Python)
-3. Installs the dependencies listed in `requirements.txt` (`openai`, `langfuse`, `python-dotenv`, `rich`)
-4. Copies `.env.example` to `.env` if no `.env` exists yet
+`setup.sh` does exactly three things — nothing more:
+1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies
+2. Copies `.env.example` to `.env` if no `.env` exists yet
 
 It does **not** install anything globally, modify your system, or send any data anywhere.
 
@@ -118,6 +116,7 @@ langfuse-workshop/
 │   ├── 06-human-annotation/      # Lab 6: human annotation workflows
 │   └── 07-offline-evals/         # Lab 7: offline evals, datasets & experiments
 ├── .env.example                  # Environment variable template
+├── pyproject.toml
 ├── requirements.txt
 └── setup.sh                      # One-command bootstrap
 ```

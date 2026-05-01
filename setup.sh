@@ -3,27 +3,16 @@ set -e
 
 echo "Setting up Langfuse Workshop..."
 
-# Check Python version
-python_version=$(python3 --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1,2)
-required="3.10"
-if [ "$(printf '%s\n' "$required" "$python_version" | sort -V | head -n1)" != "$required" ]; then
-  echo "Error: Python 3.10+ required (found $python_version)"
+# Check uv is installed
+if ! command -v uv &> /dev/null; then
+  echo "Error: uv is not installed."
+  echo "Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
   exit 1
 fi
 
-# Create virtual environment if it doesn't exist
-if [ ! -d ".venv" ]; then
-  echo "Creating virtual environment..."
-  python3 -m venv .venv
-fi
-
-# Activate venv
-source .venv/bin/activate
-
-# Install dependencies
+# Install Python 3.14 and dependencies
 echo "Installing dependencies..."
-pip install -q --upgrade pip
-pip install -q -r requirements.txt
+uv sync
 
 # Set up .env if not present
 if [ ! -f ".env" ]; then
