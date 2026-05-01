@@ -180,8 +180,8 @@ langfuse.flush()
 
 ## Environment
 
-- Python 3.10+, virtual environment at `.venv/`
-- Dependencies at setup: `openai`, `python-dotenv`, `rich` (langfuse installed in Lab 2)
+- Python 3.14, managed by `uv`, virtual environment at `.venv/`
+- Dependencies: `openai`, `langfuse`, `python-dotenv`, `rich` (defined in `pyproject.toml`)
 - Credentials in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `OPENAI_API_KEY`
 - Run the app: `python -m app.main`
 - Activate venv: `source .venv/bin/activate`

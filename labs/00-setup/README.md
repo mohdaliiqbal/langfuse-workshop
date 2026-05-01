@@ -4,17 +4,29 @@ Get the workshop running on your machine. This lab covers cloning the repo and b
 
 ---
 
-## Step 1: OpenAI API Key
+## Step 1: Install uv
+
+If you don't have `uv` installed, run:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+`uv` will handle Python 3.14 and all dependencies — no separate Python install needed.
+
+---
+
+## Step 2: OpenAI API Key
 
 If you don't have one, create an account at [platform.openai.com](https://platform.openai.com) and generate an API key.
 
 ---
 
-## Step 2: Bootstrap the Project
+## Step 3: Bootstrap the Project
 
 ```bash
 # Clone the workshop repo
-git clone git@github.com:mohdaliiqbal/langfuse-workshop.git
+git clone https://github.com/mohdaliiqbal/langfuse-workshop.git
 cd langfuse-workshop
 
 # Run the setup script
@@ -22,17 +34,15 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-`setup.sh` does exactly four things — nothing more:
-1. Checks you have Python 3.10+
-2. Creates a virtual environment in `.venv/` (isolated, won't affect your system Python)
-3. Installs the dependencies listed in `requirements.txt` (`openai`, `python-dotenv`, `rich`)
-4. Copies `.env.example` to `.env` if no `.env` exists yet
+`setup.sh` does exactly two things — nothing more:
+1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies (`openai`, `langfuse`, `python-dotenv`, `rich`)
+2. Copies `.env.example` to `.env` if no `.env` exists yet
 
 It does **not** install anything globally, modify your system, or send any data anywhere.
 
 ---
 
-## Step 3: Add your OpenAI key to `.env`
+## Step 4: Add your OpenAI key to `.env`
 
 Open `.env` and fill in your OpenAI key. Leave the Langfuse fields for now — you'll get those in Lab 1.
 
@@ -42,7 +52,7 @@ OPENAI_API_KEY=sk-...
 
 ---
 
-## Step 4: Verify the baseline app works
+## Step 5: Verify the baseline app works
 
 Activate the virtual environment and run the app:
 
