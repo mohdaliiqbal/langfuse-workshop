@@ -156,6 +156,8 @@ Compared to the previous step, notice what's new: the left panel now shows a tre
 
 > **Key concept**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship between the spans.
 
+> **Note**: `app/knowledge_base.py` does **not** need any Langfuse imports — it's a plain data file. The `@observe` decorator goes on `retrieve_context()` in `app/assistant.py`, which wraps the knowledge base functions.
+
 ---
 
 ### Task 2.3 — Track the LLM call as a generation
@@ -203,6 +205,8 @@ Ask another question and open the trace. You'll now see all three nodes in the l
 Click on `call_llm`. This is where things get interesting — the Input shows the **full messages array** that was sent to the model: the system prompt, the retrieved documentation context, and the user's question all assembled together. The Output shows exactly what the model returned. This is the most valuable view for debugging — if the model gave a bad answer, you can see precisely what it was working with.
 
 > **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 3.
+
+> **Stay on `from openai import OpenAI` for now.** In Lab 3 you'll switch to `from langfuse.openai import OpenAI` — a drop-in replacement that auto-captures token counts and cost with no other code changes. Don't make that swap yet; it belongs in Lab 3.
 
 ---
 
