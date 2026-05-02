@@ -64,20 +64,23 @@ Wait for confirmation before making any code changes.
 
 **Make these four changes** to `app/assistant.py`:
 
-**1. Update the import** (add `get_client`):
+**1. Update the import** (add `get_client`) in `app/assistant.py`:
 ```python
+# app/assistant.py — update import:
 from langfuse import observe, get_client, propagate_attributes
 ```
 
-**2. Add a `get_system_prompt()` helper** above `answer()`:
+**2. Add a `get_system_prompt()` helper** above `answer()` in `app/assistant.py`:
 ```python
+# app/assistant.py — add above answer():
 def get_system_prompt():
     langfuse = get_client()
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 ```
 
-**3. Update `answer()`** to fetch, compile, and pass the prompt object:
+**3. Update `answer()`** in `app/assistant.py` to fetch, compile, and pass the prompt object:
 ```python
+# app/assistant.py — replace answer():
 @observe()
 def answer(
     question: str,
@@ -108,8 +111,9 @@ def answer(
         return call_llm(messages, prompt=prompt_obj)
 ```
 
-**4. Update `call_llm()`** to accept and pass through the prompt object:
+**4. Update `call_llm()`** in `app/assistant.py` to accept and pass through the prompt object:
 ```python
+# app/assistant.py — replace call_llm():
 @observe()
 def call_llm(messages: list[dict], prompt=None) -> str:
     response = client.chat.completions.create(

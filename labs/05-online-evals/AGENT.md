@@ -29,11 +29,13 @@ You are teaching Lab 5 as a live instructor. Add three quality signals one at a 
 
 First, ensure `get_client` is in the import:
 ```python
+# app/assistant.py — update import:
 from langfuse import observe, get_client, propagate_attributes
 ```
 
 Then replace the entire `answer()` function:
 ```python
+# app/assistant.py — replace answer():
 @observe()
 def answer(
     question: str,
@@ -80,9 +82,11 @@ def answer(
 **Make the change** — update `app/main.py`. Ensure `get_client` is imported, add `evaluate_response` and `threading` imports, and replace the `main()` function:
 
 ```python
+# app/main.py — add these imports at the top:
 from app.evaluator import evaluate_response
 import threading
 
+# app/main.py — replace main():
 def main():
     console.print(Panel.fit(
         "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
@@ -217,6 +221,7 @@ Wait for confirmation, then make the code change.
 **Make the change** — create `app/evaluator.py`:
 
 ```python
+# app/evaluator.py (create this new file):
 import json
 import os
 from openai import OpenAI
