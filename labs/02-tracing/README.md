@@ -45,14 +45,39 @@ The flow is: **user question → retrieve docs → build messages → call LLM �
 
 ### Task 2.1 — Add the `@observe` decorator to `answer()`
 
-Open `app/assistant.py`. Import and apply `@observe` to the `answer` function.
+Open `app/assistant.py`. Add the import at the top of the file, then add `@observe()` directly above `answer()`.
 
+**File: `app/assistant.py`**
 ```python
+# Add this import at the top of the file:
 from langfuse import observe
 
+# Add @observe() directly above the answer() function:
 @observe()
 def answer(question: str, history: list[dict] | None = None) -> str:
-    ...
+    # Retrieve relevant docs from the knowledge base
+    docs = retrieve(question)
+    context = format_context(docs)
+
+    # Build the messages array: system prompt + conversation history + user question with context
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        messages.extend(history)
+
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    # Call the LLM and return the response
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+
+    return response.choices[0].message.content
 ```
 
 Run the app, ask a question, then check your Langfuse dashboard. You should see a trace appear.
@@ -84,8 +109,9 @@ Click on any row to open the detail view. You'll see:
 
 ### Task 2.2 — Add a span for retrieval
 
-The trace shows the full `answer()` call, but we want to see the retrieval step separately. Wrap the retrieval logic in its own `@observe`-decorated function.
+The trace shows the full `answer()` call, but we want to see the retrieval step separately. Add a new `retrieve_context()` function in `app/assistant.py`, then update `answer()` to call it instead of calling `retrieve()` and `format_context()` directly.
 
+**File: `app/assistant.py`** — add this new function above `answer()`:
 ```python
 @observe()
 def retrieve_context(question: str) -> str:
@@ -93,7 +119,34 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 ```
 
-Then call `retrieve_context(question)` from inside `answer()` instead of calling `retrieve` and `format_context` directly.
+Then update `answer()` to use it (replace the two retrieval lines):
+
+```python
+@observe()
+def answer(question: str, history: list[dict] | None = None) -> str:
+    # Replace the direct retrieve() + format_context() calls with this:
+    context = retrieve_context(question)
+
+    # Build the messages array: system prompt + conversation history + user question with context
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        messages.extend(history)
+
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    # Call the LLM and return the response
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+
+    return response.choices[0].message.content
+```
 
 Ask another question and check the trace. You should now see a **nested** span for retrieval inside the root trace.
 
@@ -103,12 +156,15 @@ Compared to the previous step, notice what's new: the left panel now shows a tre
 
 > **Key concept**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship between the spans.
 
+> **Note**: `app/knowledge_base.py` does **not** need any Langfuse imports — it's a plain data file. The `@observe` decorator goes on `retrieve_context()` in `app/assistant.py`, which wraps the knowledge base functions.
+
 ---
 
 ### Task 2.3 — Track the LLM call as a generation
 
-LLM calls are special — Langfuse has a dedicated type for them called a **generation** that tracks model name, token usage, and cost. Wrap the OpenAI call in an `@observe(as_type="generation")` decorated function.
+LLM calls are special — Langfuse has a dedicated type for them called a **generation** that tracks model name, token usage, and cost. Add a new `call_llm()` function in `app/assistant.py`, then update `answer()` to call it.
 
+**File: `app/assistant.py`** — add this new function above `answer()`:
 ```python
 @observe(as_type="generation")
 def call_llm(messages: list[dict]) -> str:
@@ -120,7 +176,27 @@ def call_llm(messages: list[dict]) -> str:
     return response.choices[0].message.content
 ```
 
-Call `call_llm(messages)` from inside `answer()`.
+Then update `answer()` to call `call_llm()` instead of calling `client.chat.completions.create()` directly:
+
+```python
+@observe()
+def answer(question: str, history: list[dict] | None = None) -> str:
+    context = retrieve_context(question)
+
+    # Build the messages array: system prompt + conversation history + user question with context
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        messages.extend(history)
+
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    # Replace the direct client.chat.completions.create() call with this:
+    return call_llm(messages)
+```
 
 Ask another question and open the trace. You'll now see all three nodes in the left panel: `answer` → `retrieve_context` and `call_llm` side by side beneath it.
 
@@ -130,18 +206,20 @@ Click on `call_llm`. This is where things get interesting — the Input shows th
 
 > **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 3.
 
+> **Stay on `from openai import OpenAI` for now.** In Lab 3 you'll switch to `from langfuse.openai import OpenAI` — a drop-in replacement that auto-captures token counts and cost with no other code changes. Don't make that swap yet; it belongs in Lab 3.
+
 ---
 
 ### Task 2.4 — Flush on exit
 
 In a long-running server, Langfuse sends data in the background. In a short-lived script, you need to flush manually to ensure all events are sent before the process exits.
 
-Add to `app/main.py`:
-
+**File: `app/main.py`** — add the import at the top and the flush call at the end of `main()`:
 ```python
+# Add at the top of the file:
 from langfuse import get_client
 
-# At the end of main(), after the loop:
+# Add at the end of main(), after the while loop (before the closing of the function):
 get_client().flush()
 ```
 

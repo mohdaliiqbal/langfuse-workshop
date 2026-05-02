@@ -37,12 +37,18 @@ from openai import OpenAI
 from langfuse.openai import OpenAI  # drop-in: auto-captures tokens, model, cost
 ```
 
-Also change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()`:
+Also change `@observe(as_type="generation")` on `call_llm()` to plain `@observe()` — in `app/assistant.py`:
 
 ```python
+# app/assistant.py — update call_llm():
 @observe()  # plain span — the OpenAI wrapper creates the generation inside it
 def call_llm(messages: list[dict]) -> str:
-    ...
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+    return response.choices[0].message.content
 ```
 
 **Explain**: The `langfuse.openai` wrapper is a transparent proxy — it intercepts every `client.chat.completions.create()` call and records the model name, input tokens, output tokens, and estimated cost in USD. We change `call_llm` from `as_type="generation"` to a plain span because the wrapper now creates the generation automatically inside it — keeping `as_type="generation"` would create a duplicate nested generation.
@@ -64,9 +70,11 @@ def call_llm(messages: list[dict]) -> str:
 **Make the change** — update `answer()` in `app/assistant.py`:
 
 ```python
+# app/assistant.py — add to imports at the top:
 import uuid
 from langfuse import observe, propagate_attributes
 
+# Replace answer() with:
 @observe()
 def answer(
     question: str,
@@ -76,14 +84,25 @@ def answer(
 ) -> str:
     with propagate_attributes(session_id=session_id or str(uuid.uuid4())):
         context = retrieve_context(question)
-        ...
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
 Update `app/main.py` to generate a session ID at startup and pass it through:
 
 ```python
+# app/main.py — add at top of file:
 import uuid
 
+# Inside main(), before the while loop:
 session_id = str(uuid.uuid4())
 
 # In the loop, update the answer() call:
@@ -98,6 +117,8 @@ response = answer(question, history, session_id=session_id)
 
 📸 **See Task 3.2 in the lab README** for a screenshot of the session view.
 
+> **If the Sessions view is empty**: Sessions only appear after you quit the app — Langfuse flushes the session data on exit. If the view is still empty after quitting, check that `session_id` is being passed to `answer()` in `main.py` (not missing from the call). Every trace in the session must share the same `session_id` value.
+
 **✋ Check in**: "Do you see a session with multiple turns? Click it — can you see the full conversation in order?"
 
 ---
@@ -106,23 +127,43 @@ response = answer(question, history, session_id=session_id)
 
 **Announce**: Session IDs group conversations. User IDs link conversations to specific users — essential when someone reports a problem and you need to see everything they've asked.
 
-**Make the change** — expand `propagate_attributes` in `answer()`:
+**Make the change** — expand `propagate_attributes` in `answer()` in `app/assistant.py`:
 
 ```python
-with propagate_attributes(
-    session_id=session_id,
-    user_id=user_id,
-    tags=["workshop", "lab-3"],
-    metadata={"app_version": "1.0.0"},
-):
-    ...
+# app/assistant.py — update answer():
+@observe()
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
+    with propagate_attributes(
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id,
+        tags=["workshop", "lab-3"],
+        metadata={"app_version": "1.0.0"},
+    ):
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
 Update `app/main.py` to pass a user ID:
 
 ```python
+# app/main.py — inside main(), before the while loop:
 user_id = "workshop-user-1"
 
+# In the loop, update the answer() call:
 response = answer(question, history, session_id=session_id, user_id=user_id)
 ```
 
@@ -142,19 +183,35 @@ response = answer(question, history, session_id=session_id, user_id=user_id)
 
 **Announce**: By default, traces are named after the function (`answer`). A meaningful name makes them identifiable at scale across multiple pipelines.
 
-**Make the change** — add `name=` to the `@observe()` decorator on `answer()`, and add `trace_name` to `propagate_attributes`:
+**Make the change** — in `app/assistant.py`, add `name=` to the `@observe()` decorator on `answer()` and add `trace_name` to `propagate_attributes`:
 
 ```python
+# app/assistant.py — update answer():
 @observe(name="support-question")
-def answer(...):
+def answer(
+    question: str,
+    history: list[dict] | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> str:
     with propagate_attributes(
         trace_name="support-question",
-        session_id=session_id,
+        session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
         tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
-        ...
+        context = retrieve_context(question)
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({
+            "role": "user",
+            "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+        })
+
+        return call_llm(messages)
 ```
 
 **Explain**: `name=` on the decorator sets the observation name shown in the UI. `trace_name` in `propagate_attributes` sets the trace-level name. Both need to match — the new Langfuse UI shows the observation name as the primary label. When you later add other pipelines (a summariser, a billing assistant, a search endpoint), filtering by `name = "support-question"` shows each pipeline's performance separately.
@@ -171,17 +228,19 @@ def answer(...):
 
 ## Step 5 — Set the tracing environment
 
-**Announce**: Without environments, dev and production data mix together. One line in `.env` keeps them cleanly separated.
+**Announce**: Without environments, dev and production data mix together. This is already configured — let's verify it's active.
 
-**Make the change** — add to the attendee's `.env` file:
+**Check** — open the attendee's `.env` file and confirm this line is already there (it was copied from `.env.example` during setup):
 
 ```bash
 LANGFUSE_TRACING_ENVIRONMENT=development
 ```
 
+If it's missing, add it now. Otherwise, no change needed.
+
 **Explain**: Every trace now carries an `environment` attribute. In production you'd set `LANGFUSE_TRACING_ENVIRONMENT=production`. Same project, same datasets — but you can filter the observations table to show only `development` traces. This prevents dev noise from inflating error rates or polluting dashboards the team watches in real time.
 
-**Terminal prompt**: "Restart the app (so the `.env` change takes effect) and ask a question."
+**Terminal prompt**: "Restart the app (so the `.env` is loaded fresh) and ask a question."
 
 **Langfuse check**: "Use the **Environment** filter at the top of the observations table. Select `development` — only your workshop traces should appear."
 

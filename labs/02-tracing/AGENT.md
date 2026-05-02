@@ -56,17 +56,43 @@ Wait for their reply before continuing.
 
 **Announce**: We'll start by wrapping `answer()` with `@observe()`. This one decorator is all it takes to create a trace in Langfuse for every question the user asks.
 
-**Make the change** — add the import and decorator to `app/assistant.py`:
+**Make the change** — in `app/assistant.py`, add the import at the top and `@observe()` above `answer()`:
 
 ```python
+# Add at the top of app/assistant.py:
 from langfuse import observe
 
+# Add @observe() directly above answer():
 @observe()
 def answer(question: str, history: list[dict] | None = None) -> str:
-    ...
+    # Retrieve relevant docs from the knowledge base
+    docs = retrieve(question)
+    context = format_context(docs)
+
+    # Build the messages array: system prompt + conversation history + user question with context
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        messages.extend(history)
+
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    # Call the LLM and return the response
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+
+    return response.choices[0].message.content
 ```
 
 **Show the diff**: Point out the two new lines — the import at the top and `@observe()` above the function.
+
+> **Note for attendees**: `app/knowledge_base.py` does NOT need any Langfuse imports — it's a plain data file. The `@observe` decorator goes on functions in `app/assistant.py` that wrap the knowledge base calls.
 
 **Explain**: `@observe()` intercepts the function call and records its name, inputs (the question and history), return value (the response), and timing — automatically. Without this, a wrong answer is a black box. With it, you can open Langfuse and see exactly what the model received and returned.
 
@@ -92,16 +118,35 @@ Wait for their answer before continuing.
 
 **Announce**: The trace shows the full `answer()` call, but we can't see what the retrieval step returned. We'll extract it into its own observed function so it becomes a separate, inspectable node.
 
-**Make the change** — add a new `retrieve_context()` function and update `answer()` to call it:
+**Make the change** — in `app/assistant.py`, add a new `retrieve_context()` function and update `answer()` to call it:
 
 ```python
+# app/assistant.py — add this new function above answer():
 @observe()
 def retrieve_context(question: str) -> str:
     docs = retrieve(question)
     return format_context(docs)
-```
 
-Remove the direct calls to `retrieve()` and `format_context()` inside `answer()` and replace with `retrieve_context(question)`.
+# Update answer() to use it:
+@observe()
+def answer(question: str, history: list[dict] | None = None) -> str:
+    context = retrieve_context(question)
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    if history:
+        messages.extend(history)
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    response = client.chat.completions.create(
+        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
+        messages=messages,
+        temperature=0.3,
+    )
+    return response.choices[0].message.content
+```
 
 **Explain**: When one `@observe`-decorated function calls another, Langfuse automatically nests the child beneath the parent. This matters because "the model gave a wrong answer" is rarely a complete diagnosis. Often the real cause is "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
 
@@ -119,9 +164,10 @@ Remove the direct calls to `retrieve()` and `format_context()` inside `answer()`
 
 **Announce**: LLM calls are special — Langfuse has a dedicated `generation` type that tracks model name, token usage, and cost. We'll extract the OpenAI call into its own function and mark it as a generation.
 
-**Make the change** — add a `call_llm()` function and update `answer()` to call it:
+**Make the change** — in `app/assistant.py`, add a `call_llm()` function and update `answer()` to call it:
 
 ```python
+# app/assistant.py — add this new function above answer():
 @observe(as_type="generation")
 def call_llm(messages: list[dict]) -> str:
     response = client.chat.completions.create(
@@ -130,9 +176,24 @@ def call_llm(messages: list[dict]) -> str:
         temperature=0.3,
     )
     return response.choices[0].message.content
+
+# Update answer() to call call_llm() instead of client.chat.completions.create():
+@observe()
+def answer(question: str, history: list[dict] | None = None) -> str:
+    context = retrieve_context(question)
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    if history:
+        messages.extend(history)
+    messages.append({
+        "role": "user",
+        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
+    })
+
+    return call_llm(messages)
 ```
 
-Update `answer()` to call `call_llm(messages)` instead of calling `client.chat.completions.create()` directly.
+> **Note for attendees**: We're using `from openai import OpenAI` here — that's correct for Lab 2. In Lab 3 you'll switch to `from langfuse.openai import OpenAI` (a drop-in replacement) which auto-captures token counts and cost. Don't make that change yet.
 
 **Explain**: `as_type="generation"` tells Langfuse this is an LLM call. The most valuable debugging view is the Input to `call_llm` — the full messages array. When a response is wrong, you can see the exact system prompt, retrieved context, and user question the model was working from. In Lab 3, the OpenAI drop-in wrapper will fill in token counts and cost automatically.
 
