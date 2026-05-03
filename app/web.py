@@ -9,6 +9,12 @@ answer() returns a trace_id they start recording user-feedback scores in
 Langfuse automatically, with no changes needed to this file.
 """
 
+import sys
+import os
+# Ensure repo root is on sys.path so `from app.assistant import answer` resolves
+# correctly when Gradio runs this file (Gradio adds app/ to sys.path, not the root)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 load_dotenv()
 
