@@ -37,6 +37,8 @@ def _call_answer(message: str, history: list, session_id: str) -> tuple[str, str
 
 
 def _submit(message: str, history: list, state: dict):
+    if state is None:
+        state = _init_state()
     try:
         response, trace_id = _call_answer(message, history, state["session_id"])
     except Exception as e:
