@@ -76,10 +76,13 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
     )
 
 
+def _init_state():
+    # Called once per browser session via demo.load() — gives each tab its own session_id
+    return {"session_id": uuid.uuid4().hex, "trace_ids": []}
+
+
 with gr.Blocks(title="DataStream Support") as demo:
-    # gr.State with a factory function creates a fresh state per browser session,
-    # so each tab (and each hot reload) gets its own session_id
-    state = gr.State(lambda: {"session_id": uuid.uuid4().hex, "trace_ids": []})
+    state = gr.State(None)
 
     gr.Markdown("## DataStream Support Assistant")
     gr.Markdown("Ask me anything about DataStream — features, pricing, troubleshooting, and best practices.")
@@ -87,6 +90,7 @@ with gr.Blocks(title="DataStream Support") as demo:
     chatbot = gr.Chatbot(height=500, layout="bubble")
     msg = gr.Textbox(placeholder="Type your question...", show_label=False, submit_btn=True)
 
+    demo.load(_init_state, outputs=[state])
     msg.submit(_submit, inputs=[msg, chatbot, state], outputs=[msg, chatbot, state])
     chatbot.like(_handle_like, inputs=[state], outputs=[])
 
