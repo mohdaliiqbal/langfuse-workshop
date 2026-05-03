@@ -75,78 +75,13 @@ def answer(
 
 ---
 
-## Step 2 — Add user feedback to `main.py`
+## Step 2 — Verify feedback buttons work
 
-**Announce**: Now we wire up the feedback prompt and score recording in the chat loop.
+**Announce**: No code changes needed here — `app/web.py` already has 👍/👎 buttons wired up. Now that `answer()` returns a `trace_id`, they're live.
 
-**Make the change** — update `app/main.py`. Ensure `get_client` is imported, add `evaluate_response` and `threading` imports, and replace the `main()` function:
+**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem. The buttons call `get_client().create_score()` with `name="user-feedback"` and value `1` (👍) or `0` (👎).
 
-```python
-# app/main.py — add these imports at the top:
-from app.evaluator import evaluate_response
-import threading
-
-# app/main.py — replace main():
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        if trace_id:
-            threading.Thread(
-                target=evaluate_response,
-                args=(trace_id, question, response),
-                daemon=True,
-            ).start()
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()
-```
-
-Note: `app/evaluator.py` doesn't exist yet — the import will fail until Step 4. If the attendee wants to test Step 2 in isolation first, temporarily comment out that import line.
-
-**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem.
-
-**Terminal prompt**: "Run the app, ask a question, and give it a `y` or `n` rating."
+**Browser prompt**: "Ask a question in the browser and click 👍 or 👎 on the response."
 
 **Langfuse check**: "Open the observation in Langfuse — you should see a `user-feedback` score attached to it in the Scores tab."
 
@@ -258,9 +193,19 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
         print(f"Evaluation failed: {e}")
 ```
 
-**Explain**: Keeping the evaluator prompt in Langfuse means the scoring rubric isn't locked in a deployment cycle — a domain expert can tighten the definition of "correct" without a code review or git commit. The `try/except` ensures a broken judge never interrupts a real support conversation.
+Then wire it into `app/web.py` — add two lines inside `_submit()`, after `trace_ids = state["trace_ids"] + [trace_id]`:
 
-**Terminal prompt**: "Run the app and ask 5+ questions with a mix of good and edge-case inputs."
+```python
+# app/web.py — add inside _submit(), after trace_ids = ...:
+if trace_id:
+    import threading
+    from app.evaluator import evaluate_response
+    threading.Thread(target=evaluate_response, args=(trace_id, message, response), daemon=True).start()
+```
+
+**Explain**: Keeping the evaluator prompt in Langfuse means the scoring rubric isn't locked in a deployment cycle — a domain expert can tighten the definition of "correct" without a code review or git commit. Running it in a background thread means the user gets their response immediately with no latency impact. The `try/except` in `evaluator.py` ensures a broken judge never crashes the web server.
+
+**Browser prompt**: "Ask 5+ questions in the browser with a mix of good and edge-case inputs."
 
 **Langfuse check**: "Open an observation — you should see three scores: `user-feedback`, the Langfuse-hosted evaluator score, and `llm-judge-quality`. Click the `llm-judge-quality` score to read the judge's reasoning in the comment."
 
@@ -271,7 +216,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 ## Completion check
 
 - [ ] `answer()` returns `(response, trace_id)`
-- [ ] User feedback (y/n) creates a `user-feedback` score on the observation
+- [ ] Clicking 👍/👎 in the browser creates a `user-feedback` score on the observation
 - [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on observations
 - [ ] `quality-evaluator-prompt` exists in Langfuse with the `production` label

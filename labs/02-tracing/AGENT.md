@@ -29,13 +29,13 @@ The attendee's `app/assistant.py` has no Langfuse imports. The app works — it 
 
 ## Step 0 — Tour the application code
 
-**Announce**: Before we add any observability, let's understand what we're working with. Read `app/assistant.py`, `app/main.py`, and `app/knowledge_base.py` — then walk the attendee through the structure.
+**Announce**: Before we add any observability, let's understand what we're working with. Read `app/assistant.py` and `app/knowledge_base.py` — then walk the attendee through the structure.
 
 Read the files now and explain to the attendee:
 
 > "Here's how the app is structured:
 >
-> **`app/main.py`** — the entry point. It runs a loop that takes your question from the terminal, calls `answer()`, prints the response, and maintains conversation history.
+> **`app/web.py`** — the entry point. It runs a Gradio web server that serves the chat UI at http://localhost:7860, calls `answer()`, and passes the response back to the browser.
 >
 > **`app/assistant.py`** — the brain. It has three key pieces:
 > - `answer(question, history)` — the top-level function. It calls retrieval to get relevant docs, builds the messages array, then calls the LLM.
@@ -98,11 +98,9 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 Also set up a saved view: in Langfuse, filter the observations table by `name = "answer"` and save it as `Workshop – answer calls`. This gives you a one-click shortcut throughout the workshop.
 
-**Terminal prompt**: "In your terminal window, run:"
-```bash
-python -m app.main
-```
-Ask one question, then type `quit` or press `Ctrl+C` to exit. Traces are flushed on exit — check Langfuse after you quit.
+**Terminal prompt**: "Save the file — Gradio will reload automatically. Ask one question in the browser, then check Langfuse."
+
+> If the app isn't running: `uv run gradio app/web.py`, then open http://localhost:7860
 
 **Langfuse check**: "In Langfuse, go to **Tracing** and open your saved `Workshop – answer calls` view. You should see one row for the question you just asked."
 
@@ -150,7 +148,7 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 **Explain**: When one `@observe`-decorated function calls another, Langfuse automatically nests the child beneath the parent. This matters because "the model gave a wrong answer" is rarely a complete diagnosis. Often the real cause is "the retrieval step returned irrelevant context, so the model had nothing useful to work with." Seeing the retrieval output separately lets you tell those two failure modes apart instantly.
 
-**Terminal prompt**: "Run the app, ask a question, then type `quit` (or press `Ctrl+C`) to exit. Traces are flushed when the app terminates — you won't see the nested span until you quit."
+**Terminal prompt**: "Save the file — Gradio reloads automatically. Ask a question in the browser."
 
 **Langfuse check**: "Open the new observation. You should see a tree with two nodes: `answer` at the top and `retrieve_context` nested beneath it. Click `retrieve_context` — its Output shows the formatted docs text that was injected into the prompt."
 
@@ -197,7 +195,7 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 **Explain**: `as_type="generation"` tells Langfuse this is an LLM call. The most valuable debugging view is the Input to `call_llm` — the full messages array. When a response is wrong, you can see the exact system prompt, retrieved context, and user question the model was working from. In Lab 3, the OpenAI drop-in wrapper will fill in token counts and cost automatically.
 
-**Terminal prompt**: "Run the app, ask a question, then quit (`quit` or `Ctrl+C`)."
+**Terminal prompt**: "Save the file — Gradio reloads automatically. Ask a question in the browser."
 
 **Langfuse check**: "The observation now has three nodes: `answer` → `retrieve_context` + `call_llm`. Click `call_llm` — its Input should show the full messages array including the system prompt, retrieved context, and user question."
 
@@ -207,22 +205,13 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 ---
 
-## Step 4 — Flush on exit
+## Step 4 — Confirm traces appear
 
-**Announce**: One line ensures traces are fully sent before the process exits.
+**Announce**: Traces should be appearing in Langfuse within a few seconds of each question. Let's verify everything is flowing.
 
-**Make the change** — add to `app/main.py`, at the end of `main()` after the while loop:
+**Terminal prompt**: "Ask 2–3 more questions in the browser."
 
-```python
-from langfuse import get_client
-
-# At the end of main(), after the while loop:
-get_client().flush()
-```
-
-**Explain**: Langfuse batches and sends trace data asynchronously. `flush()` blocks until all pending events are dispatched. Without it, you'll occasionally see incomplete or missing traces when the script exits quickly — especially noticeable in the offline evals lab where scripts finish in seconds.
-
-**Terminal prompt**: "Run the app, ask 2–3 questions, then quit. All observations should appear complete."
+**Explain**: Langfuse batches and sends trace data asynchronously in the background. With the web server running continuously, this happens automatically — no manual flush needed. In Lab 7, the offline eval scripts are short-lived and will call `get_client().flush()` explicitly before exiting — that's the scenario flush is designed for.
 
 **✋ Check in**: "Are all your observations showing up with full input and output? Does anything look cut off?"
 
@@ -233,6 +222,5 @@ get_client().flush()
 - [ ] Each question creates a new observation in the `Workshop – answer calls` saved view
 - [ ] Each observation has `answer` → `retrieve_context` + `call_llm` as nested nodes
 - [ ] Clicking `call_llm` shows the full messages array as Input
-- [ ] All observations appear after quitting the app
 
 "Great work — you've added the foundation of observability to the app. Every step from here builds on these three decorated functions. Ready for Lab 3: Rich Instrumentation?"

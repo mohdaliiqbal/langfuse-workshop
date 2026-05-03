@@ -96,28 +96,17 @@ def answer(
         return call_llm(messages)
 ```
 
-Update `app/main.py` to generate a session ID at startup and pass it through:
-
-```python
-# app/main.py — add at top of file:
-import uuid
-
-# Inside main(), before the while loop:
-session_id = str(uuid.uuid4())
-
-# In the loop, update the answer() call:
-response = answer(question, history, session_id=session_id)
-```
+> **Web app**: `app/web.py` already passes `session_id` automatically once the parameter exists in `answer()`'s signature — no changes to `web.py` needed. Each browser tab gets its own session ID.
 
 **Explain**: Without sessions, a 10-turn conversation appears as 10 unrelated traces. With sessions, you can open **Sessions** in Langfuse and replay the entire conversation in order — exactly what a support team needs when a customer calls to complain. `propagate_attributes` attaches the session ID to the current trace context and all child spans automatically.
 
-**Terminal prompt**: "Run the app and ask 3+ questions in one run."
+**Terminal prompt**: "Save the file — Gradio reloads automatically. Ask 3+ questions in the browser."
 
 **Langfuse check**: "In Langfuse, go to **Sessions**. You should see one session containing all questions from that run."
 
 📸 **See Task 3.2 in the lab README** for a screenshot of the session view.
 
-> **If the Sessions view is empty**: Sessions only appear after you quit the app — Langfuse flushes the session data on exit. If the view is still empty after quitting, check that `session_id` is being passed to `answer()` in `main.py` (not missing from the call). Every trace in the session must share the same `session_id` value.
+> **If the Sessions view is empty**: Check that `session_id` is declared in `answer()`'s signature — `app/web.py` only passes it if the parameter exists. Wait a few seconds and refresh; traces are sent asynchronously.
 
 **✋ Check in**: "Do you see a session with multiple turns? Click it — can you see the full conversation in order?"
 
@@ -157,19 +146,11 @@ def answer(
         return call_llm(messages)
 ```
 
-Update `app/main.py` to pass a user ID:
-
-```python
-# app/main.py — inside main(), before the while loop:
-user_id = "workshop-user-1"
-
-# In the loop, update the answer() call:
-response = answer(question, history, session_id=session_id, user_id=user_id)
-```
+> **Web app**: `app/web.py` already passes `user_id = "workshop-user-1"` automatically once the parameter exists in `answer()`'s signature — no changes to `web.py` needed.
 
 **Explain**: `user_id` lets you filter Langfuse to show only one user's traces. In production, this is how you investigate a specific complaint — search the user ID and see every conversation they've had, every score they've received, every error that occurred. Tags are free-form labels useful for filtering across multiple pipelines.
 
-**Terminal prompt**: "Run the app and ask a few questions."
+**Terminal prompt**: "Save the file — Gradio reloads automatically. Ask a few questions in the browser."
 
 **Langfuse check**: "In Langfuse, go to **Users**. You should see `workshop-user-1` listed with a trace count."
 

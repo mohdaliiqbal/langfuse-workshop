@@ -140,7 +140,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 Run the app and ask a question:
 
 ```bash
-python -m app.main
+uv run gradio app/web.py
 ```
 
 Open the trace in Langfuse and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`. Every generation now records exactly which prompt version produced it.

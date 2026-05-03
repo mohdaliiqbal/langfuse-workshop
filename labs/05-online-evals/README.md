@@ -86,79 +86,11 @@ def answer(
     return response, trace_id
 ```
 
-**Step 2 — Update `app/main.py` to collect feedback**
+**Step 2 — Feedback is already wired in `app/web.py`**
 
-**File: `app/main.py`** — replace the full contents with the following:
+No code changes needed for this step. The web UI has 👍/👎 buttons on every assistant message. Once `answer()` returns a `trace_id` (Step 1 above), those buttons start recording `user-feedback` scores automatically.
 
-```python
-from dotenv import load_dotenv
-load_dotenv()
-
-import uuid
-from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import Prompt
-from langfuse import get_client          # NEW: for recording scores
-from app.assistant import answer
-
-console = Console()
-
-
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()              # NEW: Langfuse client for scoring
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            # CHANGED: answer() now returns (response, trace_id)
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        # NEW: ask for feedback and record it as a score on the trace
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()                     # NEW: ensure scores are sent before exit
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Run the app, ask a question, and give feedback. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
+Ask a question in the browser and click 👍 or 👎. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
 
 
 ![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-score.png)
@@ -298,73 +230,23 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
     )
 ```
 
-**Step 3 — Call the evaluator from `main.py`**
+**Step 3 — Call the evaluator from `app/web.py`**
 
-**File: `app/main.py`** — replace the `main()` function with the following (adds the background thread evaluator call):
+**File: `app/web.py`** — add two lines to the `_submit()` function, after `trace_ids = ...`:
 
 ```python
-
-from app.evaluator import evaluate_response
-import threading
-
-
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        # Collect user feedback
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        # Run LLM-as-a-judge in the background so it doesn't slow down the user
-        if trace_id:
-            threading.Thread(
-                target=evaluate_response,
-                args=(trace_id, question, response),
-                daemon=True,
-            ).start()
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()
-
+# app/web.py — add inside _submit(), after trace_ids = state["trace_ids"] + [trace_id]:
+if trace_id:
+    import threading
+    from app.evaluator import evaluate_response
+    threading.Thread(
+        target=evaluate_response,
+        args=(trace_id, message, response),
+        daemon=True,
+    ).start()
 ```
+
+> **Why a background thread?** `evaluate_response` makes its own LLM call, which takes 1–2 seconds. Running it in a daemon thread means the user gets their response immediately — the evaluation happens in parallel, with no impact on perceived latency.
 
 > **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
@@ -393,7 +275,7 @@ The **Scores** list gives you a full view across all traces:
 
 Ask 5+ questions with mixed quality (simple questions, edge cases, questions the bot can't answer).
 
-- [ ] User feedback (y/n) creates a `user-feedback` score on the trace
+- [ ] Clicking 👍/👎 in the browser creates a `user-feedback` score on the trace
 - [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on traces
 - [ ] Low-scoring traces have a comment explaining why
@@ -413,6 +295,6 @@ With scores, you can:
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant, [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator, and [`solution/main.py`](./solution/main.py) for the updated entry point with feedback collection.
+See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant and [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator.
 
 Next: **[Lab 6: Human Annotation](../06-human-annotation/README.md)**

@@ -80,11 +80,9 @@ def answer(question: str, history: list[dict] | None = None) -> str:
     return response.choices[0].message.content
 ```
 
-Run the app, ask a question, then check your Langfuse dashboard. You should see a trace appear.
+Save the file — Gradio will reload automatically. Ask a question in the browser, then check your Langfuse dashboard. You should see a trace appear.
 
-```bash
-python -m app.main
-```
+> If the web app isn't running yet: `uv run gradio app/web.py`, then open http://localhost:7860
 
 In Langfuse, go to **Tracing** — you'll land on the **observations table**, where every individual operation your app performs appears as its own row. This is Langfuse's primary view: each decorated function call is an observation you can query directly.
 
@@ -210,24 +208,17 @@ Click on `call_llm`. This is where things get interesting — the Input shows th
 
 ---
 
-### Task 2.4 — Flush on exit
+### Note — Flushing traces
 
-In a long-running server, Langfuse sends data in the background. In a short-lived script, you need to flush manually to ensure all events are sent before the process exits.
+With the Gradio web server running continuously, Langfuse's background thread sends batches automatically — no explicit `flush()` call is needed. If traces appear to be missing, wait a few seconds and refresh Langfuse.
 
-**File: `app/main.py`** — add the import at the top and the flush call at the end of `main()`:
-```python
-# Add at the top of the file:
-from langfuse import get_client
-
-# Add at the end of main(), after the while loop (before the closing of the function):
-get_client().flush()
-```
+> **For short-lived scripts** (like the offline evaluation scripts in Lab 7), you will call `get_client().flush()` explicitly before the script exits. That's the scenario flush was designed for.
 
 ---
 
 ## Checkpoint
 
-Run the app and ask 2-3 questions. In your Langfuse dashboard:
+Ask 2-3 questions in the browser. In your Langfuse dashboard:
 
 - [ ] Each question creates a new trace
 - [ ] Each trace has a nested retrieval span and an LLM generation
