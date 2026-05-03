@@ -31,7 +31,18 @@ def _call_answer(message: str, history: list, session_id: str) -> tuple[str, str
 
 
 def _submit(message: str, history: list, state: dict):
-    response, trace_id = _call_answer(message, history, state["session_id"])
+    try:
+        response, trace_id = _call_answer(message, history, state["session_id"])
+    except Exception as e:
+        # Show the real error in the chat so attendees don't have to hunt the terminal
+        import traceback
+        traceback.print_exc()
+        error_msg = f"**Error**: {e}\n\nCheck the terminal for the full traceback."
+        history = history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": error_msg},
+        ]
+        return "", history, state
     history = history + [
         {"role": "user", "content": message},
         {"role": "assistant", "content": response},
