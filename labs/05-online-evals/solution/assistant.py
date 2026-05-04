@@ -34,7 +34,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
     return response.choices[0].message.content
 
 
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,

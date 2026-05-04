@@ -91,7 +91,7 @@ def get_system_prompt():
 **3. Replace `answer()` entirely** — `app/assistant.py`:
 
 ```python
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,

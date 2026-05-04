@@ -81,7 +81,7 @@ def get_system_prompt():
 **3. Update `answer()`** in `app/assistant.py` to fetch, compile, and pass the prompt object:
 ```python
 # app/assistant.py — replace answer():
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,

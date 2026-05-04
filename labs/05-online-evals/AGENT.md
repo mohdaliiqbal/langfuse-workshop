@@ -36,7 +36,7 @@ from langfuse import observe, get_client, propagate_attributes
 Then replace the entire `answer()` function:
 ```python
 # app/assistant.py — replace answer():
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,
