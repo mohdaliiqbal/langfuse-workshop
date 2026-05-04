@@ -90,6 +90,28 @@ def answer(
 
 No code changes needed for this step. The web UI has 👍/👎 buttons on every assistant message. Once `answer()` returns a `trace_id` (Step 1 above), those buttons start recording `user-feedback` scores automatically.
 
+Here is the relevant code already in `app/web.py` that handles the button clicks:
+
+```python
+def _handle_like(data: gr.LikeData, state: dict) -> None:
+    trace_ids = state.get("trace_ids", [])
+    idx = data.index if isinstance(data.index, int) else data.index[0]
+    turn = idx // 2
+    trace_id = trace_ids[turn] if turn < len(trace_ids) else None
+    if not trace_id:
+        return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+    from langfuse import get_client
+    get_client().create_score(
+        trace_id=trace_id,
+        name="user-feedback",
+        value=1 if data.liked else 0,
+        data_type="BOOLEAN",
+        comment="User thumbs up/down from web UI",
+    )
+```
+
+`data.liked` is `True` for 👍 and `False` for 👎. The score is a **BOOLEAN** type with value `1` (liked) or `0` (disliked). Each score is attached to the specific trace for that turn using `trace_id`, which is why Step 1 — returning the trace ID from `answer()` — was required first.
+
 Ask a question in the browser and click 👍 or 👎. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
 
 
