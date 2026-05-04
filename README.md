@@ -92,8 +92,9 @@ source .venv/bin/activate
 
 # 5. Run the baseline app
 uv run gradio app/web.py
-# Then open http://localhost:7860 in your browser
 ```
+
+Then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> in your browser.
 
 Then open [labs/00-setup/README.md](labs/00-setup/README.md) and follow the labs in order.
 

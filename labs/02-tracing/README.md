@@ -82,7 +82,7 @@ def answer(question: str, history: list[dict] | None = None) -> str:
 
 Save the file — Gradio will reload automatically. Ask a question in the browser, then check your Langfuse dashboard. You should see a trace appear.
 
-> If the web app isn't running yet: `uv run gradio app/web.py`, then open http://localhost:7860
+> If the web app isn't running yet: `uv run gradio app/web.py`, then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a>
 
 In Langfuse, go to **Tracing** — you'll land on the **observations table**, where every individual operation your app performs appears as its own row. This is Langfuse's primary view: each decorated function call is an observation you can query directly.
 

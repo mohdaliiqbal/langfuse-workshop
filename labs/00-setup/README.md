@@ -66,7 +66,7 @@ You should see output like:
 Running on local URL: http://127.0.0.1:7860
 ```
 
-Open **http://localhost:7860** in your browser. You'll see the DataStream Support Assistant chat UI.
+Open **<a href="http://localhost:7860" target="_blank">http://localhost:7860</a>** in your browser. You'll see the DataStream Support Assistant chat UI.
 
 Try asking: *"How do I get started with DataStream?"*
 
@@ -80,6 +80,6 @@ You should get a helpful response. No Langfuse data will appear yet — that com
 
 - [ ] `./setup.sh` ran without errors
 - [ ] `uv run gradio app/web.py` starts without errors
-- [ ] The chat UI opens at http://localhost:7860 and responds to a question
+- [ ] The chat UI opens at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and responds to a question
 
 Once both pass, move on to **Lab 1: Langfuse** to create your account and get your API keys.
