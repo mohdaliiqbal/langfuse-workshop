@@ -238,4 +238,4 @@ In your Langfuse project, go to **Traces**. Click into a trace and explore:
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant and [`solution/main.py`](./solution/main.py) for the updated entry point.
+See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant.

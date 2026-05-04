@@ -282,4 +282,4 @@ With token usage, you can:
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant and [`solution/main.py`](./solution/main.py) for the updated entry point.
+See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant.
