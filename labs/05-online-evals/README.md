@@ -175,9 +175,11 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-llm-evaluators.png)
 
-7. Run the app and ask a few questions. After a short delay, open a trace — you'll see a score from the Langfuse-hosted evaluator attached automatically.
+7. Go back to the web UI at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and ask a few questions. After a short delay (30–60 seconds), the evaluator will run in the background and attach a score to each observation.
 
-8. Now filter the traces by *Numeric Scores* of **Helpfulness** equals to `0` and open any trace.
+   To see the scores: go to **Observations** in the left sidebar, open any observation named `support-question`, and click the **Scores** tab — you should see a score from the Langfuse-hosted evaluator listed there.
+
+8. Now filter the observations by *Numeric Scores* of **Helpfulness** equals to `0` and open any observation.
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-evaluator-helpfulness-filtered.png)
 
@@ -230,7 +232,7 @@ from langfuse import get_client
 client = OpenAI()
 
 
-def evaluate_response(trace_id: str, question: str, response: str) -> None:
+def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
@@ -249,6 +251,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
     langfuse.create_score(
         trace_id=trace_id,
+        observation_id=observation_id,
         name="llm-judge-quality",
         value=float(evaluation["score"]),
         data_type="NUMERIC",
@@ -261,13 +264,13 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 **File: `app/web.py`** — add two lines to the `_submit()` function, after `trace_ids = ...`:
 
 ```python
-# app/web.py — add inside _submit(), after trace_ids = state["trace_ids"] + [trace_id]:
+# app/web.py — add inside _submit(), after observation_ids = ...:
 if trace_id:
     import threading
     from app.evaluator import evaluate_response
     threading.Thread(
         target=evaluate_response,
-        args=(trace_id, message, response),
+        args=(trace_id, observation_id, message, response),
         daemon=True,
     ).start()
 ```
@@ -282,7 +285,7 @@ if trace_id:
 
 Now that you have scores flowing in from multiple sources, explore them in Langfuse:
 
-1. Go to **Traces** and filter by `score name = "llm-judge-quality"` — see which traces scored low and read the judge's reasoning in the comment.
+1. Go to **Observations** and filter by `environment = "langfuse-llm-as-a-judge"` — these are the observations created by the Langfuse-hosted evaluator. Open one to see its score and the judge's reasoning in the comment.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 ![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-scores-analytics.png)
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).

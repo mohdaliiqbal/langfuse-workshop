@@ -117,9 +117,9 @@ def answer(
 
 **Explain**: The UI evaluator runs asynchronously — after your app responds, Langfuse picks up the observation and scores it in the background. Zero latency impact for the user, zero infra to manage. The rubric can be changed in the UI without touching code — useful when a PM wants to tighten the definition of "helpful" mid-sprint.
 
-**Terminal prompt**: "Run the app and ask a few questions."
+**Browser prompt**: "Go back to the web UI at http://localhost:7860 and ask a few questions."
 
-**Langfuse check**: "After a short delay (30–60 seconds), open an observation. You should see a score from the Langfuse-hosted evaluator."
+**Langfuse check**: "After a short delay (30–60 seconds), go to **Observations** in the left sidebar, open any observation named `support-question`, and click the **Scores** tab — you should see a score from the Langfuse-hosted evaluator listed there."
 
 **✋ Check in**: "Do you see the evaluator score appearing on observations? What name does it use?"
 
@@ -166,7 +166,7 @@ from langfuse import get_client
 client = OpenAI()
 
 
-def evaluate_response(trace_id: str, question: str, response: str) -> None:
+def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
@@ -185,6 +185,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
         langfuse.create_score(
             trace_id=trace_id,
+            observation_id=observation_id,
             name="llm-judge-quality",
             value=float(evaluation["score"]),
             data_type="NUMERIC",
@@ -201,7 +202,7 @@ Then wire it into `app/web.py` — add two lines inside `_submit()`, after `trac
 if trace_id:
     import threading
     from app.evaluator import evaluate_response
-    threading.Thread(target=evaluate_response, args=(trace_id, message, response), daemon=True).start()
+    threading.Thread(target=evaluate_response, args=(trace_id, observation_id, message, response), daemon=True).start()
 ```
 
 **Explain**: Keeping the evaluator prompt in Langfuse means the scoring rubric isn't locked in a deployment cycle — a domain expert can tighten the definition of "correct" without a code review or git commit. Running it in a background thread means the user gets their response immediately with no latency impact. The `try/except` in `evaluator.py` ensures a broken judge never crashes the web server.
