@@ -150,7 +150,9 @@ def call_llm(messages: list[dict], prompt=None) -> str:
    ```
 3. Check **"Set the production label"** (not checked by default) → **Save new prompt version**
 
-**Terminal prompt**: "Run the app — without changing any code — and ask a question."
+> **Heads up**: The Langfuse SDK caches prompt versions for **1 minute**. If the attendee asks a question and the behaviour hasn't changed yet, tell them to wait a minute and try again — this is expected. The cache is what makes `get_prompt()` fast on every request; the trade-off is a short propagation delay.
+
+**Browser prompt**: "Ask a question in the browser — without changing any code."
 
 **Langfuse check**: "Open the latest trace's generation. The **Prompt** field should now show `version 2`. Does the assistant's response end with the new sign-off?"
 

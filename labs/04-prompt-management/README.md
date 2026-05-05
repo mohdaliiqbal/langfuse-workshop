@@ -165,7 +165,9 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 ![New version form — add guideline, check production label, save](./assets/langfuse-prompt-version-save.png)
 
-Now run the app again — without changing any code, the assistant's behaviour has changed.
+> **Cache note**: The Langfuse SDK caches prompt versions client-side for **1 minute**. After saving a new version, ask a question in the browser — if the behaviour hasn't changed yet, wait a minute and try again. This cache is what makes `get_prompt()` fast on every request; the trade-off is a short propagation delay when you update a prompt.
+
+Now ask a question in the browser — without changing any code, the assistant's behaviour has changed.
 
 In Langfuse, open the latest trace and click the generation inside `call_llm`. The **Prompt** field now shows `datastream-system-prompt @ version 2`.
 
