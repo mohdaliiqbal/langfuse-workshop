@@ -23,7 +23,7 @@ You are teaching Lab 5 as a live instructor. Add three quality signals one at a 
 
 ## Step 1 — Return the trace ID from `answer()`
 
-**Announce**: To attach a score to a trace, you need its ID. We'll update `answer()` to return it alongside the response.
+**Announce**: To attach a score to a specific observation, you need both the trace ID and the observation ID. We'll update `answer()` to return both alongside the response.
 
 **Make the change** — update `app/assistant.py`:
 
@@ -42,7 +42,7 @@ def answer(
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:
+) -> tuple[str, str | None, str | None]:
     langfuse = get_client()
 
     with propagate_attributes(
@@ -67,19 +67,20 @@ def answer(
 
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+        observation_id = langfuse.get_current_observation_id()
 
-    return response, trace_id
+    return response, trace_id, observation_id
 ```
 
-**Explain**: `get_current_trace_id()` returns the ID of the observation currently in scope. We capture it before the `propagate_attributes` context closes. Without an ID there's no way to connect a score back to the specific request that produced it. The return type changes from `str` to `tuple[str, str | None]` — callers now unpack `response, trace_id = answer(...)`.
+**Explain**: `get_current_trace_id()` and `get_current_observation_id()` both read from the active OpenTelemetry context — they must be called before the `propagate_attributes` block closes. Passing `observation_id` to `create_score` pins the score to the exact `support-question` span in the trace, so it appears directly on that observation in the Langfuse UI rather than just at the trace level. The return type changes from `str` to `tuple[str, str | None, str | None]`.
 
 ---
 
 ## Step 2 — Verify feedback buttons work
 
-**Announce**: No code changes needed here — `app/web.py` already has 👍/👎 buttons wired up. Now that `answer()` returns a `trace_id`, they're live.
+**Announce**: No code changes needed here — `app/web.py` already has 👍/👎 buttons wired up. Now that `answer()` returns `trace_id` and `observation_id`, they're live.
 
-**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem. The buttons call `get_client().create_score()` with `name="user-feedback"` and value `1` (👍) or `0` (👎).
+**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem. The buttons call `get_client().create_score()` with `name="user-feedback"`, value `1` (👍) or `0` (👎), and `observation_id` so the score appears directly on the observation.
 
 **Browser prompt**: "Ask a question in the browser and click 👍 or 👎 on the response."
 

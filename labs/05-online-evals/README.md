@@ -38,9 +38,9 @@ Once you have scores, you can filter traces by score, chart quality over time, a
 
 The goal: after each response, ask the user "was this helpful?" and record their answer as a score on the trace. Scores let you filter, chart, and act on quality signals in the Langfuse dashboard.
 
-To attach a score to a trace you need the **trace ID**. You get it by calling `langfuse.get_current_trace_id()` inside the `@observe`-decorated `answer()` function and returning it to the caller.
+To attach a score to a specific observation you need both the **trace ID** and the **observation ID**. You get them by calling `langfuse.get_current_trace_id()` and `langfuse.get_current_observation_id()` inside the `@observe`-decorated `answer()` function and returning them to the caller.
 
-**Step 1 — Return the trace ID from `answer()`**
+**Step 1 — Return the trace ID and observation ID from `answer()`**
 
 **File: `app/assistant.py`** — update the import at the top to include `get_client`:
 
@@ -57,7 +57,7 @@ def answer(
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:
+) -> tuple[str, str | None, str | None]:
     langfuse = get_client()
 
     with propagate_attributes(
@@ -82,27 +82,31 @@ def answer(
 
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+        observation_id = langfuse.get_current_observation_id()
 
-    return response, trace_id
+    return response, trace_id, observation_id
 ```
 
 **Step 2 — Feedback is already wired in `app/web.py`**
 
-No code changes needed for this step. The web UI has 👍/👎 buttons on every assistant message. Once `answer()` returns a `trace_id` (Step 1 above), those buttons start recording `user-feedback` scores automatically.
+No code changes needed for this step. The web UI has 👍/👎 buttons on every assistant message. Once `answer()` returns a `trace_id` and `observation_id` (Step 1 above), those buttons start recording `user-feedback` scores automatically.
 
 Here is the relevant code already in `app/web.py` that handles the button clicks:
 
 ```python
 def _handle_like(data: gr.LikeData, state: dict) -> None:
     trace_ids = state.get("trace_ids", [])
+    observation_ids = state.get("observation_ids", [])
     idx = data.index if isinstance(data.index, int) else data.index[0]
     turn = idx // 2
     trace_id = trace_ids[turn] if turn < len(trace_ids) else None
     if not trace_id:
         return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+    observation_id = observation_ids[turn] if turn < len(observation_ids) else None
     from langfuse import get_client
     get_client().create_score(
         trace_id=trace_id,
+        observation_id=observation_id,  # pins the score to the specific observation, not just the trace
         name="user-feedback",
         value=1 if data.liked else 0,
         data_type="BOOLEAN",
@@ -110,18 +114,18 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
     )
 ```
 
-`data.liked` is `True` for 👍 and `False` for 👎. The score is a **BOOLEAN** type with value `1` (liked) or `0` (disliked). Each score is attached to the specific trace for that turn using `trace_id`, which is why Step 1 — returning the trace ID from `answer()` — was required first.
+`data.liked` is `True` for 👍 and `False` for 👎. The score is a **BOOLEAN** type with value `1` (liked) or `0` (disliked). Passing both `trace_id` and `observation_id` pins the score to the exact `support-question` observation — not just the trace as a whole — so it appears directly on the observation in the Langfuse UI.
 
-Ask a question in the browser and click 👍 or 👎. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
+Ask a question in the browser and click 👍 or 👎. In Langfuse → **Observations**, open the observation — you should see a `user-feedback` score attached to it.
 
 
 ![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-score.png)
 
-Note that you can also filter traces by a certain value of a score 
+Note that you can also filter observations by score value:
 
-1. Expand the filter panel by clicking "Show filters" in the traces screen
+1. Expand the filter panel by clicking "Show filters" in the observations screen
 2. Scroll down to "Numeric Scores" and select "user-feedback" equals 1.
-3. You will see system will automatically filter the traces that have user-feedback = true
+3. The table will automatically show only observations where the user gave a thumbs up.
 
 ![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-filter-userfeedback.png)
 

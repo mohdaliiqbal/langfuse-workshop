@@ -23,7 +23,7 @@ import uuid
 import gradio as gr
 
 
-def _call_answer(message: str, history: list, session_id: str) -> tuple[str, str | None]:
+def _call_answer(message: str, history: list, session_id: str) -> tuple[str, str | None, str | None]:
     # Imported here (not at module level) so gradio hot reload picks up changes to assistant.py
     from app.assistant import answer
     sig = inspect.signature(answer)
@@ -33,14 +33,18 @@ def _call_answer(message: str, history: list, session_id: str) -> tuple[str, str
     if "user_id" in sig.parameters:
         kwargs["user_id"] = "workshop-user-1"
     result = answer(**kwargs)
-    return (result[0], result[1]) if isinstance(result, tuple) else (result, None)
+    if isinstance(result, tuple):
+        trace_id = result[1] if len(result) > 1 else None
+        observation_id = result[2] if len(result) > 2 else None
+        return result[0], trace_id, observation_id
+    return result, None, None
 
 
 def _submit(message: str, history: list, state: dict):
     if state is None:
         state = _init_state()
     try:
-        response, trace_id = _call_answer(message, history, state["session_id"])
+        response, trace_id, observation_id = _call_answer(message, history, state["session_id"])
     except Exception as e:
         # Show the real error in the chat so attendees don't have to hunt the terminal
         import traceback
@@ -55,22 +59,26 @@ def _submit(message: str, history: list, state: dict):
         {"role": "user", "content": message},
         {"role": "assistant", "content": response},
     ]
-    # Store trace_id per turn so .like() can look it up by message index
+    # Store trace_id and observation_id per turn so .like() can look them up by message index
     trace_ids = state["trace_ids"] + [trace_id]
-    return "", history, {**state, "trace_ids": trace_ids}
+    observation_ids = state.get("observation_ids", []) + [observation_id]
+    return "", history, {**state, "trace_ids": trace_ids, "observation_ids": observation_ids}
 
 
 def _handle_like(data: gr.LikeData, state: dict) -> None:
     trace_ids = state.get("trace_ids", [])
+    observation_ids = state.get("observation_ids", [])
     # data.index is the position in history; assistant messages are at every other slot
     idx = data.index if isinstance(data.index, int) else data.index[0]
     turn = idx // 2
     trace_id = trace_ids[turn] if turn < len(trace_ids) else None
     if not trace_id:
         return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+    observation_id = observation_ids[turn] if turn < len(observation_ids) else None
     from langfuse import get_client
     get_client().create_score(
         trace_id=trace_id,
+        observation_id=observation_id,  # pins the score to the specific observation, not just the trace
         name="user-feedback",
         value=1 if data.liked else 0,
         data_type="BOOLEAN",
@@ -80,7 +88,7 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
 
 def _init_state():
     # Called once per browser session via demo.load() — gives each tab its own session_id
-    return {"session_id": uuid.uuid4().hex, "trace_ids": []}
+    return {"session_id": uuid.uuid4().hex, "trace_ids": [], "observation_ids": []}
 
 
 with gr.Blocks(title="DataStream Support") as demo:
