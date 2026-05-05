@@ -97,6 +97,7 @@ Here is the relevant code already in `app/web.py` that handles the button clicks
 def _handle_like(data: gr.LikeData, state: dict) -> None:
     trace_ids = state.get("trace_ids", [])
     observation_ids = state.get("observation_ids", [])
+    session_id = state.get("session_id")
     idx = data.index if isinstance(data.index, int) else data.index[0]
     turn = idx // 2
     trace_id = trace_ids[turn] if turn < len(trace_ids) else None
@@ -107,6 +108,7 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
     get_client().create_score(
         trace_id=trace_id,
         observation_id=observation_id,  # pins the score to the specific observation, not just the trace
+        session_id=session_id,
         name="user-feedback",
         value=1 if data.liked else 0,
         data_type="BOOLEAN",
