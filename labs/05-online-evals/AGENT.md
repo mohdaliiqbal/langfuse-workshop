@@ -105,7 +105,7 @@ def answer(
 **Create the evaluator:**
 1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
 2. Pick a managed evaluator — e.g. **Helpfulness**
-3. Set target to **Live Observations**, add filters:
+3. Set **Run on** to **Observations**, add filters:
    - `trace name = support-question`
    - `environment = any of [development]` — use **any of**, not "none of"
 4. Map variables:

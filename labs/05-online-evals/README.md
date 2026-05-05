@@ -152,7 +152,7 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-evaluator-helpfulness-select.png)
 
-3. Set the target to **Live Observations**, add filters:
+3. Set **Run on** to **Observations**, add filters:
    - `trace name = support-question`
    - `environment = any of [development]` — limits evaluation to your dev traces only (use **any of**, not "none of")
 
