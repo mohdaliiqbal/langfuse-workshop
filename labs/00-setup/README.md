@@ -35,7 +35,7 @@ chmod +x setup.sh
 ```
 
 `setup.sh` does exactly two things — nothing more:
-1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies (`openai`, `langfuse`, `python-dotenv`, `rich`)
+1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies (`openai`, `langfuse`, `python-dotenv`, `rich`, `gradio`)
 2. Copies `.env.example` to `.env` if no `.env` exists yet
 
 It does **not** install anything globally, modify your system, or send any data anywhere.
@@ -54,22 +54,32 @@ OPENAI_API_KEY=sk-...
 
 ## Step 5: Verify the baseline app works
 
-Activate the virtual environment and run the app:
+Run the app:
 
 ```bash
-source .venv/bin/activate
-python -m app.main
+uv run gradio app/web.py
 ```
+
+You should see output like:
+
+```
+Running on local URL: http://127.0.0.1:7860
+```
+
+Open **<a href="http://localhost:7860" target="_blank">http://localhost:7860</a>** in your browser. You'll see the DataStream Support Assistant chat UI.
 
 Try asking: *"How do I get started with DataStream?"*
 
 You should get a helpful response. No Langfuse data will appear yet — that comes after Lab 1.
+
+> **To stop the app**: press `Ctrl+C` in the terminal.
 
 ---
 
 ## Checkpoint
 
 - [ ] `./setup.sh` ran without errors
-- [ ] `python -m app.main` starts and responds to a question
+- [ ] `uv run gradio app/web.py` starts without errors
+- [ ] The chat UI opens at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and responds to a question
 
 Once both pass, move on to **Lab 1: Langfuse** to create your account and get your API keys.

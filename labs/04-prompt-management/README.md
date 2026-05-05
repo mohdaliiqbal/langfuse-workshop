@@ -91,7 +91,7 @@ def get_system_prompt():
 **3. Replace `answer()` entirely** — `app/assistant.py`:
 
 ```python
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,
@@ -140,7 +140,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 Run the app and ask a question:
 
 ```bash
-python -m app.main
+uv run gradio app/web.py
 ```
 
 Open the trace in Langfuse and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`. Every generation now records exactly which prompt version produced it.
@@ -165,7 +165,9 @@ This becomes powerful at scale: if quality drops, you can filter all traces by p
 
 ![New version form — add guideline, check production label, save](./assets/langfuse-prompt-version-save.png)
 
-Now run the app again — without changing any code, the assistant's behaviour has changed.
+> **Cache note**: The Langfuse SDK caches prompt versions client-side for **1 minute**. After saving a new version, ask a question in the browser — if the behaviour hasn't changed yet, wait a minute and try again. This cache is what makes `get_prompt()` fast on every request; the trade-off is a short propagation delay when you update a prompt.
+
+Now ask a question in the browser — without changing any code, the assistant's behaviour has changed.
 
 In Langfuse, open the latest trace and click the generation inside `call_llm`. The **Prompt** field now shows `datastream-system-prompt @ version 2`.
 
@@ -194,4 +196,4 @@ The version history also gives you a safety net: if a prompt change causes quali
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant and [`solution/main.py`](./solution/main.py) for the updated entry point.
+See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant.

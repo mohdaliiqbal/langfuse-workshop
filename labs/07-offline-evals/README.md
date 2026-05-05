@@ -62,7 +62,7 @@ The script `create_dataset.py` is already written. It populates *datastream-supp
 1. Run it once:
 
 ```bash
-python labs/07-offline-evals/create_dataset.py
+uv run python labs/07-offline-evals/create_dataset.py
 ```
 
 _The script calls two Langfuse APIs:_
@@ -134,13 +134,13 @@ Respond with JSON only:
 3. The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. You can run it to begin the experiment:
 
 ```bash
-python labs/07-offline-evals/run_experiment.py
+uv run python labs/07-offline-evals/run_experiment.py
 ```
 
 Or pass a custom name:
 
 ```bash
-python labs/07-offline-evals/run_experiment.py --name prompt-v1
+uv run python labs/07-offline-evals/run_experiment.py --name prompt-v1
 ```
 
 ### **How the script works:** 
@@ -191,7 +191,7 @@ Now lets update system prompt in Langfuse (create a new version with different i
 
 2. Run the experiment again with a new name:
    ```bash
-   python labs/07-offline-evals/run_experiment.py --name prompt-v2
+   uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
    ```
 
 3. In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
@@ -213,9 +213,9 @@ You don't always need to write code to run an experiment. Langfuse can run a pro
 
 4. Set label `production` and click **Create prompt**
 
-![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
+5. You should see the prompt created with the production label attached.
 
-5. You should see prompt created with production label attached. 
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-list.png)
 

@@ -91,6 +91,8 @@ Ad-hoc annotation (Task 6.2) works for spot checks. When you want to review a ba
 3. Select both Score Configs: `response-quality` and `answer-grounded`
 4. Click **Create**
 
+5. You should see the new queue created with both score configs attached.
+
 _Note: in a team setting, you can assign annotation queues to specific users_
 
 ![Annotation Queues list showing workshop-review queue with both score configs](./assets/langfuse-annotation-new-queue-dialog.png)

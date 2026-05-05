@@ -50,7 +50,7 @@ Wait for confirmation, then ask them to run the script.
 
 **Terminal prompt**: "In your terminal, run:"
 ```bash
-python labs/07-offline-evals/create_dataset.py
+uv run python labs/07-offline-evals/create_dataset.py
 ```
 
 **Explain**: This script creates 9 benchmark questions covering pricing, connectors, troubleshooting, security, and more — representative of real support questions. Any regression in your assistant's quality will show up here before your users notice it.
@@ -69,7 +69,7 @@ python labs/07-offline-evals/create_dataset.py
 
 **Terminal prompt**: "In your terminal, run:"
 ```bash
-python labs/07-offline-evals/run_experiment.py --name prompt-v1
+uv run python labs/07-offline-evals/run_experiment.py --name prompt-v1
 ```
 
 **Explain**: `dataset.run_experiment()` loops over every item, calls `run_task()` (which calls the real `answer()` function, creating actual Langfuse traces), then calls `evaluate_item()` and returns an `Evaluation` with the score. The `--name` flag labels this run — use descriptive names so comparisons are meaningful later.
@@ -97,7 +97,7 @@ python labs/07-offline-evals/run_experiment.py --name prompt-v1
 
 **Terminal prompt**: "Without changing any code, run the experiment with a new name:"
 ```bash
-python labs/07-offline-evals/run_experiment.py --name prompt-v2
+uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
 ```
 
 **Explain**: This replaces "I think the new prompt is better" with a measurable, reproducible result. The `--name` flag distinguishes the two runs — no file editing needed. The same 9 questions, the same judge, but the prompt your app actually used was different.

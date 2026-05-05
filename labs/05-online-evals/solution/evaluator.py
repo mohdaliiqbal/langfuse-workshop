@@ -12,7 +12,7 @@ from langfuse import get_client
 client = OpenAI()
 
 
-def evaluate_response(trace_id: str, question: str, response: str) -> None:
+def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
     """
     Run LLM-as-a-judge evaluation and record the score in Langfuse.
     Fetches the evaluator prompt from Langfuse — iterate on the rubric
@@ -36,6 +36,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
         langfuse.create_score(
             trace_id=trace_id,
+            observation_id=observation_id,
             name="llm-judge-quality",
             value=float(evaluation["score"]),
             data_type="NUMERIC",

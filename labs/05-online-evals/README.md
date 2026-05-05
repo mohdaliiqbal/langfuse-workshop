@@ -38,9 +38,9 @@ Once you have scores, you can filter traces by score, chart quality over time, a
 
 The goal: after each response, ask the user "was this helpful?" and record their answer as a score on the trace. Scores let you filter, chart, and act on quality signals in the Langfuse dashboard.
 
-To attach a score to a trace you need the **trace ID**. You get it by calling `langfuse.get_current_trace_id()` inside the `@observe`-decorated `answer()` function and returning it to the caller.
+To attach a score to a specific observation you need both the **trace ID** and the **observation ID**. You get them by calling `langfuse.get_current_trace_id()` and `langfuse.get_current_observation_id()` inside the `@observe`-decorated `answer()` function and returning them to the caller.
 
-**Step 1 — Return the trace ID from `answer()`**
+**Step 1 — Return the trace ID and observation ID from `answer()`**
 
 **File: `app/assistant.py`** — update the import at the top to include `get_client`:
 
@@ -51,13 +51,13 @@ from langfuse import observe, get_client, propagate_attributes
 Then replace the entire `answer()` function with this:
 
 ```python
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:
+) -> tuple[str, str | None, str | None]:
     langfuse = get_client()
 
     with propagate_attributes(
@@ -82,92 +82,50 @@ def answer(
 
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+        observation_id = langfuse.get_current_observation_id()
 
-    return response, trace_id
+    return response, trace_id, observation_id
 ```
 
-**Step 2 — Update `app/main.py` to collect feedback**
+**Step 2 — Feedback is already wired in `app/web.py`**
 
-**File: `app/main.py`** — replace the full contents with the following:
+No code changes needed for this step. The web UI has 👍/👎 buttons on every assistant message. Once `answer()` returns a `trace_id` and `observation_id` (Step 1 above), those buttons start recording `user-feedback` scores automatically.
+
+Here is the relevant code already in `app/web.py` that handles the button clicks:
 
 ```python
-from dotenv import load_dotenv
-load_dotenv()
-
-import uuid
-from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import Prompt
-from langfuse import get_client          # NEW: for recording scores
-from app.assistant import answer
-
-console = Console()
-
-
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()              # NEW: Langfuse client for scoring
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            # CHANGED: answer() now returns (response, trace_id)
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        # NEW: ask for feedback and record it as a score on the trace
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()                     # NEW: ensure scores are sent before exit
-
-
-if __name__ == "__main__":
-    main()
+def _handle_like(data: gr.LikeData, state: dict) -> None:
+    trace_ids = state.get("trace_ids", [])
+    observation_ids = state.get("observation_ids", [])
+    idx = data.index if isinstance(data.index, int) else data.index[0]
+    turn = idx // 2
+    trace_id = trace_ids[turn] if turn < len(trace_ids) else None
+    if not trace_id:
+        return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+    observation_id = observation_ids[turn] if turn < len(observation_ids) else None
+    from langfuse import get_client
+    get_client().create_score(
+        trace_id=trace_id,
+        observation_id=observation_id,  # pins the score to the specific observation, not just the trace
+        name="user-feedback",
+        value=1 if data.liked else 0,
+        data_type="BOOLEAN",
+        comment="User thumbs up/down from web UI",
+    )
 ```
 
-Run the app, ask a question, and give feedback. In Langfuse → **Traces**, open the trace — you should see a `user-feedback` score attached to it.
+`data.liked` is `True` for 👍 and `False` for 👎. The score is a **BOOLEAN** type with value `1` (liked) or `0` (disliked). Passing both `trace_id` and `observation_id` pins the score to the exact `support-question` observation — not just the trace as a whole — so it appears directly on the observation in the Langfuse UI.
+
+Ask a question in the browser and click 👍 or 👎. In Langfuse → **Observations**, open the observation — you should see a `user-feedback` score attached to it.
 
 
 ![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-score.png)
 
-Note that you can also filter traces by a certain value of a score 
+Note that you can also filter observations by score value:
 
-1. Expand the filter panel by clicking "Show filters" in the traces screen
+1. Expand the filter panel by clicking "Show filters" in the observations screen
 2. Scroll down to "Numeric Scores" and select "user-feedback" equals 1.
-3. You will see system will automatically filter the traces that have user-feedback = true
+3. The table will automatically show only observations where the user gave a thumbs up.
 
 ![Scores tab under traces page showing feedback from the users](./assets/langfuse-trace-filter-userfeedback.png)
 
@@ -194,7 +152,7 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-evaluator-helpfulness-select.png)
 
-3. Set the target to **Live Observations**, add filters:
+3. Set **Run on** to **Observations**, add filters:
    - `trace name = support-question`
    - `environment = any of [development]` — limits evaluation to your dev traces only (use **any of**, not "none of")
 
@@ -217,9 +175,11 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-llm-evaluators.png)
 
-7. Run the app and ask a few questions. After a short delay, open a trace — you'll see a score from the Langfuse-hosted evaluator attached automatically.
+7. Go back to the web UI at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and ask a few questions. After a short delay (30–60 seconds), the evaluator will run in the background and attach a score to each observation.
 
-8. Now filter the traces by *Numeric Scores* of **Helpfulness** equals to `0` and open any trace.
+   To see the scores: go to **Observations** in the left sidebar, open any observation named `support-question`, and click the **Scores** tab — you should see a score from the Langfuse-hosted evaluator listed there.
+
+8. Now filter the observations by *Numeric Scores* of **Helpfulness** equals to `0` and open any observation.
 
 ![LLM-as-a-Judge evaluators page showing active Helpfulness evaluator](./assets/langfuse-evaluator-helpfulness-filtered.png)
 
@@ -272,7 +232,7 @@ from langfuse import get_client
 client = OpenAI()
 
 
-def evaluate_response(trace_id: str, question: str, response: str) -> None:
+def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
@@ -291,6 +251,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
     langfuse.create_score(
         trace_id=trace_id,
+        observation_id=observation_id,
         name="llm-judge-quality",
         value=float(evaluation["score"]),
         data_type="NUMERIC",
@@ -298,73 +259,23 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
     )
 ```
 
-**Step 3 — Call the evaluator from `main.py`**
+**Step 3 — Call the evaluator from `app/web.py`**
 
-**File: `app/main.py`** — replace the `main()` function with the following (adds the background thread evaluator call):
+**File: `app/web.py`** — add two lines to the `_submit()` function, after `trace_ids = ...`:
 
 ```python
-
-from app.evaluator import evaluate_response
-import threading
-
-
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        # Collect user feedback
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        # Run LLM-as-a-judge in the background so it doesn't slow down the user
-        if trace_id:
-            threading.Thread(
-                target=evaluate_response,
-                args=(trace_id, question, response),
-                daemon=True,
-            ).start()
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()
-
+# app/web.py — add inside _submit(), after observation_ids = ...:
+if trace_id:
+    import threading
+    from app.evaluator import evaluate_response
+    threading.Thread(
+        target=evaluate_response,
+        args=(trace_id, observation_id, message, response),
+        daemon=True,
+    ).start()
 ```
+
+> **Why a background thread?** `evaluate_response` makes its own LLM call, which takes 1–2 seconds. Running it in a daemon thread means the user gets their response immediately — the evaluation happens in parallel, with no impact on perceived latency.
 
 > **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
@@ -374,7 +285,7 @@ def main():
 
 Now that you have scores flowing in from multiple sources, explore them in Langfuse:
 
-1. Go to **Traces** and filter by `score name = "llm-judge-quality"` — see which traces scored low and read the judge's reasoning in the comment.
+1. Go to **Scores** in the left menu and filter by `name = "llm-judge-quality"` — these are the scores produced by your programmatic evaluator. Open any score to read the judge's reasoning in the comment field.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 ![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-scores-analytics.png)
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
@@ -393,7 +304,7 @@ The **Scores** list gives you a full view across all traces:
 
 Ask 5+ questions with mixed quality (simple questions, edge cases, questions the bot can't answer).
 
-- [ ] User feedback (y/n) creates a `user-feedback` score on the trace
+- [ ] Clicking 👍/👎 in the browser creates a `user-feedback` score on the trace
 - [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on traces
 - [ ] Low-scoring traces have a comment explaining why
@@ -413,6 +324,6 @@ With scores, you can:
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant, [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator, and [`solution/main.py`](./solution/main.py) for the updated entry point with feedback collection.
+See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant and [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator.
 
 Next: **[Lab 6: Human Annotation](../06-human-annotation/README.md)**

@@ -43,7 +43,7 @@ A customer support chatbot for a fictional SaaS product called **DataStream**. T
 - `call_llm(messages)` — makes the OpenAI API call
 - `answer(question, history, session_id, user_id)` — orchestrates the full pipeline
 
-**`app/main.py`** — CLI entry point. Runs the chat loop and calls `answer()`.
+**`app/web.py`** — Web entry point. Runs a Gradio chat UI at http://localhost:7860, calls `answer()`, and handles user feedback via 👍/👎 buttons.
 
 **`app/knowledge_base.py`** — in-memory list of DataStream docs with a keyword-based `retrieve()` function. Attendees do not modify this file.
 
@@ -63,14 +63,14 @@ user question
 |-----|-------------|
 | 00 - Setup | Environment setup, no code changes |
 | 01 - Langfuse | Langfuse account, project, API keys — no code changes |
-| 02 - Tracing | Add `@observe` decorators to `assistant.py`, add `flush()` to `main.py` |
-| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name, environment to `assistant.py` and `main.py` |
-| 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py`; Playground (UI only) |
-| 05 - Online Evals | Add scoring: user feedback in `main.py`, LLM-as-judge in new `app/evaluator.py`; UI evaluator (UI only) |
+| 02 - Tracing | Add `@observe` decorators to `assistant.py` |
+| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name, environment to `assistant.py` |
+| 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py` |
+| 05 - Online Evals | Return `trace_id` from `assistant.py`; add evaluator call to `web.py`; create `app/evaluator.py`; UI evaluator (UI only) |
 | 06 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |
 | 07 - Offline Evals | Run `labs/07-offline-evals/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
 
-Each lab builds directly on the previous one. The attendee keeps modifying `app/assistant.py` and `app/main.py` — they are never replaced wholesale.
+Each lab builds directly on the previous one. The attendee primarily modifies `app/assistant.py` — it is never replaced wholesale. `app/web.py` is only touched in Lab 5 to add the background evaluator call.
 
 ---
 
@@ -84,7 +84,7 @@ You are teaching, not completing a task. The attendee is present and learning in
 
 ### Hard rules — what you MUST NOT do
 
-- **Do not run the app.** Never use Bash to execute `python -m app.main` or any command the attendee should run. Running it yourself skips the learning moment.
+- **Do not run the app.** Never use Bash to execute `uv run gradio app/web.py` or any command the attendee should run. Running it yourself skips the learning moment.
 - **Do not run multiple steps without stopping.** Make one change, explain it, send the terminal command, and wait. Do not chain step 1 → step 2 → step 3 in a single response.
 - **Do not assume success.** The attendee must confirm they see the expected result in Langfuse before you make the next change.
 - **Do not silently fix failures.** If something breaks, diagnose it with the attendee and explain what went wrong.
@@ -94,7 +94,7 @@ You are teaching, not completing a task. The attendee is present and learning in
 - **Make code changes yourself** using Edit/Write — the attendee doesn't need to type boilerplate.
 - **Show a clear diff or summary** of what you changed and where, immediately after making it.
 - **Explain the why**, not just the what. Every change should connect to a real production problem it solves.
-- **Give the exact terminal command** to run next: "In a new terminal window, run: `python -m app.main`". Be explicit about whether they need a new window.
+- **Give the exact terminal command** to run next: "Save the file — Gradio will reload automatically. Then ask a question in the browser at http://localhost:7860." If the server isn't running yet, tell them to run `uv run gradio app/web.py` in a terminal first.
 - **Direct them to Langfuse** with the exact navigation path and what they should see.
 - **✋ Pause and ask** a specific, observable question before continuing: "Do you see an observation named `answer` in the table?" — not "Did it work?"
 - **Wait for their reply.** Silence is not confirmation. Ask again if needed.
@@ -183,7 +183,7 @@ langfuse.flush()
 - Python 3.14, managed by `uv`, virtual environment at `.venv/`
 - Dependencies: `openai`, `langfuse`, `python-dotenv`, `rich` (defined in `pyproject.toml`)
 - Credentials in `.env`: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `OPENAI_API_KEY`
-- Run the app: `python -m app.main`
+- Run the app: `uv run gradio app/web.py` — then open http://localhost:7860
 - Activate venv: `source .venv/bin/activate`
 
 ---

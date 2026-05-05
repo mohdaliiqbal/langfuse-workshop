@@ -139,17 +139,7 @@ def answer(
         return call_llm(messages)
 ```
 
-**File: `app/main.py`** — generate a session ID once at startup and pass it to `answer()` on every turn:
-```python
-# Add at the top of the file:
-import uuid
-
-# Inside main(), before the while loop:
-session_id = str(uuid.uuid4())
-
-# In the loop, update the answer() call:
-response = answer(question, history, session_id=session_id)
-```
+> **Web app**: once `answer()` accepts `session_id`, `app/web.py` passes it automatically — no changes to `web.py` needed. Each browser tab gets its own session ID.
 
 Ask a few questions in one session. In Langfuse, go to **Sessions** — all questions from that run should be grouped together.
 
@@ -191,16 +181,9 @@ def answer(
         return call_llm(messages)
 ```
 
-**File: `app/main.py`** — add a user ID and pass it to `answer()`:
-```python
-# Inside main(), before the while loop:
-user_id = "workshop-user-1"
+> **Web app**: once `answer()` accepts `user_id`, `app/web.py` passes `"workshop-user-1"` automatically — no changes to `web.py` needed.
 
-# In the loop, update the answer() call:
-response = answer(question, history, session_id=session_id, user_id=user_id)
-```
-
-After running the app, go to **Observability → Users** in Langfuse. You'll see your user appear with their first and last event timestamps and a total trace count.
+After asking a question in the browser, go to **Observability → Users** in Langfuse. You'll see your user appear with their first and last event timestamps and a total trace count.
 
 ![Langfuse users view](assets/langfuse-user.png)
 
@@ -299,4 +282,4 @@ With token usage, you can:
 
 ## Solution
 
-See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant and [`solution/main.py`](./solution/main.py) for the updated entry point.
+See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant.

@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from langfuse import get_client
+from langfuse.api.commons.errors.not_found_error import NotFoundError as LangfuseNotFoundError
 
 langfuse = get_client()
 
@@ -25,8 +26,10 @@ try:
         print(f"Dataset '{DATASET_NAME}' already has {len(existing.items)} items.")
         print("Run this script only once to avoid duplicates. Exiting.")
         sys.exit(0)
-except Exception:
-    pass  # Dataset doesn't exist yet — proceed normally
+except LangfuseNotFoundError:
+    # Dataset doesn't exist yet — create it before adding items
+    print(f"Dataset '{DATASET_NAME}' not found, creating it...")
+    langfuse.create_dataset(name=DATASET_NAME, description="Benchmark dataset for DataStream support questions")
 
 test_cases = [
 

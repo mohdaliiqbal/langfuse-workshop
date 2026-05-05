@@ -1,6 +1,6 @@
 """
 Lab 5 Solution: assistant.py
-Returns (response, trace_id) so main.py can attach scores.
+Returns (response, trace_id, observation_id) so web.py can attach scores to the specific observation.
 """
 
 import os
@@ -34,23 +34,20 @@ def call_llm(messages: list[dict], prompt=None) -> str:
     return response.choices[0].message.content
 
 
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:
-    """
-    Returns (response_text, trace_id) so the caller can attach scores.
-    """
+) -> tuple[str, str | None, str | None]:
     langfuse = get_client()
 
     with propagate_attributes(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-4"],
+        tags=["workshop"],
         metadata={"app_version": "1.0.0"},
     ):
         prompt_obj = get_system_prompt()
@@ -68,5 +65,6 @@ def answer(
 
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+        observation_id = langfuse.get_current_observation_id()
 
-    return response, trace_id
+    return response, trace_id, observation_id

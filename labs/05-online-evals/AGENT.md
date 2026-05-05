@@ -23,7 +23,7 @@ You are teaching Lab 5 as a live instructor. Add three quality signals one at a 
 
 ## Step 1 — Return the trace ID from `answer()`
 
-**Announce**: To attach a score to a trace, you need its ID. We'll update `answer()` to return it alongside the response.
+**Announce**: To attach a score to a specific observation, you need both the trace ID and the observation ID. We'll update `answer()` to return both alongside the response.
 
 **Make the change** — update `app/assistant.py`:
 
@@ -36,13 +36,13 @@ from langfuse import observe, get_client, propagate_attributes
 Then replace the entire `answer()` function:
 ```python
 # app/assistant.py — replace answer():
-@observe()
+@observe(name="support-question")
 def answer(
     question: str,
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None]:
+) -> tuple[str, str | None, str | None]:
     langfuse = get_client()
 
     with propagate_attributes(
@@ -67,86 +67,22 @@ def answer(
 
         response = call_llm(messages, prompt=prompt_obj)
         trace_id = langfuse.get_current_trace_id()
+        observation_id = langfuse.get_current_observation_id()
 
-    return response, trace_id
+    return response, trace_id, observation_id
 ```
 
-**Explain**: `get_current_trace_id()` returns the ID of the observation currently in scope. We capture it before the `propagate_attributes` context closes. Without an ID there's no way to connect a score back to the specific request that produced it. The return type changes from `str` to `tuple[str, str | None]` — callers now unpack `response, trace_id = answer(...)`.
+**Explain**: `get_current_trace_id()` and `get_current_observation_id()` both read from the active OpenTelemetry context — they must be called before the `propagate_attributes` block closes. Passing `observation_id` to `create_score` pins the score to the exact `support-question` span in the trace, so it appears directly on that observation in the Langfuse UI rather than just at the trace level. The return type changes from `str` to `tuple[str, str | None, str | None]`.
 
 ---
 
-## Step 2 — Add user feedback to `main.py`
+## Step 2 — Verify feedback buttons work
 
-**Announce**: Now we wire up the feedback prompt and score recording in the chat loop.
+**Announce**: No code changes needed here — `app/web.py` already has 👍/👎 buttons wired up. Now that `answer()` returns `trace_id` and `observation_id`, they're live.
 
-**Make the change** — update `app/main.py`. Ensure `get_client` is imported, add `evaluate_response` and `threading` imports, and replace the `main()` function:
+**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem. The buttons call `get_client().create_score()` with `name="user-feedback"`, value `1` (👍) or `0` (👎), and `observation_id` so the score appears directly on the observation.
 
-```python
-# app/main.py — add these imports at the top:
-from app.evaluator import evaluate_response
-import threading
-
-# app/main.py — replace main():
-def main():
-    console.print(Panel.fit(
-        "[bold cyan]DataStream Support Assistant[/bold cyan]\n"
-        "[dim]Type your question or 'quit' to exit[/dim]",
-        border_style="cyan"
-    ))
-
-    session_id = str(uuid.uuid4())
-    user_id = "workshop-user-1"
-    history = []
-    langfuse = get_client()
-
-    while True:
-        question = Prompt.ask("\n[bold green]You[/bold green]")
-
-        if question.lower() in ("quit", "exit", "q"):
-            console.print("[dim]Goodbye![/dim]")
-            break
-
-        if not question.strip():
-            continue
-
-        with console.status("[dim]Thinking...[/dim]"):
-            response, trace_id = answer(question, history, session_id=session_id, user_id=user_id)
-
-        console.print(f"\n[bold blue]Assistant[/bold blue]: {response}")
-
-        feedback = Prompt.ask(
-            "[dim]Was this helpful?[/dim]",
-            choices=["y", "n", "skip"],
-            default="skip",
-        )
-
-        if feedback in ("y", "n") and trace_id:
-            langfuse.create_score(
-                trace_id=trace_id,
-                name="user-feedback",
-                value=1 if feedback == "y" else 0,
-                data_type="BOOLEAN",
-                comment="User thumbs up/down from CLI",
-            )
-
-        if trace_id:
-            threading.Thread(
-                target=evaluate_response,
-                args=(trace_id, question, response),
-                daemon=True,
-            ).start()
-
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": response})
-
-    langfuse.flush()
-```
-
-Note: `app/evaluator.py` doesn't exist yet — the import will fail until Step 4. If the attendee wants to test Step 2 in isolation first, temporarily comment out that import line.
-
-**Explain**: User feedback is the highest-signal evaluation you can capture — it comes from humans who had a real need and can judge whether it was met. Automated judges score format and coherence; only the user knows if the answer actually solved their problem.
-
-**Terminal prompt**: "Run the app, ask a question, and give it a `y` or `n` rating."
+**Browser prompt**: "Ask a question in the browser and click 👍 or 👎 on the response."
 
 **Langfuse check**: "Open the observation in Langfuse — you should see a `user-feedback` score attached to it in the Scores tab."
 
@@ -169,7 +105,7 @@ Note: `app/evaluator.py` doesn't exist yet — the import will fail until Step 4
 **Create the evaluator:**
 1. Go to **Evaluation** → **LLM-as-a-Judge** → **Create Evaluator**
 2. Pick a managed evaluator — e.g. **Helpfulness**
-3. Set target to **Live Observations**, add filters:
+3. Set **Run on** to **Observations**, add filters:
    - `trace name = support-question`
    - `environment = any of [development]` — use **any of**, not "none of"
 4. Map variables:
@@ -181,9 +117,9 @@ Note: `app/evaluator.py` doesn't exist yet — the import will fail until Step 4
 
 **Explain**: The UI evaluator runs asynchronously — after your app responds, Langfuse picks up the observation and scores it in the background. Zero latency impact for the user, zero infra to manage. The rubric can be changed in the UI without touching code — useful when a PM wants to tighten the definition of "helpful" mid-sprint.
 
-**Terminal prompt**: "Run the app and ask a few questions."
+**Browser prompt**: "Go back to the web UI at http://localhost:7860 and ask a few questions."
 
-**Langfuse check**: "After a short delay (30–60 seconds), open an observation. You should see a score from the Langfuse-hosted evaluator."
+**Langfuse check**: "After a short delay (30–60 seconds), go to **Observations** in the left sidebar, open any observation named `support-question`, and click the **Scores** tab — you should see a score from the Langfuse-hosted evaluator listed there."
 
 **✋ Check in**: "Do you see the evaluator score appearing on observations? What name does it use?"
 
@@ -230,7 +166,7 @@ from langfuse import get_client
 client = OpenAI()
 
 
-def evaluate_response(trace_id: str, question: str, response: str) -> None:
+def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
@@ -249,6 +185,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 
         langfuse.create_score(
             trace_id=trace_id,
+            observation_id=observation_id,
             name="llm-judge-quality",
             value=float(evaluation["score"]),
             data_type="NUMERIC",
@@ -258,9 +195,19 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
         print(f"Evaluation failed: {e}")
 ```
 
-**Explain**: Keeping the evaluator prompt in Langfuse means the scoring rubric isn't locked in a deployment cycle — a domain expert can tighten the definition of "correct" without a code review or git commit. The `try/except` ensures a broken judge never interrupts a real support conversation.
+Then wire it into `app/web.py` — add two lines inside `_submit()`, after `trace_ids = state["trace_ids"] + [trace_id]`:
 
-**Terminal prompt**: "Run the app and ask 5+ questions with a mix of good and edge-case inputs."
+```python
+# app/web.py — add inside _submit(), after trace_ids = ...:
+if trace_id:
+    import threading
+    from app.evaluator import evaluate_response
+    threading.Thread(target=evaluate_response, args=(trace_id, observation_id, message, response), daemon=True).start()
+```
+
+**Explain**: Keeping the evaluator prompt in Langfuse means the scoring rubric isn't locked in a deployment cycle — a domain expert can tighten the definition of "correct" without a code review or git commit. Running it in a background thread means the user gets their response immediately with no latency impact. The `try/except` in `evaluator.py` ensures a broken judge never crashes the web server.
+
+**Browser prompt**: "Ask 5+ questions in the browser with a mix of good and edge-case inputs."
 
 **Langfuse check**: "Open an observation — you should see three scores: `user-feedback`, the Langfuse-hosted evaluator score, and `llm-judge-quality`. Click the `llm-judge-quality` score to read the judge's reasoning in the comment."
 
@@ -271,7 +218,7 @@ def evaluate_response(trace_id: str, question: str, response: str) -> None:
 ## Completion check
 
 - [ ] `answer()` returns `(response, trace_id)`
-- [ ] User feedback (y/n) creates a `user-feedback` score on the observation
+- [ ] Clicking 👍/👎 in the browser creates a `user-feedback` score on the observation
 - [ ] A Langfuse-hosted evaluator is active and attaching scores automatically
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on observations
 - [ ] `quality-evaluator-prompt` exists in Langfuse with the `production` label

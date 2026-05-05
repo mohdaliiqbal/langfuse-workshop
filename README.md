@@ -91,8 +91,10 @@ It does **not** install anything globally, modify your system, or send any data 
 source .venv/bin/activate
 
 # 5. Run the baseline app
-python -m app.main
+uv run gradio app/web.py
 ```
+
+Then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> in your browser.
 
 Then open [labs/00-setup/README.md](labs/00-setup/README.md) and follow the labs in order.
 
@@ -103,7 +105,7 @@ Then open [labs/00-setup/README.md](labs/00-setup/README.md) and follow the labs
 ```
 langfuse-workshop/
 ├── app/                          # Baseline application
-│   ├── main.py                   # CLI entrypoint
+│   ├── web.py                    # Web UI entrypoint (Gradio)
 │   ├── assistant.py              # LLM logic (you'll modify this)
 │   └── knowledge_base.py         # In-memory docs + retrieval
 ├── labs/
