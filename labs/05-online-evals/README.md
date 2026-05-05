@@ -285,7 +285,7 @@ if trace_id:
 
 Now that you have scores flowing in from multiple sources, explore them in Langfuse:
 
-1. Go to **Observations** and filter by `environment = "langfuse-llm-as-a-judge"` — these are the observations created by the Langfuse-hosted evaluator. Open one to see its score and the judge's reasoning in the comment.
+1. Go to **Scores** in the left menu and filter by `name = "llm-judge-quality"` — these are the scores produced by your programmatic evaluator. Open any score to read the judge's reasoning in the comment field.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 ![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-scores-analytics.png)
 3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
