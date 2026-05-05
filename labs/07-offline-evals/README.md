@@ -213,9 +213,9 @@ You don't always need to write code to run an experiment. Langfuse can run a pro
 
 4. Set label `production` and click **Create prompt**
 
-![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
+5. You should see the prompt created with the production label attached.
 
-5. You should see prompt created with production label attached. 
+![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-create.png)
 
 ![Experiment runs comparison showing prompt-v1 vs prompt-v2 scores](./assets/langfuse-dataset-experiment-prompt-list.png)
 
