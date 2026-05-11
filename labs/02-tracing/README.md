@@ -1,4 +1,4 @@
-# Lab 2: Basic Tracing
+# Lab 2: Rich Tracing
 
 ## Concept
 
@@ -6,36 +6,39 @@ When an LLM application fails or behaves unexpectedly, where do you look? Withou
 
 **Langfuse traces** give you a structured record of every request through your system:
 - The full input and output at each step
-- Timing for every operation
+- Latency for every operation
 - Nested structure showing how calls relate to each other
-- Cost and token usage
+- Model, token counts, and cost on LLM calls
 
-A **trace** represents one end-to-end request (e.g., a user asking a question). Within it, **observations** represent individual steps — an LLM call, a retrieval step, a tool execution.
+A **trace** represents one end-to-end request (e.g., a user asking a question). Within it, **observations** represent individual steps — an LLM call, a retrieval step, a tool execution. There are different observation **types** — a plain span is one, a `generation` is the special type Langfuse uses for LLM calls so it can attach model, tokens and cost.
 
 ```
-Trace: "answer user question"
-├── Span: "retrieve context"       ← retrieval step
-└── Generation: "llm call"         ← LLM call (tracks model, tokens, cost)
+Trace: "support-question"
+├── Span: "retrieve_context"           ← retrieval step
+└── Span: "call_llm"
+    └── Generation: gpt-4o-mini        ← LLM call (model, tokens, cost)
 ```
 
-The simplest way to create traces in Langfuse is the `@observe` decorator — wrap a function and Langfuse automatically captures its name, inputs, outputs, and timing.
+The simplest way to create traces in Langfuse is the `@observe` decorator — wrap a function and Langfuse automatically captures its name, inputs, outputs, and timing. We'll combine that with the **`langfuse.openai`** drop-in so every OpenAI call becomes a fully-typed generation automatically.
 
 ---
 
 ## What You'll Build
 
-Instrument `app/assistant.py` so that every question answered creates a trace in Langfuse with:
-- A root span for the full `answer()` call
-- A child span for the retrieval step
-- A generation for the LLM call
+In this lab we go straight for **rich** tracing. By the end of the three tasks below, every question the user asks produces a trace with:
+
+- A meaningful trace name (`support-question`) — not the raw function name
+- Nested observations for retrieval and the LLM call
+- A typed **generation** for the LLM call with model name, input/output tokens, total tokens and estimated cost
+- Latency on every node
 
 ### The app you're instrumenting
 
-Open `app/assistant.py` and read through it before starting. Here's what each part does:
+Open `app/assistant.py` and read through it before starting. The current `answer()` does everything inline — retrieve, build messages, call OpenAI. To get a useful trace tree we'll split that into three named functions:
 
-- **`SYSTEM_PROMPT`** — the instructions given to the model on every request, defining its persona and behaviour
-- **`retrieve(question)` / `format_context(docs)`** — imported from `app/knowledge_base.py`. Open that file and have a quick look: it contains a list of DataStream documentation entries (each with a title, content, and tags), and a `retrieve()` function that scores each entry by counting how many words from the query appear in it, returning the top matches. `format_context()` then joins those matches into a single text block that gets inserted into the prompt. Find `retrieve()` at the top of `app/knowledge_base.py` — it's the function that starts with `def retrieve(query: str, top_k: int = 3)`
-- **`answer(question, history)`** — the main function you'll be modifying; it retrieves context, builds the message list (system prompt + conversation history + user question + context), calls OpenAI, and returns the response string
+- **`retrieve_context(question)`** — wraps the keyword search from `app/knowledge_base.py` and returns the formatted text block injected into the prompt
+- **`call_llm(messages)`** — wraps the OpenAI call so the LLM step shows up as its own node
+- **`answer(question, history)`** — the root function the web UI calls, orchestrating the two above
 
 The flow is: **user question → retrieve docs → build messages → call LLM → return answer**. That's exactly the structure your trace will reflect.
 
@@ -43,128 +46,24 @@ The flow is: **user question → retrieve docs → build messages → call LLM �
 
 ## Tasks
 
-### Task 2.1 — Add the `@observe` decorator to `answer()`
+### Task 2.1 — Add nested observations with a meaningful trace name
 
-Open `app/assistant.py`. Add the import at the top of the file, then add `@observe()` directly above `answer()`.
+We're adding three `@observe` decorators in one pass — one for the root, one for retrieval, one for the LLM call — and we're naming the root trace `support-question` from the very first trace. At scale you'll have many pipelines logging into the same project; the function name `answer` is far less useful in a filter than a meaningful name.
 
 **File: `app/assistant.py`**
+
 ```python
 # Add this import at the top of the file:
 from langfuse import observe
 
-# Add @observe() directly above the answer() function:
-@observe()
-def answer(question: str, history: list[dict] | None = None) -> str:
-    # Retrieve relevant docs from the knowledge base
-    docs = retrieve(question)
-    context = format_context(docs)
-
-    # Build the messages array: system prompt + conversation history + user question with context
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-    if history:
-        messages.extend(history)
-
-    messages.append({
-        "role": "user",
-        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
-    })
-
-    # Call the LLM and return the response
-    response = client.chat.completions.create(
-        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-        messages=messages,
-        temperature=0.3,
-    )
-
-    return response.choices[0].message.content
-```
-
-Save the file — Gradio will reload automatically. Ask a question in the browser, then check your Langfuse dashboard. You should see a trace appear.
-
-> If the web app isn't running yet: `uv run gradio app/web.py`, then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a>
-
-In Langfuse, go to **Tracing** — you'll land on the **observations table**, where every individual operation your app performs appears as its own row. This is Langfuse's primary view: each decorated function call is an observation you can query directly.
-
-> **Set up a saved view (do this once now):** The observations table shows everything — LLM calls, retrieval steps, root spans, all mixed together. To keep the workshop tidy, filter the table to just your root `answer()` calls:
-> 1. Open the filter sidebar and add: `name = "answer"`
-> 2. Click **Save view** and name it `Workshop – answer calls`
->
-> From here on, use this saved view to jump straight to your data with one click.
-
-![Langfuse observations table](assets/langfuse-trace-ui.png)
-
-Click on any row to open the detail view. You'll see:
-- **Input** — the exact arguments passed to `answer()` (the question and history)
-- **Output** — the string returned by `answer()`
-- **Metadata** — timing, tags, and any other attributes attached to the observation
-
-![Langfuse observation detail](assets/langfuse-trace-dialog.png)
-
-> **What happened?** `@observe` automatically captured the function name, its arguments as input, and its return value as output. It also recorded the start and end time.
-
----
-
-### Task 2.2 — Add a span for retrieval
-
-The trace shows the full `answer()` call, but we want to see the retrieval step separately. Add a new `retrieve_context()` function in `app/assistant.py`, then update `answer()` to call it instead of calling `retrieve()` and `format_context()` directly.
-
-**File: `app/assistant.py`** — add this new function above `answer()`:
-```python
+# Add these two new functions above answer():
 @observe()
 def retrieve_context(question: str) -> str:
     docs = retrieve(question)
     return format_context(docs)
-```
 
-Then update `answer()` to use it (replace the two retrieval lines):
 
-```python
 @observe()
-def answer(question: str, history: list[dict] | None = None) -> str:
-    # Replace the direct retrieve() + format_context() calls with this:
-    context = retrieve_context(question)
-
-    # Build the messages array: system prompt + conversation history + user question with context
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-    if history:
-        messages.extend(history)
-
-    messages.append({
-        "role": "user",
-        "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
-    })
-
-    # Call the LLM and return the response
-    response = client.chat.completions.create(
-        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-        messages=messages,
-        temperature=0.3,
-    )
-
-    return response.choices[0].message.content
-```
-
-Ask another question and check the trace. You should now see a **nested** span for retrieval inside the root trace.
-
-![Langfuse trace with retrieve_context span](assets/langfuse-trace-retrieve.png)
-
-Compared to the previous step, notice what's new: the left panel now shows a tree with two nodes — `answer` at the top and `retrieve_context` indented beneath it. Clicking `retrieve_context` shows its own Input (the question) and Output (the formatted docs text that was passed to the LLM). You can now see exactly what the retrieval step returned and how long it took, separately from the overall `answer` call.
-
-> **Key concept**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship between the spans.
-
-> **Note**: `app/knowledge_base.py` does **not** need any Langfuse imports — it's a plain data file. The `@observe` decorator goes on `retrieve_context()` in `app/assistant.py`, which wraps the knowledge base functions.
-
----
-
-### Task 2.3 — Track the LLM call as a generation
-
-LLM calls are special — Langfuse has a dedicated type for them called a **generation** that tracks model name, token usage, and cost. Add a new `call_llm()` function in `app/assistant.py`, then update `answer()` to call it.
-
-**File: `app/assistant.py`** — add this new function above `answer()`:
-```python
-@observe(as_type="generation")
 def call_llm(messages: list[dict]) -> str:
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
@@ -172,67 +71,119 @@ def call_llm(messages: list[dict]) -> str:
         temperature=0.3,
     )
     return response.choices[0].message.content
-```
 
-Then update `answer()` to call `call_llm()` instead of calling `client.chat.completions.create()` directly:
 
-```python
-@observe()
+# Replace the existing answer() with this — note the name="support-question":
+@observe(name="support-question")
 def answer(question: str, history: list[dict] | None = None) -> str:
     context = retrieve_context(question)
 
-    # Build the messages array: system prompt + conversation history + user question with context
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
     if history:
         messages.extend(history)
-
     messages.append({
         "role": "user",
         "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
     })
 
-    # Replace the direct client.chat.completions.create() call with this:
     return call_llm(messages)
 ```
 
-Ask another question and open the trace. You'll now see all three nodes in the left panel: `answer` → `retrieve_context` and `call_llm` side by side beneath it.
+Save the file — Gradio will reload automatically. Ask a question in the browser, then check your Langfuse dashboard. You should see a trace named `support-question` appear.
 
-![Langfuse trace with call_llm generation](assets/langfuse-trace-call-llm.png)
+> If the web app isn't running yet: `uv run gradio app/web.py`, then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a>
 
-Click on `call_llm`. This is where things get interesting — the Input shows the **full messages array** that was sent to the model: the system prompt, the retrieved documentation context, and the user's question all assembled together. The Output shows exactly what the model returned. This is the most valuable view for debugging — if the model gave a bad answer, you can see precisely what it was working with.
+In Langfuse, go to **Tracing** → **Traces**. You'll see your new trace at the top of the list, named `support-question`. Click it.
 
-> **Note**: The `@observe` decorator captures return values automatically. For generations, Langfuse also infers token counts when the full response object is returned. We'll improve this in Lab 3.
+![Langfuse trace with nested spans](assets/langfuse-trace-retrieve.png)
 
-> **Stay on `from openai import OpenAI` for now.** In Lab 3 you'll switch to `from langfuse.openai import OpenAI` — a drop-in replacement that auto-captures token counts and cost with no other code changes. Don't make that swap yet; it belongs in Lab 3.
+The left panel shows a tree with three nodes: `support-question` at the top, with `retrieve_context` and `call_llm` nested beneath. Clicking each node shows its own Input and Output:
+
+- `support-question` — the original question and history
+- `retrieve_context` — the question (in) and the formatted docs (out)
+- `call_llm` — the full messages array (in), the assistant's reply (out)
+
+> **Key concept**: When one `@observe`-decorated function calls another, Langfuse automatically creates a parent-child relationship between the observations. This is how a flat function call graph becomes a tree you can debug.
+
+> **Note**: `app/knowledge_base.py` does **not** need any Langfuse imports — it's a plain data file.
 
 ---
 
-### Note — Flushing traces
+### Task 2.2 — Capture cost, tokens, and the generation type
 
-With the Gradio web server running continuously, Langfuse's background thread sends batches automatically — no explicit `flush()` call is needed. If traces appear to be missing, wait a few seconds and refresh Langfuse.
+Right now the `call_llm` node shows the messages going in and the response coming out, but it has no idea this was an LLM call. There's no model name, no token count, no cost. Langfuse has a dedicated observation **type** for LLM calls — `generation` — and the simplest way to get one is the **Langfuse OpenAI drop-in**: a one-line import change that wraps the OpenAI client and automatically records model, tokens and cost for every call.
 
-> **For short-lived scripts** (like the offline evaluation scripts in Lab 7), you will call `get_client().flush()` explicitly before the script exits. That's the scenario flush was designed for.
+**File: `app/assistant.py`** — replace the OpenAI import at the top:
+
+```python
+# Before:
+from openai import OpenAI
+
+# After:
+from langfuse.openai import OpenAI  # drop-in: auto-captures tokens, model, cost
+```
+
+That's the entire change. Don't touch the `@observe()` on `call_llm` — keep it as a plain span. The wrapper creates a `generation` observation inside it automatically.
+
+Ask another question and open the trace. Inside `call_llm` you'll see a new child node with a different icon — that's the generation.
+
+![Generation with token counts and cost](../03-sessions-environments/assets/langfuse-llm-call-instrumentation.png)
+
+Click the generation. The top bar now shows:
+
+- **Model** — e.g. `gpt-4o-mini`
+- **Input tokens** / **Output tokens** / **Total tokens**
+- **Estimated cost in USD**
+- **Latency** — already there on every node, but particularly relevant for the LLM call
+
+This is what powers cost dashboards, per-model comparisons, and per-user spend reports later on — all of it derived from the data the wrapper attaches automatically.
+
+> **Other providers**: Langfuse offers the same drop-in pattern (or similar one-line integrations) for most major providers and frameworks:
+> - **Anthropic**: Anthropic exposes an OpenAI-compatible API, so the same `from langfuse.openai import OpenAI` wrapper works — just swap `api_key`, `base_url`, and `model`.
+> - **AWS Bedrock**: use `@observe()` with manual usage reporting.
+> - **Google Gemini / Vertex AI**: native Langfuse integrations available.
+> - **LiteLLM**: `litellm.callbacks = ["langfuse_otel"]` — one line to trace any of the 100+ models LiteLLM supports.
+> - **LangChain / LangGraph**: pass `CallbackHandler` from `langfuse.callback`.
+> - **LlamaIndex**: register the Langfuse handler once at startup.
+>
+> The full list is at [langfuse.com/integrations](https://langfuse.com/integrations). For this workshop we use OpenAI directly, but the patterns apply identically across all of them.
+
+---
+
+### Task 2.3 — Confirm everything is flowing
+
+Ask 2–3 more questions in the browser. Each should produce a new `support-question` trace with the same structure: nested observations, a generation with tokens and cost, latency on every node.
+
+![Langfuse observations table](assets/langfuse-trace-ui.png)
+
+> **Note — flushing traces**: With the Gradio web server running continuously, Langfuse's background thread sends batches automatically — no explicit `flush()` call is needed. If traces appear to be missing, wait a few seconds and refresh Langfuse.
+>
+> **For short-lived scripts** (like the offline eval scripts in Lab 7), you will call `get_client().flush()` explicitly before the script exits. That's the scenario flush was designed for.
 
 ---
 
 ## Checkpoint
 
-Ask 2-3 questions in the browser. In your Langfuse dashboard:
+After asking a few questions, in your Langfuse dashboard:
 
-- [ ] Each question creates a new trace
-- [ ] Each trace has a nested retrieval span and an LLM generation
-- [ ] The inputs and outputs are visible on each span
-- [ ] The generation shows a model name
+- [ ] Each question creates a new trace named `support-question`
+- [ ] Each trace has `support-question` → `retrieve_context` + `call_llm` nested
+- [ ] `call_llm` contains a typed **generation** with model, token counts, and cost
+- [ ] Latency is visible on every node
 
 ---
 
-## Explore the UI
+## Why This Matters
 
-In your Langfuse project, go to **Traces**. Click into a trace and explore:
-- The timeline view shows span durations
-- Click a generation to see the full prompt and completion
-- The "Input / Output" tab shows what was sent and received
+In one lab you've gone from zero observability to a trace tree that tells you:
+
+- What the user asked
+- What the retrieval step returned (so you can spot bad retrieval before blaming the model)
+- Exactly what was sent to the model (system prompt + context + question)
+- What the model returned, how many tokens it used, and how much it cost
+- How long each step took
+
+That's the foundation for everything that follows — sessions, scores, evals, experiments.
 
 ---
 

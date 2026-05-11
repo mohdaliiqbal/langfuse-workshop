@@ -63,8 +63,8 @@ user question
 |-----|-------------|
 | 00 - Setup | Environment setup, no code changes |
 | 01 - Langfuse | Langfuse account, project, API keys — no code changes |
-| 02 - Tracing | Add `@observe` decorators to `assistant.py` |
-| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name, environment to `assistant.py` |
+| 02 - Tracing | Add nested `@observe` decorators + `langfuse.openai` drop-in + trace name to `assistant.py` (rich tracing from the start) |
+| 03 - Sessions & Environments | Add `session_id`/`user_id` via `propagate_attributes`; set `LANGFUSE_TRACING_ENVIRONMENT` in `.env` |
 | 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py` |
 | 05 - Online Evals | Return `trace_id` from `assistant.py`; add evaluator call to `web.py`; create `app/evaluator.py`; UI evaluator (UI only) |
 | 06 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |

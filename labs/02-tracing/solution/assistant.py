@@ -1,10 +1,10 @@
 """
-Lab 2 Solution: Basic Tracing
+Lab 2 Solution: Rich Tracing
 Drop-in replacement for app/assistant.py
 """
 
 import os
-from openai import OpenAI
+from langfuse.openai import OpenAI  # drop-in: captures model, tokens, cost on every call
 from langfuse import observe
 from app.knowledge_base import retrieve, format_context
 
@@ -23,13 +23,13 @@ Guidelines:
 """
 
 
-@observe()  # Creates a child span for retrieval
+@observe()
 def retrieve_context(question: str) -> str:
     docs = retrieve(question)
     return format_context(docs)
 
 
-@observe(as_type="generation")  # Marks this as an LLM generation
+@observe()  # plain span — the openai wrapper creates the generation inside it
 def call_llm(messages: list[dict]) -> str:
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
@@ -39,7 +39,7 @@ def call_llm(messages: list[dict]) -> str:
     return response.choices[0].message.content
 
 
-@observe()  # Root trace for the full answer pipeline
+@observe(name="support-question")
 def answer(question: str, history: list[dict] | None = None) -> str:
     context = retrieve_context(question)
 

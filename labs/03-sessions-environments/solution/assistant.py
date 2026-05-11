@@ -1,5 +1,5 @@
 """
-Lab 3 Solution: Rich Instrumentation
+Lab 3 Solution: Sessions & Environments
 Drop-in replacement for app/assistant.py
 """
 
@@ -48,11 +48,8 @@ def answer(
     user_id: str | None = None,
 ) -> str:
     with propagate_attributes(
-        trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-3"],
-        metadata={"app_version": "1.0.0"},
     ):
         context = retrieve_context(question)
 

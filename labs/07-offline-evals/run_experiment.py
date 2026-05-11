@@ -5,11 +5,14 @@ Usage:
     python labs/07-offline-evals/run_experiment.py
     python labs/07-offline-evals/run_experiment.py --name prompt-v2
 
-Change --name between runs to compare different versions in Langfuse.
+This script only runs the assistant against each dataset item — scoring is
+handled by an LLM-as-a-judge evaluator you configure in the Langfuse UI
+(Evaluation → LLM-as-a-Judge, scoped to "Dataset Runs"). The platform
+evaluator runs automatically on each experiment item as it's recorded.
+
+Change --name between runs to compare different prompt versions in Langfuse.
 """
 
-import json
-import os
 import sys
 import argparse
 from pathlib import Path
@@ -20,47 +23,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
-from openai import OpenAI
-from langfuse import get_client, Evaluation
+from langfuse import get_client
 from app.assistant import answer
 
 langfuse = get_client()
-oai = OpenAI()
 
 DATASET_NAME = "datastream-support-benchmark"
-
-def judge(question: str, expected: str, actual: str) -> dict:
-    """Score a response using an LLM judge. Prompt is managed in Langfuse."""
-    prompt_obj = langfuse.get_prompt("experiment-judge-prompt", label="production")
-    prompt_text = prompt_obj.compile(question=question, expected=expected, actual=actual)
-
-    result = oai.chat.completions.create(
-        model=os.getenv("APP_MODEL", "gpt-4o-mini"),
-        messages=[{"role": "user", "content": prompt_text}],
-        response_format={"type": "json_object"},
-        temperature=0,
-    )
-    return json.loads(result.choices[0].message.content)
 
 
 def run_task(*, item, **kwargs):
     """Run the assistant against one dataset item."""
     question = item.input["question"]
     result = answer(question)
-    # answer() returns (response, trace_id) from Lab 5 onwards
+    # answer() returns (response, trace_id, observation_id) from Lab 5 onwards
     if isinstance(result, tuple):
         return result[0]
     return result
-
-
-def evaluate_item(*, input, output, expected_output, **kwargs):
-    """Score the assistant's response against the expected answer using LLM-as-a-judge."""
-    evaluation = judge(input["question"], expected_output, output)
-    return Evaluation(
-        name="answer-correctness",
-        value=float(evaluation["score"]),
-        comment=evaluation.get("reason", ""),
-    )
 
 
 def run(experiment_name: str):
@@ -69,14 +47,16 @@ def run(experiment_name: str):
 
     dataset = langfuse.get_dataset(DATASET_NAME)
 
+    # No evaluators= here — scoring is done by a Langfuse LLM-as-a-Judge
+    # evaluator configured in the UI to run on Dataset Runs.
     result = dataset.run_experiment(
         name=experiment_name,
         task=run_task,
-        evaluators=[evaluate_item],
     )
 
     print(result.format())
     print(f"\nView results: Langfuse → Datasets → {DATASET_NAME} → Runs")
+    print("Scores will appear within ~30–60 seconds once the platform evaluator picks them up.")
 
 
 if __name__ == "__main__":

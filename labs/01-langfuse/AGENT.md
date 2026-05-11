@@ -111,4 +111,4 @@ Wait for confirmation before declaring the lab complete.
 - [ ] API keys copied into `.env`
 - [ ] Connection check prints `OK`
 
-Once confirmed, tell the attendee they're ready for **Lab 2: Basic Tracing**.
+Once confirmed, tell the attendee they're ready for **Lab 2: Rich Tracing**.

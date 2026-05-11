@@ -107,4 +107,4 @@ from langfuse import get_client
 print(get_client().auth_check())  # Should print True
 ```
 
-If you see `True`, you're connected and ready for **Lab 2: Basic Tracing**.
+If you see `True`, you're connected and ready for **Lab 2: Rich Tracing**.
