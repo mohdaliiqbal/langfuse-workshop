@@ -1,6 +1,6 @@
 """
-Lab 5 Solution: LLM-as-a-judge evaluator.
-The judge prompt is managed in Langfuse (not hardcoded here).
+Lab 5 Solution: programmatic out-of-scope evaluator.
+The judge prompt is managed in Langfuse so the rubric can be tuned without code changes.
 Called in a background thread after each response.
 """
 
@@ -13,16 +13,11 @@ client = OpenAI()
 
 
 def evaluate_response(trace_id: str, observation_id: str | None, question: str, response: str) -> None:
-    """
-    Run LLM-as-a-judge evaluation and record the score in Langfuse.
-    Fetches the evaluator prompt from Langfuse — iterate on the rubric
-    without redeploying code.
-    """
+    """Score whether the question was in-scope and record the result on the trace."""
     langfuse = get_client()
 
     try:
-        # Fetch the prompt from Langfuse (same pattern as Lab 4)
-        prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
+        prompt_obj = langfuse.get_prompt("out-of-scope-evaluator-prompt", label="production")
         prompt_text = prompt_obj.compile(question=question, response=response)
 
         result = client.chat.completions.create(
@@ -33,13 +28,14 @@ def evaluate_response(trace_id: str, observation_id: str | None, question: str, 
         )
 
         evaluation = json.loads(result.choices[0].message.content)
+        in_scope = bool(evaluation.get("in_scope", True))
 
         langfuse.create_score(
             trace_id=trace_id,
             observation_id=observation_id,
-            name="llm-judge-quality",
-            value=float(evaluation["score"]),
-            data_type="NUMERIC",
+            name="in-scope",
+            value=1 if in_scope else 0,
+            data_type="BOOLEAN",
             comment=evaluation.get("reason", ""),
         )
     except Exception as e:

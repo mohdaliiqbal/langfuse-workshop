@@ -37,8 +37,8 @@ You'll instrument a production-style customer support chatbot step by step, lear
 |-----|-------|----------------|
 | [00 - Setup](labs/00-setup/README.md) | Environment | Python setup, running the baseline app |
 | [01 - Langfuse UI](labs/01-langfuse/README.md) | UI orientation | Organizations, projects, navigation, trace detail view |
-| [02 - Tracing](labs/02-tracing/README.md) | Basic observability | `@observe` decorator, trace structure, exploring the UI |
-| [03 - Instrumentation](labs/03-instrumentation/README.md) | Rich traces | Token tracking, sessions, user IDs, environments |
+| [02 - Tracing](labs/02-tracing/README.md) | Rich observability | `@observe` decorator, nested observations, `langfuse.openai` drop-in for tokens & cost, trace naming |
+| [03 - Sessions & Environments](labs/03-sessions-environments/README.md) | Conversation + environment context | `session_id`, `user_id`, `LANGFUSE_TRACING_ENVIRONMENT` |
 | [04 - Prompt Management](labs/04-prompt-management/README.md) | Prompt versioning | Decouple prompts from code, variables, Playground, rollback |
 | [05 - Online Evals](labs/05-online-evals/README.md) | Quality signals | User feedback, LLM-as-a-judge (code + UI-hosted) |
 | [06 - Human Annotation](labs/06-human-annotation/README.md) | Ground truth | Score configs, trace annotation, annotation queues |
@@ -111,8 +111,8 @@ langfuse-workshop/
 ├── labs/
 │   ├── 00-setup/README.md        # Environment setup
 │   ├── 01-langfuse/              # Lab 1: Langfuse UI orientation
-│   ├── 02-tracing/               # Lab 2: @observe decorator
-│   ├── 03-instrumentation/       # Lab 3: tokens, sessions, metadata
+│   ├── 02-tracing/               # Lab 2: rich tracing (nested @observe + langfuse.openai + trace name)
+│   ├── 03-sessions-environments/ # Lab 3: sessions, user IDs, environments
 │   ├── 04-prompt-management/     # Lab 4: prompts in Langfuse
 │   ├── 05-online-evals/          # Lab 5: online evals
 │   ├── 06-human-annotation/      # Lab 6: human annotation workflows

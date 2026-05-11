@@ -89,11 +89,8 @@ def answer(
     user_id: str | None = None,
 ) -> str:
     with propagate_attributes(
-        trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-4"],
-        metadata={"app_version": "1.0.0"},
     ):
         prompt_obj = get_system_prompt()
         system_prompt = prompt_obj.compile(product_name="DataStream")
