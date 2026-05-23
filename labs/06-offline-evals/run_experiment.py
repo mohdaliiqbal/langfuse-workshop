@@ -2,8 +2,8 @@
 Run an experiment against the benchmark dataset.
 
 Usage:
-    python labs/07-offline-evals/run_experiment.py
-    python labs/07-offline-evals/run_experiment.py --name prompt-v2
+    python labs/06-offline-evals/run_experiment.py
+    python labs/06-offline-evals/run_experiment.py --name prompt-v2
 
 Change --name between runs to compare different versions in Langfuse.
 """
@@ -47,7 +47,7 @@ def run_task(*, item, **kwargs):
     """Run the assistant against one dataset item."""
     question = item.input["question"]
     result = answer(question)
-    # answer() returns (response, trace_id) from Lab 5 onwards
+    # answer() returns (response, trace_id) from Lab 4 onwards
     if isinstance(result, tuple):
         return result[0]
     return result

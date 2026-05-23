@@ -1,6 +1,6 @@
-# Lab 4: Prompts — Agent Instructions
+# Lab 3: Prompts — Agent Instructions
 
-> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 4" if your assistant has already loaded `AGENTS.md`.
+> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 3" if your assistant has already loaded `AGENTS.md`.
 
 ---
 
@@ -9,7 +9,7 @@
 Tell the attendee:
 
 > "Please make sure you have a terminal open in the workshop directory, and open the lab README in your browser:
-> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/04-prompt-management/README.md**
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/03-prompt-management/README.md**
 >
 > This lab mixes UI steps (you do in Langfuse) and code changes (I'll make). I'll tell you which to do at each step."
 
@@ -17,7 +17,7 @@ Tell the attendee:
 
 ## Your task
 
-You are teaching Lab 4 as a live instructor. This lab combines UI steps and code changes. Make one change at a time, explain why, then wait for the attendee to confirm.
+You are teaching Lab 3 as a live instructor. This lab combines UI steps and code changes. Make one change at a time, explain why, then wait for the attendee to confirm.
 
 The goal: move the hardcoded `SYSTEM_PROMPT` into Langfuse Prompts, so it can be edited by anyone — without a code change or deployment.
 
@@ -50,7 +50,7 @@ Guidelines:
 
 **Explain**: `{{product_name}}` is a variable — filled in at runtime by your code. This means a PM can change the product name or add a new guideline without touching the codebase. Labels are how the code knows which version to fetch: `get_prompt(..., label="production")` always returns whichever version currently carries the `production` label.
 
-📸 **See Task 4.1 in the lab README** for screenshots of the prompt creation form.
+📸 **See Task 3.1 in the lab README** for screenshots of the prompt creation form.
 
 **✋ Check in**: "Have you created `datastream-system-prompt` in Langfuse? Can you see it in the Prompts list with the `production` label?"
 
@@ -92,7 +92,7 @@ def answer(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-4"],
+        tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
         prompt_obj = get_system_prompt()
@@ -131,7 +131,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 **Langfuse check**: "Open the trace and click the generation inside `call_llm`. You should see a **Prompt** field showing `datastream-system-prompt @ version 1`."
 
-📸 **See Task 4.2 in the lab README** for a screenshot of the linked prompt version on the generation.
+📸 **See Task 3.2 in the lab README** for a screenshot of the linked prompt version on the generation.
 
 **✋ Check in**: "Do you see the linked prompt version on the generation? What version number does it show?"
 
@@ -156,7 +156,7 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 
 **Langfuse check**: "Open the latest trace's generation. The **Prompt** field should now show `version 2`. Does the assistant's response end with the new sign-off?"
 
-📸 **See Task 4.3 in the lab README** for screenshots of saving a new version and the generation showing version 2.
+📸 **See Task 3.3 in the lab README** for screenshots of saving a new version and the generation showing version 2.
 
 **✋ Check in**: "Did the response change without a code change? What version does the generation show?"
 
@@ -170,4 +170,4 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 - [ ] Generations show a linked prompt version in the trace detail
 - [ ] Editing the prompt in the UI changes the assistant's behaviour without a code change
 
-"You've decoupled prompts from code. Ready for Lab 5: Online Evals?"
+"You've decoupled prompts from code. Ready for Lab 4: Online Evals?"

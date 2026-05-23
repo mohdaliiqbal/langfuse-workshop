@@ -1,6 +1,6 @@
-# Lab 7: Offline Evals — Datasets & Experiments — Agent Instructions
+# Lab 6: Offline Evals — Datasets & Experiments — Agent Instructions
 
-> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 7" if your assistant has already loaded `AGENTS.md`.
+> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 6" if your assistant has already loaded `AGENTS.md`.
 
 ---
 
@@ -9,7 +9,7 @@
 Tell the attendee:
 
 > "No code changes to the app in this lab — we use standalone scripts. Please open the lab README in your browser for screenshots:
-> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/07-offline-evals/README.md**
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/06-offline-evals/README.md**
 >
 > You'll need your terminal open to run two scripts. I'll tell you exactly when and what to run."
 
@@ -17,13 +17,13 @@ Tell the attendee:
 
 ## Your task
 
-You are teaching Lab 7 as a live instructor. Guide the attendee through creating a benchmark dataset, running experiments to compare prompt versions, a no-code UI experiment, and adding a production trace to the dataset. Ask them to confirm each result before moving on.
+You are teaching Lab 6 as a live instructor. Guide the attendee through creating a benchmark dataset, running experiments to compare prompt versions, a no-code UI experiment, and adding a production trace to the dataset. Ask them to confirm each result before moving on.
 
 ---
 
 ## Step 1 — Create the dataset
 
-**Announce**: A dataset is a curated collection of input/expected-output pairs — your golden benchmark. Before running the experiment, we need the LLM judge prompt to exist in Langfuse, consistent with the prompt management approach from Lab 4.
+**Announce**: A dataset is a curated collection of input/expected-output pairs — your golden benchmark. Before running the experiment, we need the LLM judge prompt to exist in Langfuse, consistent with the prompt management approach from Lab 3.
 
 **Direct the attendee** to create the judge prompt in Langfuse:
 1. Go to **Prompts** → **New Prompt**
@@ -50,14 +50,14 @@ Wait for confirmation, then ask them to run the script.
 
 **Terminal prompt**: "In your terminal, run:"
 ```bash
-uv run python labs/07-offline-evals/create_dataset.py
+uv run python labs/06-offline-evals/create_dataset.py
 ```
 
 **Explain**: This script creates 9 benchmark questions covering pricing, connectors, troubleshooting, security, and more — representative of real support questions. Any regression in your assistant's quality will show up here before your users notice it.
 
 **Langfuse check**: "In Langfuse, go to **Datasets**. Click `datastream-support-benchmark` — you should see 9 items with their expected answers."
 
-📸 **See Task 7.1 in the lab README** for screenshots of the dataset list and the items view.
+📸 **See Task 6.1 in the lab README** for screenshots of the dataset list and the items view.
 
 **✋ Check in**: "Do you see 9 items in the dataset? Click one — what does the expected output say?"
 
@@ -69,14 +69,14 @@ uv run python labs/07-offline-evals/create_dataset.py
 
 **Terminal prompt**: "In your terminal, run:"
 ```bash
-uv run python labs/07-offline-evals/run_experiment.py --name prompt-v1
+uv run python labs/06-offline-evals/run_experiment.py --name prompt-v1
 ```
 
 **Explain**: `dataset.run_experiment()` loops over every item, calls `run_task()` (which calls the real `answer()` function, creating actual Langfuse traces), then calls `evaluate_item()` and returns an `Evaluation` with the score. The `--name` flag labels this run — use descriptive names so comparisons are meaningful later.
 
 **Langfuse check**: "In Langfuse, go to **Datasets** → `datastream-support-benchmark` → **Runs** tab. You should see `prompt-v1` with an average score and per-item results."
 
-📸 **See Task 7.2 in the lab README** for a screenshot of the experiment output and the Runs view.
+📸 **See Task 6.2 in the lab README** for a screenshot of the experiment output and the Runs view.
 
 **✋ Check in**: "Can you see the `prompt-v1` run? What is the average score? Are there items that scored notably low?"
 
@@ -97,14 +97,14 @@ uv run python labs/07-offline-evals/run_experiment.py --name prompt-v1
 
 **Terminal prompt**: "Without changing any code, run the experiment with a new name:"
 ```bash
-uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
+uv run python labs/06-offline-evals/run_experiment.py --name prompt-v2
 ```
 
 **Explain**: This replaces "I think the new prompt is better" with a measurable, reproducible result. The `--name` flag distinguishes the two runs — no file editing needed. The same 9 questions, the same judge, but the prompt your app actually used was different.
 
 **Langfuse check**: "In **Datasets** → **Runs**, both `prompt-v1` and `prompt-v2` should appear. Click **Compare** — look for questions where the score changed significantly."
 
-📸 **See Task 7.3 in the lab README** for a screenshot of the two runs compared side by side.
+📸 **See Task 6.3 in the lab README** for a screenshot of the two runs compared side by side.
 
 **✋ Check in**: "Do you see both runs? Did the average score go up or down? Were there any regressions?"
 
@@ -127,7 +127,7 @@ uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
 4. Optionally attach a Langfuse-hosted evaluator
 5. Click **Run Experiment**
 
-📸 **See Task 7.4 in the lab README** for screenshots of the UI experiment setup.
+📸 **See Task 6.4 in the lab README** for screenshots of the UI experiment setup.
 
 **Explain**: No deployment cycle — you prototype in the Playground, run it against the full benchmark, and see if it regresses before promoting to production. This is where product teams can validate prompt ideas without involving engineering.
 
@@ -145,7 +145,7 @@ uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
 
 **Explain**: The production failure becomes a permanent test case. The next time you run an experiment, it will be tested — ensuring this specific failure can never silently regress. Over time your dataset becomes a comprehensive regression suite built from real failures, not hypothetical ones.
 
-📸 **See Task 7.5 in the lab README** for a screenshot of the Add to dataset flow.
+📸 **See Task 6.5 in the lab README** for a screenshot of the Add to dataset flow.
 
 **✋ Check in**: "Have you added a trace to the dataset? Can you see it as a new item in the dataset items list?"
 

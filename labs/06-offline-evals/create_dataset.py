@@ -1,6 +1,6 @@
 """
 Create the golden benchmark dataset in Langfuse.
-Run once: python labs/07-offline-evals/create_dataset.py
+Run once: python labs/06-offline-evals/create_dataset.py
 """
 
 import sys

@@ -37,12 +37,11 @@ You'll instrument a production-style customer support chatbot step by step, lear
 |-----|-------|----------------|
 | [00 - Setup](labs/00-setup/README.md) | Environment | Python setup, running the baseline app |
 | [01 - Langfuse UI](labs/01-langfuse/README.md) | UI orientation | Organizations, projects, navigation, trace detail view |
-| [02 - Tracing](labs/02-tracing/README.md) | Basic observability | `@observe` decorator, trace structure, exploring the UI |
-| [03 - Instrumentation](labs/03-instrumentation/README.md) | Rich traces | Token tracking, sessions, user IDs, environments |
-| [04 - Prompt Management](labs/04-prompt-management/README.md) | Prompt versioning | Decouple prompts from code, variables, Playground, rollback |
-| [05 - Online Evals](labs/05-online-evals/README.md) | Quality signals | User feedback, LLM-as-a-judge (code + UI-hosted) |
-| [06 - Human Annotation](labs/06-human-annotation/README.md) | Ground truth | Score configs, trace annotation, annotation queues |
-| [07 - Offline Evals](labs/07-offline-evals/README.md) | Systematic testing | Datasets, SDK experiments, UI experiments, A/B comparisons |
+| [02 - Instrumentation](labs/02-instrumentation/README.md) | Observability foundation | `@observe`, langfuse.openai drop-in, named traces, sessions, user IDs, environments |
+| [03 - Prompt Management](labs/03-prompt-management/README.md) | Prompt versioning | Decouple prompts from code, variables, Playground, rollback |
+| [04 - Online Evals](labs/04-online-evals/README.md) | Quality signals | User feedback, LLM-as-a-judge (code + UI-hosted) |
+| [05 - Human Annotation](labs/05-human-annotation/README.md) | Ground truth | Score configs, trace annotation, annotation queues |
+| [06 - Offline Evals](labs/06-offline-evals/README.md) | Systematic testing | Datasets, SDK experiments, UI experiments, A/B comparisons |
 
 ---
 
@@ -111,12 +110,11 @@ langfuse-workshop/
 ├── labs/
 │   ├── 00-setup/README.md        # Environment setup
 │   ├── 01-langfuse/              # Lab 1: Langfuse UI orientation
-│   ├── 02-tracing/               # Lab 2: @observe decorator
-│   ├── 03-instrumentation/       # Lab 3: tokens, sessions, metadata
-│   ├── 04-prompt-management/     # Lab 4: prompts in Langfuse
-│   ├── 05-online-evals/          # Lab 5: online evals
-│   ├── 06-human-annotation/      # Lab 6: human annotation workflows
-│   └── 07-offline-evals/         # Lab 7: offline evals, datasets & experiments
+│   ├── 02-instrumentation/       # Lab 2: @observe, drop-in OpenAI, sessions, users, env
+│   ├── 03-prompt-management/     # Lab 3: prompts in Langfuse
+│   ├── 04-online-evals/          # Lab 4: online evals
+│   ├── 05-human-annotation/      # Lab 5: human annotation workflows
+│   └── 06-offline-evals/         # Lab 6: offline evals, datasets & experiments
 ├── .env.example                  # Environment variable template
 ├── pyproject.toml
 ├── requirements.txt

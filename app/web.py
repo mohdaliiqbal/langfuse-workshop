@@ -4,7 +4,7 @@ Web entry point for the DataStream Support Assistant.
 Run with hot reload (reloads on every Python file change):
     uv run gradio app/web.py
 
-The 👍/👎 buttons on assistant messages are dormant until Lab 5 — once
+The 👍/👎 buttons on assistant messages are dormant until Lab 4 — once
 answer() returns a trace_id they start recording user-feedback scores in
 Langfuse automatically, with no changes needed to this file.
 """
@@ -73,7 +73,7 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
     turn = idx // 2
     trace_id = trace_ids[turn] if turn < len(trace_ids) else None
     if not trace_id:
-        return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+        return  # answer() doesn't return trace_id yet (Labs 0–3) — no-op
     observation_id = observation_ids[turn] if turn < len(observation_ids) else None
     from langfuse import get_client
     get_client().create_score(
@@ -368,8 +368,8 @@ EXAMPLE_QUESTIONS = [
 ]
 
 # Detect whether the current lab has wired feedback (answer() returns a trace_id).
-# Labs 0–4: `def answer(...) -> str` → no feedback buttons (they'd be dormant).
-# Lab 5+:   answer() returns a tuple including trace_id → enable 👍/👎.
+# Labs 0–3: `def answer(...) -> str` → no feedback buttons (they'd be dormant).
+# Lab 4+:   answer() returns a tuple including trace_id → enable 👍/👎.
 # Inspect via AST so we don't execute assistant.py (which imports OpenAI at module load).
 def _feedback_enabled() -> bool:
     import ast

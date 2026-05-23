@@ -1,11 +1,15 @@
 """
-Lab 3 Solution: Rich Instrumentation
-Drop-in replacement for app/assistant.py
+Lab 2 Solution: Instrumentation (merged tracing + rich instrumentation)
+Drop-in replacement for app/assistant.py.
+
+End state after Task 2.4: @observe decorators, langfuse.openai drop-in,
+named trace, session ID, user ID + tags + metadata, and environment
+separation (via LANGFUSE_TRACING_ENVIRONMENT in .env).
 """
 
 import os
 import uuid
-from langfuse.openai import OpenAI  # Drop-in: captures tokens, model, cost automatically
+from langfuse.openai import OpenAI  # drop-in: auto-captures tokens, model, cost
 from langfuse import observe, propagate_attributes
 from app.knowledge_base import retrieve, format_context
 
@@ -51,7 +55,7 @@ def answer(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop", "lab-3"],
+        tags=["workshop", "lab-2"],
         metadata={"app_version": "1.0.0"},
     ):
         context = retrieve_context(question)

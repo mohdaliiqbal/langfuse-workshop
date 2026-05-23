@@ -1,6 +1,6 @@
 """
-Lab 5 Solution: assistant.py
-Returns (response, trace_id, observation_id) so web.py can attach scores to the specific observation.
+Lab 3 Solution: Prompt Management
+Drop-in replacement for app/assistant.py
 """
 
 import os
@@ -13,6 +13,7 @@ client = OpenAI()
 
 
 def get_system_prompt():
+    """Fetch the system prompt from Langfuse prompt management."""
     langfuse = get_client()
     return langfuse.get_prompt("datastream-system-prompt", label="production")
 
@@ -23,7 +24,7 @@ def retrieve_context(question: str) -> str:
     return format_context(docs)
 
 
-@observe()
+@observe()  # plain span — openai wrapper creates the generation inside it
 def call_llm(messages: list[dict], prompt=None) -> str:
     response = client.chat.completions.create(
         model=os.getenv("APP_MODEL", "gpt-4o-mini"),
@@ -40,16 +41,15 @@ def answer(
     history: list[dict] | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
-) -> tuple[str, str | None, str | None]:
-    langfuse = get_client()
-
+) -> str:
     with propagate_attributes(
         trace_name="support-question",
         session_id=session_id or str(uuid.uuid4()),
         user_id=user_id,
-        tags=["workshop"],
+        tags=["workshop", "lab-3"],
         metadata={"app_version": "1.0.0"},
     ):
+        # Fetch prompt from Langfuse (cached after first call)
         prompt_obj = get_system_prompt()
         system_prompt = prompt_obj.compile(product_name="DataStream")
 
@@ -63,8 +63,4 @@ def answer(
             "content": f"Documentation context:\n{context}\n\nQuestion: {question}"
         })
 
-        response = call_llm(messages, prompt=prompt_obj)
-        trace_id = langfuse.get_current_trace_id()
-        observation_id = langfuse.get_current_observation_id()
-
-    return response, trace_id, observation_id
+        return call_llm(messages, prompt=prompt_obj)

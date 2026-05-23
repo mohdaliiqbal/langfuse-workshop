@@ -1,5 +1,5 @@
 """
-Lab 5 Solution: main.py
+Lab 4 Solution: main.py
 Adds user feedback collection and background LLM-as-a-judge evaluation.
 """
 

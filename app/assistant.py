@@ -4,8 +4,8 @@ The brain of the app. One function — answer() — contains three key pieces of
   - Message assembly (lines 35-43): builds the messages array — system prompt + history + user question with context
   - LLM call (lines 46-50): sends the messages to OpenAI and returns the response
 
-In Lab 2 you'll extract the retrieval and LLM call into their own functions (retrieve_context, call_llm)
-so Langfuse can trace each step separately.
+In Lab 2 you'll add @observe decorators, switch to the langfuse.openai drop-in, name the trace,
+and add sessions, user IDs, and environment separation — all in `app/assistant.py`.
 """
 
 import os

@@ -1,4 +1,4 @@
-# Lab 5: Online Evals
+# Lab 4: Online Evals
 
 ## Concept
 
@@ -34,7 +34,7 @@ Once you have scores, you can filter traces by score, chart quality over time, a
 
 ## Tasks
 
-### Task 5.1 — Capture user feedback as scores
+### Task 4.1 — Capture user feedback as scores
 
 The goal: after each response, ask the user "was this helpful?" and record their answer as a score on the trace. Scores let you filter, chart, and act on quality signals in the Langfuse dashboard.
 
@@ -101,7 +101,7 @@ def _handle_like(data: gr.LikeData, state: dict) -> None:
     turn = idx // 2
     trace_id = trace_ids[turn] if turn < len(trace_ids) else None
     if not trace_id:
-        return  # answer() doesn't return trace_id yet (Labs 0–4) — no-op
+        return  # answer() doesn't return trace_id yet (Labs 0–3) — no-op
     observation_id = observation_ids[turn] if turn < len(observation_ids) else None
     from langfuse import get_client
     get_client().create_score(
@@ -131,7 +131,7 @@ Note that you can also filter observations by score value:
 
 ---
 
-### Task 5.2 — Set up a no-code LLM-as-a-judge evaluator in the UI
+### Task 4.2 — Set up a no-code LLM-as-a-judge evaluator in the UI
 
 Langfuse has **built-in evaluators** — you configure them once in the UI and they run automatically on every matching trace, with no code needed. This is the fastest way to get a quality signal on all your traffic. But first you need to setup LLM connection with your favorite LLM api to make it work. In this lab we are using OpenAI, you may use any other LLM API.
 
@@ -192,11 +192,11 @@ Langfuse has **built-in evaluators** — you configure them once in the UI and t
 
 
 
-### Task 5.3 — Write a programmatic evaluator
+### Task 4.3 — Write a programmatic evaluator
 
 The Langfuse UI based evaluator is great for standard dimensions, but sometimes you need **custom scoring logic** — domain-specific rubrics, multi-step checks, or evaluations that call your own services. For that, you write the evaluator in code.
 
-Since Lab 4, we manage prompts in Langfuse — not hardcoded in source files. The evaluator prompt is no different: create it in Langfuse so you can iterate on the rubric without redeploying code. Hint: If you get code failures you can use solution files at the bottom.
+Since Lab 3, we manage prompts in Langfuse — not hardcoded in source files. The evaluator prompt is no different: create it in Langfuse so you can iterate on the rubric without redeploying code. Hint: If you get code failures you can use solution files at the bottom.
 
 **Step 1 — Create the evaluator prompt in Langfuse**
 
@@ -236,7 +236,7 @@ def evaluate_response(trace_id: str, observation_id: str | None, question: str, 
     """Run LLM-as-a-judge evaluation and record the score."""
     langfuse = get_client()
 
-    # Fetch the prompt from Langfuse — same pattern as Lab 4
+    # Fetch the prompt from Langfuse — same pattern as Lab 3
     prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
     prompt_text = prompt_obj.compile(question=question, response=response)
 
@@ -277,18 +277,18 @@ if trace_id:
 
 > **Why a background thread?** `evaluate_response` makes its own LLM call, which takes 1–2 seconds. Running it in a daemon thread means the user gets their response immediately — the evaluation happens in parallel, with no impact on perceived latency.
 
-> **Code vs UI evaluators**: The UI evaluator (Task 5.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
+> **Code vs UI evaluators**: The UI evaluator (Task 4.2) is zero-maintenance — Langfuse hosts and runs it, it auto-scales, and you update the rubric without a deployment. The code evaluator gives full control: custom prompts, any scoring logic, access to your own data. And because the prompt lives in Langfuse, you can still tune the rubric without touching code. In practice, teams use both — UI evaluators for standard quality dimensions, code evaluators for domain-specific checks.
 
 ---
 
-### Task 5.4 — View score analytics
+### Task 4.4 — View score analytics
 
 Now that you have scores flowing in from multiple sources, explore them in Langfuse:
 
 1. Go to **Scores** in the left menu and filter by `name = "llm-judge-quality"` — these are the scores produced by your programmatic evaluator. Open any score to read the judge's reasoning in the comment field.
 2. Go to **Scores** → **Analytics** to see score distributions over time.
 ![Trace detail showing user-feedback and llm-judge-quality scores](./assets/langfuse-scores-analytics.png)
-3. Compare scores between different prompt versions (if you updated the prompt in Lab 4).
+3. Compare scores between different prompt versions (if you updated the prompt in Lab 3).
 
 Open any trace — you'll see the `user-feedback` boolean, the `llm-judge-quality` numeric score from your code evaluator, and the Langfuse-hosted evaluator score all attached:
 
@@ -326,4 +326,4 @@ With scores, you can:
 
 See [`solution/assistant.py`](./solution/assistant.py) for the updated assistant and [`solution/evaluator.py`](./solution/evaluator.py) for the LLM-as-a-judge evaluator.
 
-Next: **[Lab 6: Human Annotation](../06-human-annotation/README.md)**
+Next: **[Lab 5: Human Annotation](../05-human-annotation/README.md)**

@@ -1,6 +1,6 @@
-# Lab 5: Online Evals — Agent Instructions
+# Lab 4: Online Evals — Agent Instructions
 
-> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 5" if your assistant has already loaded `AGENTS.md`.
+> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 4" if your assistant has already loaded `AGENTS.md`.
 
 ---
 
@@ -9,7 +9,7 @@
 Tell the attendee:
 
 > "Please make sure you have a terminal open in the workshop directory, and open the lab README for screenshots:
-> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/05-online-evals/README.md**
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/04-online-evals/README.md**
 >
 > This lab has both UI steps and code changes — I'll tell you which is which at each step."
 
@@ -17,7 +17,7 @@ Tell the attendee:
 
 ## Your task
 
-You are teaching Lab 5 as a live instructor. Add three quality signals one at a time: user feedback scores, a no-code Langfuse-hosted evaluator, and a programmatic LLM-as-a-judge. Wait for the attendee to verify each one before continuing.
+You are teaching Lab 4 as a live instructor. Add three quality signals one at a time: user feedback scores, a no-code Langfuse-hosted evaluator, and a programmatic LLM-as-a-judge. Wait for the attendee to verify each one before continuing.
 
 ---
 
@@ -86,7 +86,7 @@ def answer(
 
 **Langfuse check**: "Open the observation in Langfuse — you should see a `user-feedback` score attached to it in the Scores tab."
 
-📸 **See Task 5.1 in the lab README** for a screenshot of the score on the trace and the score filter.
+📸 **See Task 4.1 in the lab README** for a screenshot of the score on the trace and the score filter.
 
 **✋ Check in**: "Can you see the `user-feedback` score on the observation? What value does it show?"
 
@@ -113,7 +113,7 @@ def answer(
    - `output` → observation output, JsonPath: `$["content"]` — **the double-quotes around `content` are required**
 5. Set sampling to `100%` → **Execute**
 
-📸 **See Task 5.2 in the lab README** for screenshots of each configuration step (LLM connections, evaluator creation, variable mapping).
+📸 **See Task 4.2 in the lab README** for screenshots of each configuration step (LLM connections, evaluator creation, variable mapping).
 
 **Explain**: The UI evaluator runs asynchronously — after your app responds, Langfuse picks up the observation and scores it in the background. Zero latency impact for the user, zero infra to manage. The rubric can be changed in the UI without touching code — useful when a PM wants to tighten the definition of "helpful" mid-sprint.
 
@@ -127,7 +127,7 @@ def answer(
 
 ## Step 4 — Create a programmatic evaluator
 
-**Announce**: The UI evaluator covers standard dimensions. For custom scoring logic you write the evaluator in code. First create the prompt in Langfuse — consistent with Lab 4.
+**Announce**: The UI evaluator covers standard dimensions. For custom scoring logic you write the evaluator in code. First create the prompt in Langfuse — consistent with Lab 3.
 
 **Direct the attendee** to create the evaluator prompt in Langfuse UI:
 1. Go to **Prompts** → **New Prompt**
@@ -148,7 +148,7 @@ def answer(
    ```
 4. Set label `production` → **Create prompt**
 
-📸 **See Task 5.3 in the lab README** for the full evaluator setup walkthrough.
+📸 **See Task 4.3 in the lab README** for the full evaluator setup walkthrough.
 
 **✋ Check in**: "Have you created `quality-evaluator-prompt` with the `production` label?"
 
@@ -223,4 +223,4 @@ if trace_id:
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on observations
 - [ ] `quality-evaluator-prompt` exists in Langfuse with the `production` label
 
-"You now have three independent quality signals flowing into every trace. Ready for Lab 6: Human Annotation?"
+"You now have three independent quality signals flowing into every trace. Ready for Lab 5: Human Annotation?"

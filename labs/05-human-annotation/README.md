@@ -1,4 +1,4 @@
-# Lab 6: Human Annotation
+# Lab 5: Human Annotation
 
 > **This lab is UI-only — no code changes are required.** Everything in this lab happens in the Langfuse dashboard.
 
@@ -15,7 +15,7 @@ In Langfuse, human annotation works at two levels:
 
 Human scores serve multiple purposes:
 - **Ground truth** for calibrating your LLM-as-a-judge (is it agreeing with humans?)
-- **Dataset curation** — traces you annotate as "bad" become test cases in Lab 7
+- **Dataset curation** — traces you annotate as "bad" become test cases in Lab 6
 - **Team collaboration** — share queues with domain experts, PMs, or QA reviewers who don't need to touch code
 
 ---
@@ -135,7 +135,7 @@ _Note: in a team setting, you can assign annotation queues to specific users_
 
 The queue shows progress (X of Y completed) as you work through it.
 
-> **Turning failures into test cases**: After completing the queue, go to **Tracing** and filter by `score: response-quality < 3`. Select the low-scoring observations and add them to a dataset from the Actions menu — this is covered in Lab 7.
+> **Turning failures into test cases**: After completing the queue, go to **Tracing** and filter by `score: response-quality < 3`. Select the low-scoring observations and add them to a dataset from the Actions menu — this is covered in Lab 6.
 
 ---
 
@@ -162,4 +162,4 @@ With it, you can:
 
 ---
 
-Next: **[Lab 7: Offline Evals — Datasets & Experiments](../07-offline-evals/README.md)**
+Next: **[Lab 6: Offline Evals — Datasets & Experiments](../06-offline-evals/README.md)**

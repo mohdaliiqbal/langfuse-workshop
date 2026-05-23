@@ -1,5 +1,5 @@
 """
-Lab 5 Solution: LLM-as-a-judge evaluator.
+Lab 4 Solution: LLM-as-a-judge evaluator.
 The judge prompt is managed in Langfuse (not hardcoded here).
 Called in a background thread after each response.
 """
@@ -21,7 +21,7 @@ def evaluate_response(trace_id: str, observation_id: str | None, question: str, 
     langfuse = get_client()
 
     try:
-        # Fetch the prompt from Langfuse (same pattern as Lab 4)
+        # Fetch the prompt from Langfuse (same pattern as Lab 3)
         prompt_obj = langfuse.get_prompt("quality-evaluator-prompt", label="production")
         prompt_text = prompt_obj.compile(question=question, response=response)
 

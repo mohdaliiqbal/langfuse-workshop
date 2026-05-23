@@ -1,4 +1,4 @@
-# Lab 7: Offline Evals — Datasets & Experiments
+# Lab 6: Offline Evals — Datasets & Experiments
 
 ## Concept
 
@@ -62,7 +62,7 @@ The script `create_dataset.py` is already written. It populates *datastream-supp
 1. Run it once:
 
 ```bash
-uv run python labs/07-offline-evals/create_dataset.py
+uv run python labs/06-offline-evals/create_dataset.py
 ```
 
 _The script calls two Langfuse APIs:_
@@ -99,9 +99,9 @@ Now are dataset is ready to run experiments.
 
 ---
 
-### Task 7.2 — Run an experiment
+### Task 6.2 — Run an experiment
 
-Before running the experiment, create the LLM judge prompt in Langfuse — consistent with the prompt management pattern from Lab 4, so the rubric can be tuned without touching code.
+Before running the experiment, create the LLM judge prompt in Langfuse — consistent with the prompt management pattern from Lab 3, so the rubric can be tuned without touching code.
 
 **Create `experiment-judge-prompt` in Langfuse:**
 1. Go to **Prompts** → **New Prompt**, name it `experiment-judge-prompt`, type **Text**
@@ -131,16 +131,16 @@ Respond with JSON only:
 2. As you can see you can run experiment via User Interface or via SDK/API. We will use API, in fact we have already created a script for it. 
 ![Dataset experiments tab](./assets/langfuse-dataset-run-experiment.png)
 
-3. The experiment script is already written at `labs/07-offline-evals/run_experiment.py`. You can run it to begin the experiment:
+3. The experiment script is already written at `labs/06-offline-evals/run_experiment.py`. You can run it to begin the experiment:
 
 ```bash
-uv run python labs/07-offline-evals/run_experiment.py
+uv run python labs/06-offline-evals/run_experiment.py
 ```
 
 Or pass a custom name:
 
 ```bash
-uv run python labs/07-offline-evals/run_experiment.py --name prompt-v1
+uv run python labs/06-offline-evals/run_experiment.py --name prompt-v1
 ```
 
 ### **How the script works:** 
@@ -183,7 +183,7 @@ _Followng is a sample output of experiment script_
 ![Dataset items view showing questions and expected outputs](./assets/langfuse-dataset-experiment-run.png)
 ---
 
-### Task 7.3 — Compare two prompt versions
+### Task 6.3 — Compare two prompt versions
 
 Now lets update system prompt in Langfuse (create a new version with different instructions), then run the experiment again with a different name:
 
@@ -191,7 +191,7 @@ Now lets update system prompt in Langfuse (create a new version with different i
 
 2. Run the experiment again with a new name:
    ```bash
-   uv run python labs/07-offline-evals/run_experiment.py --name prompt-v2
+   uv run python labs/06-offline-evals/run_experiment.py --name prompt-v2
    ```
 
 3. In Langfuse → **Datasets** → `datastream-support-benchmark` → **Runs**, you can now compare both experiment runs side by side:
@@ -200,7 +200,7 @@ Now lets update system prompt in Langfuse (create a new version with different i
 
 ---
 
-### Task 7.4 — Run a no-code experiment from the UI
+### Task 6.4 — Run a no-code experiment from the UI
 
 You don't always need to write code to run an experiment. Langfuse can run a prompt directly against your dataset from the UI.
 
@@ -259,7 +259,7 @@ View the results in the **Runs** tab — each item shows the generated output an
 
 ---
 
-### Task 7.5 — Add a production trace to the dataset
+### Task 6.5 — Add a production trace to the dataset
 
 Datasets should grow over time with real failures. When you see a bad production trace, add it to the dataset so it becomes a permanent test case.
 

@@ -1,6 +1,6 @@
-# Lab 6: Human Annotation — Agent Instructions
+# Lab 5: Human Annotation — Agent Instructions
 
-> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 6" if your assistant has already loaded `AGENTS.md`.
+> **For the attendee**: Paste this file's contents into your AI assistant, or say "start lab 5" if your assistant has already loaded `AGENTS.md`.
 
 ---
 
@@ -9,7 +9,7 @@
 Tell the attendee:
 
 > "This lab is entirely UI-based — no code changes. Please open the lab README in your browser to follow along with screenshots:
-> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/06-human-annotation/README.md**
+> **https://github.com/mohdaliiqbal/langfuse-workshop/blob/main/labs/05-human-annotation/README.md**
 >
 > I'll guide you through each step in the Langfuse UI and reference the task numbers for screenshots."
 
@@ -17,7 +17,7 @@ Tell the attendee:
 
 ## Your task
 
-You are teaching Lab 6 as a live instructor. Guide the attendee through each UI step, explain the concept, and ask them to confirm before moving on. No code changes needed.
+You are teaching Lab 5 as a live instructor. Guide the attendee through each UI step, explain the concept, and ask them to confirm before moving on. No code changes needed.
 
 ---
 
@@ -40,7 +40,7 @@ You are teaching Lab 6 as a live instructor. Guide the attendee through each UI 
    - Type: **Boolean**
    - Description: *Is the answer grounded in the provided documentation context?*
 
-📸 **See Task 6.1 in the lab README** for a screenshot of the completed Score Configs list.
+📸 **See Task 5.1 in the lab README** for a screenshot of the completed Score Configs list.
 
 **Explain**: Score Configs are reusable rubric dimensions — every annotation workflow in the project (ad-hoc, queued, experiment review) uses the same configs. Defining them once means your annotation data is consistent across all methods and can be charted together in analytics.
 
@@ -59,7 +59,7 @@ You are teaching Lab 6 as a live instructor. Guide the attendee through each UI 
 3. Fill in `response-quality` (1–5) and `answer-grounded` (true/false)
 4. Optionally add a comment → click **Save**
 
-📸 **See Task 6.2 in the lab README** for screenshots of the Annotate button and the annotation panel.
+📸 **See Task 5.2 in the lab README** for screenshots of the Annotate button and the annotation panel.
 
 **Explain**: This is how a domain expert or PM contributes quality signals without touching code. Scores are immediately queryable — filter Tracing by `score: response-quality < 3` to surface all low-quality observations directly, no need to keep mental notes about specific traces.
 
@@ -77,7 +77,7 @@ You are teaching Lab 6 as a live instructor. Guide the attendee through each UI 
 3. Select both Score Configs: `response-quality` and `answer-grounded`
 4. Click **Create**
 
-📸 **See Task 6.3 in the lab README** for screenshots of creating the queue and adding traces to it.
+📸 **See Task 5.3 in the lab README** for screenshots of creating the queue and adding traces to it.
 
 **Add observations to the queue:**
 1. Go to **Tracing**
@@ -90,7 +90,7 @@ You are teaching Lab 6 as a live instructor. Guide the attendee through each UI 
 3. For each observation: review the input and output, fill in your scores, optionally provide a corrected output
 4. Click **Mark Completed** to advance to the next item
 
-**Explain**: Queues solve the team coordination problem. Without them, two reviewers working the same trace list will overlap and skip items. A queue assigns each item atomically — trackable progress, no duplicated effort. After working through the queue, filter Tracing by `score: response-quality < 3` to find low-quality observations to add to a dataset in Lab 7.
+**Explain**: Queues solve the team coordination problem. Without them, two reviewers working the same trace list will overlap and skip items. A queue assigns each item atomically — trackable progress, no duplicated effort. After working through the queue, filter Tracing by `score: response-quality < 3` to find low-quality observations to add to a dataset in Lab 6.
 
 **✋ Check in**: "Have you processed at least one queue item and marked it completed? What score did you give it?"
 
@@ -103,4 +103,4 @@ You are teaching Lab 6 as a live instructor. Guide the attendee through each UI 
 - [ ] `workshop-review` annotation queue exists with 5+ observations
 - [ ] At least one queue item is marked completed
 
-"You've added the human calibration layer to your eval system. Ready for Lab 7: Offline Evals — Datasets & Experiments?"
+"You've added the human calibration layer to your eval system. Ready for Lab 6: Offline Evals — Datasets & Experiments?"

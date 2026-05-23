@@ -38,7 +38,7 @@ A customer support chatbot for a fictional SaaS product called **DataStream**. T
 ### Key files
 
 **`app/assistant.py`** — the main file attendees modify throughout the workshop.
-- `SYSTEM_PROMPT` — hardcoded system instructions for the LLM (replaced in Lab 4)
+- `SYSTEM_PROMPT` — hardcoded system instructions for the LLM (replaced in Lab 3)
 - `retrieve_context(question)` — searches `knowledge_base.py` for relevant docs
 - `call_llm(messages)` — makes the OpenAI API call
 - `answer(question, history, session_id, user_id)` — orchestrates the full pipeline
@@ -63,14 +63,13 @@ user question
 |-----|-------------|
 | 00 - Setup | Environment setup, no code changes |
 | 01 - Langfuse | Langfuse account, project, API keys — no code changes |
-| 02 - Tracing | Add `@observe` decorators to `assistant.py` |
-| 03 - Instrumentation | Add OpenAI drop-in, sessions, user ID, trace name, environment to `assistant.py` |
-| 04 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py` |
-| 05 - Online Evals | Return `trace_id` from `assistant.py`; add evaluator call to `web.py`; create `app/evaluator.py`; UI evaluator (UI only) |
-| 06 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |
-| 07 - Offline Evals | Run `labs/07-offline-evals/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
+| 02 - Instrumentation | Add `@observe` decorators, the `langfuse.openai` drop-in, a named trace, sessions, user ID, and environment to `assistant.py` |
+| 03 - Prompt Management | Move system prompt to Langfuse, fetch it in `assistant.py` |
+| 04 - Online Evals | Return `trace_id` from `assistant.py`; add evaluator call to `web.py`; create `app/evaluator.py`; UI evaluator (UI only) |
+| 05 - Human Annotation | Score configs, trace annotation, annotation queues — UI only, no code changes |
+| 06 - Offline Evals | Run `labs/06-offline-evals/create_dataset.py` and `run_experiment.py`; UI experiment; add trace to dataset |
 
-Each lab builds directly on the previous one. The attendee primarily modifies `app/assistant.py` — it is never replaced wholesale. `app/web.py` is only touched in Lab 5 to add the background evaluator call.
+Each lab builds directly on the previous one. The attendee primarily modifies `app/assistant.py` — it is never replaced wholesale. `app/web.py` is only touched in Lab 4 to add the background evaluator call.
 
 ---
 
@@ -118,7 +117,7 @@ You are teaching, not completing a task. The attendee is present and learning in
 Claude cannot render images inline. Instead, open them in the attendee's browser using `open` (macOS) via a Bash tool call:
 
 ```bash
-open "https://raw.githubusercontent.com/mohdaliiqbal/langfuse-workshop/main/labs/02-tracing/assets/langfuse-trace-ui.png"
+open "https://raw.githubusercontent.com/mohdaliiqbal/langfuse-workshop/main/labs/02-instrumentation/assets/langfuse-trace-ui.png"
 ```
 
 On Linux use `xdg-open`, on Windows use `start`. Each lab's AGENT.md includes the relevant URLs at each verification step. Open the screenshot **before** the ✋ Check in so the attendee knows exactly what they're looking for.
