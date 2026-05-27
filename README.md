@@ -64,7 +64,9 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ---
 
-## Quick Start
+## Quick Start (macOS)
+
+> **Windows / Linux**: follow [labs/00-setup/README.md](labs/00-setup/README.md) — it has the matching commands.
 
 ```bash
 # 1. Clone this repo
