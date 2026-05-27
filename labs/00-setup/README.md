@@ -6,13 +6,21 @@ Get the workshop running on your machine. This lab covers cloning the repo and b
 
 ## Step 1: Install uv
 
-If you don't have `uv` installed, run:
+If you don't have `uv` installed:
 
+**macOS / Linux** (terminal):
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+**Windows** (PowerShell):
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
 `uv` will handle Python 3.14 and all dependencies — no separate Python install needed.
+
+> After installing on Windows, **close and reopen PowerShell** so `uv` is on your PATH.
 
 ---
 
@@ -24,18 +32,37 @@ If you don't have one, create an account at [platform.openai.com](https://platfo
 
 ## Step 3: Bootstrap the Project
 
+Clone the repo (same on every platform):
+
 ```bash
-# Clone the workshop repo
 git clone https://github.com/mohdaliiqbal/langfuse-workshop.git
 cd langfuse-workshop
+```
 
-# Run the setup script
+Then run the bootstrap.
+
+**macOS / Linux** (terminal):
+```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-`setup.sh` does exactly two things — nothing more:
-1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies (`openai`, `langfuse`, `python-dotenv`, `rich`, `gradio`)
+**Windows** (PowerShell — `setup.sh` is bash-only, run the two steps directly):
+```powershell
+uv sync
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+**Windows** (Command Prompt):
+```cmd
+uv sync
+if not exist .env copy .env.example .env
+```
+
+> Prefer to run `setup.sh` on Windows? Install **Git for Windows** and run it from the bundled **Git Bash** shell.
+
+These steps do exactly two things — nothing more:
+1. `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies (`openai`, `langfuse`, `python-dotenv`, `rich`, `gradio`)
 2. Copies `.env.example` to `.env` if no `.env` exists yet
 
 It does **not** install anything globally, modify your system, or send any data anywhere.
@@ -78,7 +105,7 @@ You should get a helpful response. No Langfuse data will appear yet — that com
 
 ## Checkpoint
 
-- [ ] `./setup.sh` ran without errors
+- [ ] `./setup.sh` (macOS/Linux) or `uv sync` + `.env` copy (Windows) ran without errors
 - [ ] `uv run gradio app/web.py` starts without errors
 - [ ] The chat UI opens at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and responds to a question
 

@@ -12,11 +12,30 @@ Guide the attendee through bootstrapping the workshop environment. Langfuse acco
 
 ## Step 1 — Bootstrap the project
 
-Run the setup script:
+First, ask the attendee what OS they're on (macOS, Linux, or Windows). Give the matching command.
 
+**macOS / Linux** — run the setup script:
 ```bash
 chmod +x setup.sh && ./setup.sh
 ```
+
+**Windows (PowerShell)** — `setup.sh` is bash-only, so run the two steps directly:
+```powershell
+uv sync
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+**Windows (Command Prompt)**:
+```cmd
+uv sync
+if not exist .env copy .env.example .env
+```
+
+> If `uv` is not found on Windows, the attendee needs to install it first:
+> ```powershell
+> powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+> ```
+> Then **close and reopen the terminal** so `uv` lands on PATH.
 
 Show the attendee the output and confirm there are no errors.
 
@@ -56,7 +75,7 @@ To stop the app between labs, press `Ctrl+C` in the terminal. To restart it, run
 
 ## Completion check
 
-- [ ] `./setup.sh` ran without errors
+- [ ] `./setup.sh` (macOS/Linux) or `uv sync` + `.env` copy (Windows) ran without errors
 - [ ] `uv run gradio app/web.py` starts without errors
 - [ ] Chat UI opens at http://localhost:7860 and responds to a question
 
