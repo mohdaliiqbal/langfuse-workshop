@@ -58,7 +58,7 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ## Prerequisites
 
-- [uv](https://docs.astral.sh/uv/) (installs Python 3.14 automatically)
+- [uv](https://docs.astral.sh/uv/) (installs Python 3.14 automatically) — install instructions for macOS, Linux, and Windows are in **[Lab 0: Setup](labs/00-setup/README.md)**
 - An OpenAI API key
 - A Langfuse account (free at [cloud.langfuse.com](https://cloud.langfuse.com), or run locally with Docker)
 
