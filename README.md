@@ -64,40 +64,9 @@ The baseline has **no Langfuse integration** — you add it lab by lab.
 
 ---
 
-## Quick Start (macOS)
+## Get Started
 
-> **Windows / Linux**: follow [labs/00-setup/README.md](labs/00-setup/README.md) — it has the matching commands.
-
-```bash
-# 1. Clone this repo
-git clone https://github.com/mohdaliiqbal/langfuse-workshop.git
-cd langfuse-workshop
-
-# 2. Bootstrap the project
-chmod +x setup.sh
-./setup.sh
-```
-
-`setup.sh` does exactly three things — nothing more:
-1. Runs `uv sync` — creates `.venv/`, installs Python 3.14, and installs all dependencies
-2. Copies `.env.example` to `.env` if no `.env` exists yet
-
-It does **not** install anything globally, modify your system, or send any data anywhere.
-
-```bash
-# 3. Fill in your API keys
-# Edit .env with your LANGFUSE_* and OPENAI_API_KEY values
-
-# 4. Activate the virtual environment
-source .venv/bin/activate
-
-# 5. Run the baseline app
-uv run gradio app/web.py
-```
-
-Then open <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> in your browser.
-
-Then open [labs/00-setup/README.md](labs/00-setup/README.md) and follow the labs in order.
+Start with **[Lab 0: Setup](labs/00-setup/README.md)** — it installs `uv`, clones the repo, configures `.env`, and verifies the baseline app. Then work through the labs in order.
 
 ---
 
