@@ -18,9 +18,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-`uv` will handle Python 3.14 and all dependencies — no separate Python install needed.
+> **After the installer finishes, close and reopen PowerShell** (or Command Prompt) so `uv` lands on your PATH — otherwise the next `uv` command will fail with "command not found".
 
-> After installing on Windows, **close and reopen PowerShell** so `uv` is on your PATH.
+`uv` will handle Python 3.14 and all dependencies — no separate Python install needed.
 
 ---
 
