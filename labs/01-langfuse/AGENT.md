@@ -13,7 +13,7 @@ Guide the attendee through creating a Langfuse account, organization, project, a
 ## Step 1 — Sign up
 
 **Tell the attendee:**
-> Go to [cloud.langfuse.com](https://cloud.langfuse.com) in your browser and click **Sign Up** in the top right. Create an account with your email, or sign in with Google or GitHub.
+> Go to [us.cloud.langfuse.com/auth/sign-up](https://us.cloud.langfuse.com/auth/sign-up) in your browser. Create an account with your email, or sign in with Google or GitHub. This signs you up directly on the **US region**.
 >
 > Let me know when you're signed in.
 

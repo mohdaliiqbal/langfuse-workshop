@@ -6,7 +6,7 @@ In this lab you'll create a Langfuse account, set up an organization and project
 
 ## Step 1: Sign Up
 
-Go to [cloud.langfuse.com](https://cloud.langfuse.com) and click **Sign Up** in the top right corner.
+Go to [us.cloud.langfuse.com/auth/sign-up](https://us.cloud.langfuse.com/auth/sign-up) to create your account directly on the **US region**.
 
 ![Langfuse landing page — click Sign Up](assets/langfuse-com-landing-signup-button.png)
 
