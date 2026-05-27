@@ -336,3 +336,5 @@ With environments, you can:
 ## Solution
 
 See [`solution/assistant.py`](./solution/assistant.py) for the fully instrumented assistant.
+
+Next: **[Lab 3: Prompt Management](../03-prompt-management/README.md)**

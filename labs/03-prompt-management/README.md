@@ -197,3 +197,5 @@ The version history also gives you a safety net: if a prompt change causes quali
 ## Solution
 
 See [`solution/assistant.py`](./solution/assistant.py) for the instrumented assistant.
+
+Next: **[Lab 4: Online Evals](../04-online-evals/README.md)**

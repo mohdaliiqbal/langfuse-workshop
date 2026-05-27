@@ -111,4 +111,4 @@ You should get a helpful response. No Langfuse data will appear yet — that com
 - [ ] `uv run gradio app/web.py` starts without errors
 - [ ] The chat UI opens at <a href="http://localhost:7860" target="_blank">http://localhost:7860</a> and responds to a question
 
-Once both pass, move on to **Lab 1: Langfuse** to create your account and get your API keys.
+Once both pass, move on to **[Lab 1: Langfuse](../01-langfuse/README.md)** to create your account and get your API keys.

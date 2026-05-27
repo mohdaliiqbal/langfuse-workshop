@@ -170,4 +170,4 @@ def call_llm(messages: list[dict], prompt=None) -> str:
 - [ ] Generations show a linked prompt version in the trace detail
 - [ ] Editing the prompt in the UI changes the assistant's behaviour without a code change
 
-"You've decoupled prompts from code. Ready for Lab 4: Online Evals?"
+"You've decoupled prompts from code. Ready for **[Lab 4: Online Evals](../04-online-evals/README.md)**?"

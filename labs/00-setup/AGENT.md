@@ -81,4 +81,4 @@ To stop the app between labs, press `Ctrl+C` in the terminal. To restart it, run
 - [ ] `uv run gradio app/web.py` starts without errors
 - [ ] Chat UI opens at http://localhost:7860 and responds to a question
 
-Once confirmed, tell the attendee they're ready for **Lab 1: Langfuse** to create their account and get their API keys.
+Once confirmed, tell the attendee they're ready for **[Lab 1: Langfuse](../01-langfuse/README.md)** to create their account and get their API keys.

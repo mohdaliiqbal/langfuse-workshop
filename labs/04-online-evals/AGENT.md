@@ -223,4 +223,4 @@ if trace_id:
 - [ ] `app/evaluator.py` exists and `llm-judge-quality` scores appear on observations
 - [ ] `quality-evaluator-prompt` exists in Langfuse with the `production` label
 
-"You now have three independent quality signals flowing into every trace. Ready for Lab 5: Human Annotation?"
+"You now have three independent quality signals flowing into every trace. Ready for **[Lab 5: Human Annotation](../05-human-annotation/README.md)**?"

@@ -297,4 +297,4 @@ If it's missing, add it now. Otherwise, no change needed.
 - [ ] `workshop-user-1` appears in the Users view
 - [ ] The Environment filter shows only `development` traces
 
-"Excellent — you now have production-grade observability: a named, fully traced pipeline with cost tracking, session replay, user attribution, and environment separation. Ready for Lab 3: Prompt Management?"
+"Excellent — you now have production-grade observability: a named, fully traced pipeline with cost tracking, session replay, user attribution, and environment separation. Ready for **[Lab 3: Prompt Management](../03-prompt-management/README.md)**?"

@@ -103,4 +103,4 @@ You are teaching Lab 5 as a live instructor. Guide the attendee through each UI 
 - [ ] `workshop-review` annotation queue exists with 5+ observations
 - [ ] At least one queue item is marked completed
 
-"You've added the human calibration layer to your eval system. Ready for Lab 6: Offline Evals — Datasets & Experiments?"
+"You've added the human calibration layer to your eval system. Ready for **[Lab 6: Offline Evals — Datasets & Experiments](../06-offline-evals/README.md)**?"
