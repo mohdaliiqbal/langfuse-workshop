@@ -28,6 +28,8 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 If you don't have one, create an account at [platform.openai.com](https://platform.openai.com) and generate an API key.
 
+> **Attending a Langfuse-hosted workshop?** Ask the workshop organizer to provide an OpenAI key — you don't need your own.
+
 ---
 
 ## Step 3: Bootstrap the Project

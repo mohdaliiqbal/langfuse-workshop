@@ -51,6 +51,8 @@ OPENAI_API_KEY=sk-...
 
 Ask the attendee to visit https://platform.openai.com/api-keys to generate api keys.
 
+> **If they're attending a Langfuse-hosted workshop**, tell them to ask the workshop organizer for the OpenAI key — they don't need their own.
+
 Leave the `LANGFUSE_*` fields blank for now — those are covered in Lab 1.
 
 ---
