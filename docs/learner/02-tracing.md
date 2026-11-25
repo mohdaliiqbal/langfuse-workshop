@@ -173,6 +173,20 @@ with propagate_attributes(
 
 Anything created inside that block, including the OpenAI generations, inherits the user, session, and tags.
 
+## Appendix: Tracing environment
+
+A user and a session say who the turn belongs to. An environment says which deployment sent the trace. Laptop runs and a deployed app land in the same stream, and the dashboards average them together.
+
+Langfuse reads `LANGFUSE_TRACING_ENVIRONMENT` from the process environment. No application code changes. `.env` is loaded before the client starts, so add:
+
+```bash
+LANGFUSE_TRACING_ENVIRONMENT=development
+```
+
+Restart `uv run python -m app.server`. In the Traces table, filter **Environment** to `development`. A deployed copy of the same project sets the variable to `production`.
+
+The lessons leave this variable unset. Traces then use Langfuse's default environment, and the sample observation in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) can still be filtered to `production` when that panel shows another environment. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
+
 ## End state
 
 The finished traced app is the starting point for `03-prompt-management` and `04-monitoring`. Load it with `uv run python scripts/use_checkpoint.py 03-prompt-management` when you start the next chapter. That snapshot includes tracing and the user/session attributes, and it still uses the local `SYSTEM_PROMPT`.
