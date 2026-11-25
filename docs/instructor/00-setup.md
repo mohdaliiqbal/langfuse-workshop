@@ -15,5 +15,5 @@ Learner guide: [00 Setup](../learner/00-setup.md)
 - The UI is at `http://127.0.0.1:3333`. One Python process serves the page and the API. There is no Vite reload. After a code edit they restart `uv run python -m app.server`.
 - `app/env.py` loads `.env` with override, so stale exported keys from another project do not win. Tell them to edit `.env`.
 - EU host: `LANGFUSE_BASE_URL=https://cloud.langfuse.com`. US host: `https://us.cloud.langfuse.com`.
-- Do not front-load **Project Settings → LLM Connections**. That happens in section 4.2, where they pick **5.6 Luna**.
+- Do not front-load **Project Settings → LLM Connections**. Learners add the OpenAI connection in [section 4.2 Detect topics and issues](../learner/04-monitoring/topics.md). [Section 4.3 Capturing signals](../learner/04-monitoring/capturing-signals.md) reuses that connection and picks **5.6 Luna** for the disagreement judge. Someone who skips topics adds the connection at the start of capturing signals.
 - Node is only for `npx langfuse-cli` and the skill installer. The app runs without it.

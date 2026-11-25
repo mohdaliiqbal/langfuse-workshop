@@ -48,6 +48,7 @@ Shared behavior that every chapter relies on:
 | `npm run prompt:publish` | `uv run python scripts/publish_prompt.py` |
 | `npm run dataset:seed` / `dataset:run` | `scripts/seed_dataset.py` / `scripts/run_dataset.py` |
 | `npm run langfuse:seed:error-analysis` | `scripts/seed_error_analysis.py` |
+| `npm run langfuse:seed:topics` | `scripts/seed_topics_traces.py` (data in `scripts/topics_data.py`) |
 
 ## Before you finish
 

@@ -32,6 +32,16 @@ These 13 files were recaptured on 2026-11-25 from a live Python run in the `pyth
 
 The remaining monitoring screenshots are still the upstream captures: the evaluator wizard steps, Halo, failure categories, the frustration dashboard, and out-of-scope.
 
+## Topics (reused from upstream `df8f386`)
+
+The 15 files in `topics/` were copied unchanged from upstream commit `df8f386dd6594074ca31227b811c8472d377d595` (2026-11-25, "Add the topics lab to monitoring (#82)"). Topics is a Langfuse product feature, so the wizard and the result screens look the same whichever SDK wrote the traces, and the Python seed sends the same 200 scenarios. They were not recaptured from the Python walkthrough project: the setup wizard, the LLM connection, and the analysis run are UI mutations, and the result tiles are model-named, so a recapture would not match the lesson text word for word anyway.
+
+- Setup: `empty-setup.png`, `setup-look-for-current.png`, `select-traces-current.png`, `review-current.png`, `edit-map.png`
+- Results: `topic-map.png`, `scatter.png`, `result-treemap.png`, `result-scatter.png`, `result-issues.png`, `result-sentiment.png`
+- Insights: `insight-intent.png`, `insight-sentiment.png`, `insight-issue-group.png`, `insight-issues.png`
+
+Some are byte-identical upstream too (`result-issues.png` = `insight-issues.png`, `result-sentiment.png` = `insight-sentiment.png`). `edit-map.png`, `topic-map.png`, and `scatter.png` are not referenced by the lesson; they are kept because upstream ships them.
+
 Diagrams that are not UI captures (`AI-engineering-loop.png`, `specs_illustration.png`, `tracing/process_illustration.png`, `monitoring/error-analysis-process.png`) do not need a Langfuse session.
 
 `scripts/refresh_screenshots.py` is the refresh path for a later pass. It exits successfully and leaves the files in place when `LANGFUSE_PROJECT_URL` and a Playwright storage state (or email and password) are missing.

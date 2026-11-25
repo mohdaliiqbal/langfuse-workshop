@@ -5,10 +5,10 @@ This repository is the Python port of [langfuse/langfuse-workshop](https://githu
 | Field | Value |
 | --- | --- |
 | Upstream | https://github.com/langfuse/langfuse-workshop |
-| Synced commit | `28996a20d39a82e511a8fd043fb26252495453e3` |
-| Upstream date | 2026-11-23 |
-| Sync date | 2026-11-24 |
-| Subject | Revert "Nest tool observations under the generation that requested them" (#84) |
+| Synced commit | `df8f386dd6594074ca31227b811c8472d377d595` |
+| Upstream date | 2026-11-25 |
+| Sync date | 2026-11-25 |
+| Subject | Add the topics lab to monitoring (#82) |
 
 ## How a weekly sync works
 
@@ -32,6 +32,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 | `docs/learner/03-prompt-management.md` | `docs/learner/03-prompt-management.md` | Ported. Prompt link via `langfuse_prompt=` on the OpenAI call (Python SDK 4) |
 | `docs/learner/04-monitoring.md` | `docs/learner/04-monitoring.md` | Ported |
 | `docs/learner/04-monitoring/error-analysis.md` | `docs/learner/04-monitoring/error-analysis.md` | Ported. Seed command is `scripts/seed_error_analysis.py` |
+| `docs/learner/04-monitoring/topics.md` | `docs/learner/04-monitoring/topics.md` | Ported. Seed command is `scripts/seed_topics_traces.py`; laptop context lives in `app/support_data.py` |
 | `docs/learner/04-monitoring/capturing-signals.md` | `docs/learner/04-monitoring/capturing-signals.md` | Ported. UI evaluators unchanged. ALL CAPS still runs in Langfuse's TypeScript sandbox |
 | `docs/learner/05-dataset.md` | `docs/learner/05-dataset.md` | Ported |
 | `docs/learner/06-experiments.md` | `docs/learner/06-experiments.md` | Ported. `dataset.run_experiment` |
@@ -39,7 +40,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 | `docs/learner/08-wrap-up.md` | `docs/learner/08-wrap-up.md` | Ported |
 | `docs/instructor/*.md` | `docs/instructor/*.md` | Ported, with Python commands |
 | `docs/preparation_and_materials/README.md` | `docs/preparation_and_materials/README.md` | Ported |
-| `docs/images/**` | `docs/images/**` | Diagrams and the monitoring shots that were not recaptured are still this upstream SHA. Thirteen Langfuse UI screenshots were recaptured on 2026-11-25 from a live Python run. `python-ui.png` and `python-ui-answer.png` are local captures of the Python chat page |
+| `docs/images/**` | `docs/images/**` | Diagrams, the monitoring shots that were not recaptured, and all 15 `topics/` shots are upstream captures (`topics/` from `df8f386`). Thirteen Langfuse UI screenshots were recaptured on 2026-11-25 from a live Python run. `python-ui.png` and `python-ui-answer.png` are local captures of the Python chat page |
 | `src/server/support-agent.ts` | `app/support_agent.py` | Ported |
 | `src/server/tools.ts` | `app/tools.py` | Ported |
 | `src/server/support-data.ts` | `app/support_data.py` | Ported |
@@ -51,6 +52,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 | `scripts/seed-dataset.ts` | `scripts/seed_dataset.py` | Ported |
 | `scripts/run-dataset.ts` | `scripts/run_dataset.py` | Ported. Decisions API via HTTP. Same judge prompt |
 | `scripts/seed-error-analysis-traces.ts` | `scripts/seed_error_analysis.py`, `scripts/error_analysis_data.py` | Ported. Same 20 scenarios. Traces are written with the Python SDK instead of an OTEL replay |
+| `scripts/seed-topics-traces.ts` | `scripts/seed_topics_traces.py`, `scripts/topics_data.py` | Ported. Same 200 scenarios in the same order (the deterministic shuffle reproduces the TypeScript float math). Sent to the Langfuse OTel endpoint with explicit timestamps instead of an OTEL template replay, because Topics needs traces spread over the last five days |
 | `scripts/seed-error-analysis-annotations.ts` | `scripts/seed_error_analysis_annotations.py` | Ported against the public API |
 | `data/seed-dataset.json` | `data/seed-dataset.json` | Copied unchanged (25 items) |
 | `checkpoint/*` git tags, `scripts/sync-checkpoints.sh` | `checkpoints/`, `scripts/use_checkpoint.py` | Python equivalent. No force-pushed tags |
@@ -61,7 +63,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 
 | Upstream | Why |
 | --- | --- |
-| `scripts/synthetic-trace-seed.ts`, `scripts/langfuse-trace-seed-lib.ts`, `scripts/import-trace-seed-otel.ts` | They clone and replay an OpenTelemetry export. Learners never open them. The Python seed writes the same scenarios with the SDK. |
+| `scripts/synthetic-trace-seed.ts`, `scripts/langfuse-trace-seed-lib.ts`, `scripts/import-trace-seed-otel.ts` | They clone and replay an OpenTelemetry export. Learners never open them. The Python seeds write the same scenarios themselves. The `anchorMs` option added in `df8f386` is covered by `topics_data.timestamps()`. |
 | `data/seed-traffic-followups-traces.json` | Template corpus for that OTEL replay only. About 50k lines, not used by a lesson. |
 | `docs/storyline/WORKSHOP_STORYLINE.md` | Internal scratch with an empty failure-mode list and typos. The learner lessons replaced it. |
 | `npm run dev` hot reload | The Python server is one process. Lessons say to restart it. |
@@ -88,11 +90,11 @@ Upstream teaches user and session IDs as an appendix and does not mention `LANGF
 - A commented `LANGFUSE_TRACING_ENVIRONMENT` line in `.env.example`
 - The optional row in the root README environment table
 
-The variable stays unset in the workshop defaults. Traces still use Langfuse's default environment, and chapter 4.2 still tells learners to filter the sample observation to `production` when that panel shows another environment. When porting a new upstream `02-tracing.md`, keep this appendix.
+The variable stays unset in the workshop defaults. Traces still use Langfuse's default environment, and chapter 4.3 still tells learners to filter the sample observation to `production` when that panel shows another environment. When porting a new upstream `02-tracing.md`, keep this appendix.
 
 ### Root input shape
 
-The Python SDK's `@observe` records a function's input as `{"args": [...], "kwargs": {}}`, and the pydantic request dumps in snake_case. The TypeScript `observe(...)` records the single argument, so upstream's root input is the `{ sessionId, userId, messages }` request body. The 4.2 evaluator mappings (**Input → messages**) and the error-analysis seed depend on that shape.
+The Python SDK's `@observe` records a function's input as `{"args": [...], "kwargs": {}}`, and the pydantic request dumps in snake_case. The TypeScript `observe(...)` records the single argument, so upstream's root input is the `{ sessionId, userId, messages }` request body. The 4.3 evaluator mappings (**Input → messages**) and the error-analysis seed depend on that shape.
 
 This port adds one `update_current_span(input=request.model_dump(mode="json", by_alias=True, exclude_none=True))` line at the top of `run_support_conversation` in `app/support_agent.py`, `checkpoints/reference/`, and `checkpoints/03-prompt-management/`, and teaches it in Step 2 of [docs/learner/02-tracing.md](docs/learner/02-tracing.md). `scripts/run_workshop.py --live` fails if the root input loses that shape. Keep the line when porting a new upstream `support-agent.ts` or `02-tracing.md`.
 
@@ -104,6 +106,6 @@ The same PR reworked the old DataStream labs. Those files are gone, and the idea
 | --- | --- |
 | Lab 02 collapses tracing into one pass and names the trace on the first observation | Chapter 02 still builds the trace in three steps: OpenAI generations, then the `dad-it-support-chat-turn` agent root, then tool spans. That end state already has the drop-in client, the nested observations, and the trace name. |
 | Lab 03 becomes its own Sessions & Environments chapter, and drops `tags` and `trace_name` from `propagate_attributes` | Chapter 03 stays prompt management. User, session, trace name, and tags are already set in the tracing appendix and in `app/support_agent.py`. |
-| Lab 05 aims both evaluators at out-of-scope detection, adds an SDK `in-scope` judge, and adds a task for thumbs-versus-judge disagreement | Chapter 4.2 stays on Detect User Disagreement and the ALL CAPS evaluator. The chat UI has no thumbs control. Out-of-scope replies are an error-analysis failure and a dataset case, scored offline by `behavior_match`. |
+| Lab 05 aims both evaluators at out-of-scope detection, adds an SDK `in-scope` judge, and adds a task for thumbs-versus-judge disagreement | Chapter 4.3 stays on Detect User Disagreement and the ALL CAPS evaluator. The chat UI has no thumbs control. Out-of-scope replies are an error-analysis failure and a dataset case, scored offline by `behavior_match`. |
 | Lab 07 removes the script judge and scores dataset runs only with a platform LLM-as-a-judge | Chapter 06 still scores `behavior_match` and `correctness` inside `dataset.run_experiment`. The lesson keeps platform evaluators out of this chapter. Chapter 07 already reads the low-scoring items, publishes the error-analysis prompt, and compares the two runs. |
 | Lab folder rename, solution files, and the old root workshop-flow tables | `labs/` is not part of this tree. No lesson links to it. |

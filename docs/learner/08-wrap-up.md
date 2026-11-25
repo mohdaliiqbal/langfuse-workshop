@@ -29,7 +29,7 @@ That snapshot is the finished reference app.
 
 - Trace an LLM app end to end and read the result as a debugging surface.
 - Connect prompts to traces so a prompt change has a measurable next-trace effect.
-- Make sense of a pile of production traces: read failures, and detect disagreement and all-caps frustration.
+- Make sense of a pile of production traces: read failures, look at topics and issues, and detect disagreement and all-caps frustration.
 - Decide what you want to evaluate and build an eval dataset from error analysis and the cases that must work.
 - Run experiments on the same agent code, with no parallel implementation.
 - Compare runs after a change and decide which setup is better, by score and by reading individual outputs.

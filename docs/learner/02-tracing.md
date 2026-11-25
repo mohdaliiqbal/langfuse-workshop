@@ -109,7 +109,7 @@ def run_support_conversation(request: ChatRequest) -> ChatResponse:
     ...
 ```
 
-`@observe` records the return value as the trace output. On its own it would record the input as `{"args": [...], "kwargs": {}}` with snake_case fields. The `update_current_span` line replaces that with the same `{ sessionId, userId, messages }` body the TypeScript app logs, which is what the evaluators in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) map with **Input → messages**.
+`@observe` records the return value as the trace output. On its own it would record the input as `{"args": [...], "kwargs": {}}` with snake_case fields. The `update_current_span` line replaces that with the same `{ sessionId, userId, messages }` body the TypeScript app logs, which is what the evaluators in [4.3 Capturing signals](./04-monitoring/capturing-signals.md) map with **Input → messages**.
 
 Restart, ask one question. One chat turn should now be a single `dad-it-support-chat-turn` observation with the OpenAI generation nested underneath.
 
@@ -188,7 +188,7 @@ LANGFUSE_TRACING_ENVIRONMENT=development
 
 Restart `uv run python -m app.server`. In the Traces table, filter **Environment** to `development`. A deployed copy of the same project sets the variable to `production`.
 
-The lessons leave this variable unset. Traces then use Langfuse's default environment, and the sample observation in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) can still be filtered to `production` when that panel shows another environment. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
+The lessons leave this variable unset. Traces then use Langfuse's default environment, and the sample observation in [4.3 Capturing signals](./04-monitoring/capturing-signals.md) can still be filtered to `production` when that panel shows another environment. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
 
 ## End state
 

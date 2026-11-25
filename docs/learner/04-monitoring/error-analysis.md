@@ -105,7 +105,7 @@ Rules:
 - You are the support agent. Do not speak as someone in his family.
 ```
 
-Leave the running prompt as it is for now. In [07 Evaluate a change](../07-evaluation.md) you publish this version and measure it. [Section 4.2 Capturing signals](./capturing-signals.md) is next.
+Leave the running prompt as it is for now. In [07 Evaluate a change](../07-evaluation.md) you publish this version and measure it. [Section 4.2 Detect topics and issues](./topics.md) is next. It looks at production traffic at a larger scale, without reading every trace by hand.
 
 > **Short on time? Seed the finished annotations.** After Step 1, with the 20 traces seeded and the `error analysis` queue created, run:
 >
