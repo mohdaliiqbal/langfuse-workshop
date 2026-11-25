@@ -84,29 +84,32 @@ from langfuse.openai import OpenAI
 
 `from langfuse.openai import OpenAI` is the Python equivalent of `observeOpenAI(new OpenAI(...))`. The call site stays `OpenAI(api_key=env.openai_api_key)`. Every `chat.completions.create(...)` now emits a generation.
 
-Restart the server (`uv run python -m app.server`), ask one question, and refresh Langfuse. You should see one generation per OpenAI call with prompt, response, tokens, and latency. Each generation is still its own top-level trace.
+Restart the server (`uv run python -m app.server`), ask one question, and refresh Langfuse. You should see one generation per OpenAI call with prompt, response, tokens, and latency. Each generation is still its own top-level trace. The Python SDK names these generations `OpenAI-generation`. The screenshot comes from the TypeScript workshop, where the same rows are named `openai-chat-completion`.
 
-![Langfuse Traces view after Step 1: each chat turn appears as standalone openai-chat-completion generations.](../images/tracing/02-tracing-step-1.png)
+![Langfuse Traces view after Step 1: each chat turn appears as standalone OpenAI generations.](../images/tracing/02-tracing-step-1.png)
 
 ## Step 2: Nested traces
 
 Group those generations under one agent run. In Python the wrapper is a decorator, which is the same idea as `observe(fn, { asType: "agent" })` in the TypeScript SDK.
 
 ```python
-from langfuse import observe
+from langfuse import get_client, observe
 ```
 
-Put the decorator on `run_support_conversation`. The body stays as it is. Create the OpenAI client **inside** the function so the generations attach to this observation:
+Put the decorator on `run_support_conversation`. Create the OpenAI client **inside** the function so the generations attach to this observation. Add one line at the top that logs the request body as the observation input:
 
 ```python
 @observe(name="dad-it-support-chat-turn", as_type="agent")
 def run_support_conversation(request: ChatRequest) -> ChatResponse:
+    get_client().update_current_span(
+        input=request.model_dump(mode="json", by_alias=True, exclude_none=True)
+    )
     context = get_support_context()
     client = OpenAI(api_key=env.openai_api_key)
     ...
 ```
 
-`@observe` records the function argument as the trace input and the return value as the trace output.
+`@observe` records the return value as the trace output. On its own it would record the input as `{"args": [...], "kwargs": {}}` with snake_case fields. The `update_current_span` line replaces that with the same `{ sessionId, userId, messages }` body the TypeScript app logs, which is what the evaluators in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) map with **Input → messages**.
 
 Restart, ask one question. One chat turn should now be a single `dad-it-support-chat-turn` observation with the OpenAI generation nested underneath.
 
@@ -143,7 +146,7 @@ def search_help_library_tool(question: str) -> dict:
 - Root observation: `dad-it-support-chat-turn` (type `agent`).
 - Child generation from `langfuse.openai.OpenAI` with prompt, response, tokens, and latency.
 - Child tool observations: `get_support_context`, `search_help_library`.
-- Root input is the chat request. Root output is the chat response.
+- Root input is the chat request body: `sessionId`, `userId`, and `messages`. Root output is the chat response.
 
 ## Wrap-up
 

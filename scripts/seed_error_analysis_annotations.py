@@ -160,6 +160,20 @@ def _queue_configs(configs: list[dict]) -> tuple[dict, dict]:
     return open_coding, pass_fail
 
 
+def _category_label(config: dict, value: str) -> str:
+    """Return the config's own spelling of a category label.
+
+    New Langfuse projects ship a default `pass or fail` config labelled `Pass` and
+    `Fail`. Langfuse drops categorical scores whose value does not match a label
+    exactly, so the script writes the label as the config spells it.
+    """
+    for category in config.get("categories") or []:
+        label = category.get("label", "")
+        if label.lower() == value.lower():
+            return label
+    return value
+
+
 def annotate(queue_name: str, dry_run: bool) -> None:
     api = LangfuseApi()
     templates = {annotation_for(scenario)["key"]: annotation_for(scenario) for scenario in SCENARIOS}
@@ -221,7 +235,7 @@ def annotate(queue_name: str, dry_run: bool) -> None:
         }
         for config, value, data_type in (
             (open_coding, annotation["note"], "TEXT"),
-            (pass_fail, annotation["pass_fail"], "CATEGORICAL"),
+            (pass_fail, _category_label(pass_fail, annotation["pass_fail"]), "CATEGORICAL"),
         ):
             api.request(
                 "POST",

@@ -5,6 +5,12 @@ variables are absent. The process exits 0 when every local step passes
 and every skipped step was skipped only because a secret was missing.
 
     uv run python scripts/run_workshop.py
+    uv run python scripts/run_workshop.py --live
+
+`--live` also sends one real chat turn through the reference agent (a few
+OpenAI calls) and checks its trace in Langfuse: the agent root, the tool
+observations, the OpenAI generations, the camelCase root input the 4.2
+evaluators map, and the prompt link when the prompt is published.
 """
 
 from __future__ import annotations
@@ -19,6 +25,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
+
+LIVE = "--live" in sys.argv[1:]
 
 REQUIRED_ENV = (
     "OPENAI_API_KEY",
@@ -43,9 +51,9 @@ class Report:
         print()
         print(f"{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed")
         if skipped:
-            print("Skipped because credentials were absent:")
-            for _step, _status, detail in skipped:
-                print(f"  - {detail}")
+            print("Skipped:")
+            for step, _status, detail in skipped:
+                print(f"  - {step}: {detail}")
         return 1 if failed else 0
 
 
@@ -191,10 +199,93 @@ def step_live(report: Report) -> None:
         if response.status != 200:
             raise RuntimeError(f"Langfuse projects API returned {response.status}")
     report.add("langfuse-auth", "PASS", "Langfuse accepted the project API keys")
+    if not LIVE:
+        report.add(
+            "live-chat-trace",
+            "SKIP",
+            "pass --live to send one chat turn and check its trace. Prompt publish, dataset seed, "
+            "and dataset runs stay with the chapter commands",
+        )
+        return
+    step_live_chat(report)
+
+
+def step_live_chat(report: Report) -> None:
+    """Send one chat turn through the reference agent and read its trace back."""
+    import time
+    import urllib.parse
+    import urllib.request
+    import base64
+    from uuid import uuid4
+
+    from langfuse import get_client
+
+    from app.env import env
+    from app.models import ChatMessage, ChatRequest
+    from app.support_agent import run_support_conversation
+
+    langfuse = get_client()
+    trace_id = langfuse.create_trace_id()
+    request = ChatRequest(
+        session_id=f"smoke-{uuid4()}",
+        user_id="workshop-smoke",
+        messages=[
+            ChatMessage(
+                id="smoke-1",
+                role="user",
+                content="How do I turn Bluetooth on?",
+                timestamp="2026-01-01T00:00:00Z",
+            )
+        ],
+    )
+    response = run_support_conversation(request, langfuse_trace_id=trace_id)
+    langfuse.flush()
+    if not response.answer.strip():
+        raise RuntimeError("the agent returned an empty answer")
+
+    token = base64.b64encode(f"{env.langfuse_public_key}:{env.langfuse_secret_key}".encode()).decode()
+    query = urllib.parse.urlencode(
+        {
+            "traceId": trace_id,
+            "fields": "core,basic,io,prompt",
+            "fromStartTime": "2020-01-01T00:00:00Z",
+            "limit": "100",
+        }
+    )
+    url = env.langfuse_base_url.rstrip("/") + "/api/public/v2/observations?" + query
+    rows: list[dict] = []
+    deadline = time.time() + 120
+    while time.time() < deadline:
+        req = urllib.request.Request(url, headers={"Authorization": f"Basic {token}"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            rows = json.loads(resp.read().decode()).get("data") or []
+        names = {row.get("name") for row in rows}
+        if "dad-it-support-chat-turn" in names and any(r.get("type") == "GENERATION" for r in rows):
+            break
+        time.sleep(5)
+
+    root = next((r for r in rows if r.get("name") == "dad-it-support-chat-turn"), None)
+    if root is None or root.get("type") != "AGENT":
+        raise RuntimeError(f"no dad-it-support-chat-turn agent observation in trace {trace_id}")
+    tools = sorted({r["name"] for r in rows if r.get("type") == "TOOL"})
+    if "get_support_context" not in tools:
+        raise RuntimeError(f"tool observations missing, found {tools}")
+    generations = [r for r in rows if r.get("type") == "GENERATION"]
+    if not generations:
+        raise RuntimeError("no OpenAI generation in the trace")
+    root_input = root.get("input")
+    if isinstance(root_input, str):
+        root_input = json.loads(root_input)
+    if not isinstance(root_input, dict) or not isinstance(root_input.get("messages"), list):
+        raise RuntimeError(f"root input is not {{messages, sessionId, userId}}: {str(root_input)[:200]}")
+    if root_input.get("sessionId") != request.session_id:
+        raise RuntimeError("root input does not carry the camelCase sessionId")
+    linked = sorted({f"{r.get('promptName')} v{r.get('promptVersion')}" for r in generations if r.get("promptName")})
+    prompt_note = f", prompt {', '.join(linked)}" if linked else ", no prompt link (prompt not published)"
     report.add(
-        "openai-and-experiments",
-        "SKIP",
-        "OPENAI_API_KEY is set; chat, prompt publish, dataset seed, and dataset run are left to the chapter commands so the smoke test does not spend model calls",
+        "live-chat-trace",
+        "PASS",
+        f"trace {trace_id}: agent root, tools {', '.join(tools)}, {len(generations)} generations{prompt_note}",
     )
 
 

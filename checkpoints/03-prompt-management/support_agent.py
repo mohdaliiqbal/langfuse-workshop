@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from langfuse import observe, propagate_attributes
+from langfuse import get_client, observe, propagate_attributes
 from langfuse.openai import OpenAI
 
 from app.env import env
@@ -47,6 +47,11 @@ def _parse_tool_arguments(arguments_text: str) -> dict[str, Any] | None:
 
 @observe(name="dad-it-support-chat-turn", as_type="agent")
 def run_support_conversation(request: ChatRequest) -> ChatResponse:
+    # Log the request body (messages, sessionId, userId) as the root input, the
+    # same shape the TypeScript app logs. The 4.2 evaluators map Input -> messages.
+    get_client().update_current_span(
+        input=request.model_dump(mode="json", by_alias=True, exclude_none=True)
+    )
     context = get_support_context()
     user_id = request.user_id or f"workshop-{context['id']}"
 

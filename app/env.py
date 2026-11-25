@@ -17,7 +17,9 @@ load_dotenv(ROOT / ".env", override=True)
 
 
 def _get(name: str, default: str = "") -> str:
-    return os.environ.get(name, default)
+    # An empty value counts as unset. GitHub Actions passes unset secrets as
+    # empty strings, which would otherwise blank out the prompt and dataset names.
+    return os.environ.get(name) or default
 
 
 class Env:
