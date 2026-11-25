@@ -6,7 +6,7 @@ https://github.com/langfuse/langfuse-workshop
 
 They were copied at upstream commit `28996a20d39a82e511a8fd043fb26252495453e3` (2026-11-23). This Python port uses the same trace name (`dad-it-support-chat-turn`), tool names (`get_support_context`, `search_help_library`), prompt name (`dad-it-support-agent`), and dataset name (`dad-it-support-workshop`).
 
-`sample_app.png` and `specs_illustration.png` show the upstream client. `python-ui.png` (Specs greeting, suggestion chips, iPhone panel) and `python-ui-answer.png` (the Bluetooth chip answered by the model) are headless Chrome captures of this repo's page at `http://127.0.0.1:3333`, taken during the 2026-11-25 live walkthrough with real OpenAI and Langfuse keys.
+Every image of the app itself is from this Python app. `sample_app.png` (1440x900, greeting state, same framing as the upstream file it replaces) was recaptured on 2026-11-25 with headless Chrome from `http://127.0.0.1:3333`; no doc links it, but it is kept under the upstream name. `python-ui.png` (Specs greeting, suggestion chips, iPhone panel) and `python-ui-answer.png` (the Bluetooth chip answered by the model) are headless Chrome captures of this repo's page at `http://127.0.0.1:3333`, taken during the 2026-11-25 live walkthrough with real OpenAI and Langfuse keys.
 
 ## Recaptured on 2026-11-25
 
@@ -42,6 +42,20 @@ The 15 files in `topics/` were copied unchanged from upstream commit `df8f386dd6
 
 Some are byte-identical upstream too (`result-issues.png` = `insight-issues.png`, `result-sentiment.png` = `insight-sentiment.png`). `edit-map.png`, `topic-map.png`, and `scatter.png` are not referenced by the lesson; they are kept because upstream ships them.
 
-Diagrams that are not UI captures (`AI-engineering-loop.png`, `specs_illustration.png`, `tracing/process_illustration.png`, `monitoring/error-analysis-process.png`) do not need a Langfuse session.
+## Agent diagrams (Python, 2026-11-25)
+
+`specs_illustration.png` (architecture) and `tracing/process_illustration.png` (the six steps of one turn) are diagrams, not screen captures, but they show what the app does, so they are redrawn from a real Python run instead of reusing the upstream art. The upstream versions said `gpt-4o`, `iPhone 11 · iOS 16.7.10`, and three LLM calls. The 2026-11-25 run of "How do I turn Bluetooth on?" (trace `917cb569feda6b3d5a6904b1a1300522` in `python-workshop-walkthrough`) showed `gpt-5.5-2026-04-23`, two `OpenAI-generation` calls (the first requests `get_support_context` and `search_help_library` together, the second writes the answer), `devices: ["iPhone 15"]`, and the 4-step `iphone-bluetooth` guide. Sources are `source/*.html` (styled with `app/static/colors.css`); re-render both with `uv run --with playwright python docs/images/source/render.py` and update the values if the app changes.
+
+`AI-engineering-loop.png` and `monitoring/error-analysis-process.png` are concept diagrams with no app output in them. They stay as the upstream art.
+
+## Langfuse UI captures that still show TypeScript-written traces
+
+These upstream captures show Langfuse's UI, not the app, but the traces in them came from the TypeScript app: `OpenAI.chat` generation names (Python writes `OpenAI-generation`), `gpt-4.1-mini`, or JS SDK metadata (`scope.name: langfuse-sdk`, `scope.version: 5.3.0`). Recapturing them needs the Langfuse UI and evaluator-wizard mutations:
+
+- `monitoring/select-sample-observation.png`, `monitoring/user-frustration-target-root-observation.png`
+- `monitoring/user-disagreement-conversation-history-mapping.png`, `monitoring/user-disagreement-last-user-message-mapping.png`, `monitoring/user-disagreement-test-evaluator.png`, `monitoring/user-disagreement-execute-evaluator.png`
+- `monitoring/out-of-scope.png`, `monitoring/out-of-scope-example.png` (not linked from a lesson)
+
+`monitoring/user-frustration-target-root-observation.png` also shows the ALL CAPS evaluator's TypeScript, which is correct: Langfuse runs code evaluators in its TypeScript sandbox.
 
 `scripts/refresh_screenshots.py` is the refresh path for a later pass. It exits successfully and leaves the files in place when `LANGFUSE_PROJECT_URL` and a Playwright storage state (or email and password) are missing.

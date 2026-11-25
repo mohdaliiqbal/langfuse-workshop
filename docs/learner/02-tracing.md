@@ -21,7 +21,7 @@ When Dad asks "How do I turn Bluetooth on?", the agent does not just hit OpenAI 
 
 The goal is one nested trace per chat turn: the agent run, the OpenAI generations, and the two tool calls, in order.
 
-![Spec's step by step process](../images/tracing/process_illustration.png)
+![One question becomes six steps: Dad asks, the model requests both tools, get_support_context and search_help_library return, the model writes, and Specs answers.](../images/tracing/process_illustration.png)
 
 1. **First trace**: log the OpenAI generations themselves.
 2. **Nested traces**: group the generations under one agent run per turn.

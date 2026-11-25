@@ -1,0 +1,28 @@
+@import url("../../../app/static/colors.css");
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--surface-bg); color: var(--text-primary); font-family: var(--font-sans); }
+.brand { display:flex; align-items:center; justify-content:center; gap:10px; font-family: var(--font-mono); font-size:10px; letter-spacing:.12em; color: var(--text-tertiary); text-transform: uppercase; }
+.brand img { height: 14px; }
+.brand .sep { width:1px; height:14px; background: var(--line-structure); }
+h1 { font-family: var(--font-sans); font-weight: 500; text-align:center; letter-spacing:-0.02em; }
+.hl { background: var(--surface-cta-primary); padding: 0 6px; }
+.sub { text-align:center; color: var(--text-tertiary); }
+.box { position: relative; border: 1px solid var(--line-structure); background: var(--surface-bg); }
+.box::before, .box::after, .box > .c1, .box > .c2 { content:""; position:absolute; width:8px; height:8px; border-color: var(--text-primary); border-style: solid; }
+.box::before { top:-1px; left:-1px; border-width: 1.5px 0 0 1.5px; }
+.box::after { top:-1px; right:-1px; border-width: 1.5px 1.5px 0 0; }
+.box > .c1 { bottom:-1px; left:-1px; border-width: 0 0 1.5px 1.5px; }
+.box > .c2 { bottom:-1px; right:-1px; border-width: 0 1.5px 1.5px 0; }
+.box.tool { background: #f4f5dc; }
+.box.tool::selection {}
+.box.tool { border-top: 3px solid var(--surface-cta-primary); }
+.kicker { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-tertiary); }
+.kicker.llm { color: #8a86e0; }
+.mono { font-family: var(--font-mono); }
+.code { font-family: var(--font-mono); font-size: 10.5px; background: var(--surface-2); padding: 2px 5px; }
+.arrow { border-top: 1.5px dashed var(--text-secondary); position: relative; }
+.arrow::after { content:""; position:absolute; right:-2px; top:-5.5px; border-left: 8px solid var(--text-secondary); border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.legend { display:flex; gap:34px; justify-content:center; font-family: var(--font-mono); font-size: 9.5px; letter-spacing:.1em; text-transform: uppercase; color: var(--text-secondary); }
+
+.kicker { white-space: nowrap; }
+svg { flex-shrink: 0; }

@@ -40,7 +40,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 | `docs/learner/08-wrap-up.md` | `docs/learner/08-wrap-up.md` | Ported |
 | `docs/instructor/*.md` | `docs/instructor/*.md` | Ported, with Python commands |
 | `docs/preparation_and_materials/README.md` | `docs/preparation_and_materials/README.md` | Ported |
-| `docs/images/**` | `docs/images/**` | Diagrams, the monitoring shots that were not recaptured, and all 15 `topics/` shots are upstream captures (`topics/` from `df8f386`). Thirteen Langfuse UI screenshots were recaptured on 2026-11-25 from a live Python run. `python-ui.png` and `python-ui-answer.png` are local captures of the Python chat page |
+| `docs/images/**` | `docs/images/**` | Diagrams, the monitoring shots that were not recaptured, and all 15 `topics/` shots are upstream captures (`topics/` from `df8f386`). Thirteen Langfuse UI screenshots were recaptured on 2026-11-25 from a live Python run. `python-ui.png`, `python-ui-answer.png`, and `sample_app.png` are local captures of the Python chat page. `specs_illustration.png` and `tracing/process_illustration.png` are redrawn from a real Python run (`docs/images/source/`); keep them when syncing upstream image changes |
 | `src/server/support-agent.ts` | `app/support_agent.py` | Ported |
 | `src/server/tools.ts` | `app/tools.py` | Ported |
 | `src/server/support-data.ts` | `app/support_data.py` | Ported |

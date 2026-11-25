@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+body { width: 840px; height: 366px; padding: 14px 20px 0; }
+h1 { font-size: 34px; margin-top: 12px; }
+.sub { font-size: 12px; margin-top: 8px; }
+.stage { position: relative; height: 230px; margin-top: 14px; }
+.tools { position:absolute; left: 338px; top: 0; width: 164px; padding: 10px 12px; }
+.tools .row { display:flex; align-items:center; gap:8px; font-family: var(--font-mono); font-size: 11px; padding: 6px 0; }
+.tools .row + .row { border-top: 1px dashed var(--line-divider-dash); }
+.tools .row::before { content:"▸"; color: var(--text-tertiary); font-size:8px; }
+.sq { display:inline-block; width:8px; height:8px; border:1.5px solid var(--text-primary); background: var(--surface-cta-primary); vertical-align: middle; margin-right: 6px; }
+.calls { position:absolute; left: 400px; top: 92px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; color: var(--text-secondary); text-align:center; width: 40px; }
+.vline { position:absolute; left: 420px; top: 84px; height: 30px; border-left: 1.5px dashed var(--text-secondary); }
+.vline::after { content:""; position:absolute; left:-5.5px; bottom:-6px; border-top: 7px solid var(--text-secondary); border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; }
+.user { position:absolute; left: 30px; top: 118px; width: 150px; height: 60px; display:flex; align-items:center; gap: 10px; padding: 0 12px; }
+.av { width: 30px; height: 30px; border:1px solid var(--line-structure); background: var(--surface-1); display:flex; align-items:center; justify-content:center; }
+.agent { position:absolute; left: 328px; top: 120px; width: 184px; height: 66px; display:flex; align-items:center; gap: 12px; padding: 0 12px; }
+.model { position:absolute; left: 640px; top: 128px; width: 170px; white-space: nowrap; height: 46px; border-radius: 23px; display:flex; align-items:center; gap: 10px; padding: 0 16px; }
+.big { font-size: 17px; }
+.small { font-size: 9.5px; color: var(--text-tertiary); }
+.link { position:absolute; top: 150px; border-top: 1.5px dashed var(--text-secondary); }
+.link::before, .link::after { content:""; position:absolute; top:-5.5px; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.link::before { left:-2px; border-right: 8px solid var(--text-secondary); }
+.link::after { right:-2px; border-left: 8px solid var(--text-secondary); }
+.pill { position:absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--surface-bg); border:1px solid var(--line-structure); border-radius: 9px; padding: 1px 8px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing:.1em; white-space:nowrap; color: var(--text-secondary); }
+.legend { position:absolute; left:0; right:0; bottom: 0; }
+</style></head><body>
+<div class="brand"><img src="../../../app/static/assets/langfuse-wordart.svg"><span class="sep"></span><span>// Agent · Architecture · Python app</span></div>
+<h1>How <span class="hl">Specs</span> handles a ticket</h1>
+<p class="sub">One agent, two tools, one model. Each hop is an observation in the trace.</p>
+<div class="stage">
+  <div class="box tools"><span class="c1"></span><span class="c2"></span>
+    <div class="kicker" style="margin-bottom:4px"><span class="sq"></span>Tools</div>
+    <div class="row">get_support_context</div><div class="row">search_help_library</div></div>
+  <div class="vline"></div><div class="calls" style="top:88px;left:440px;text-align:left">CALLS</div>
+  <div class="box user"><span class="c1"></span><span class="c2"></span>
+    <div class="av"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#222220" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></div>
+    <div><div class="kicker">// User</div><div class="big">Dad</div><div class="small">"How do I turn Bluetooth on?"</div></div></div>
+  <div class="link" style="left: 184px; width: 140px;"><span class="pill">MESSAGES · ANSWER</span></div>
+  <div class="box agent"><span class="c1"></span><span class="c2"></span>
+    <svg viewBox="0 0 80 92" style="width:24px;height:28px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg"><line x1="40" y1="22" x2="40" y2="12" stroke="#222220" stroke-width="2.4" stroke-linecap="round"/><circle cx="40" cy="10" r="4.4" fill="#fbff81" stroke="#222220" stroke-width="2"/><rect x="11" y="22" width="58" height="46" rx="2" fill="#f6f6f3" stroke="#222220" stroke-width="2.6"/><circle cx="29" cy="42" r="4.6" fill="#222220"/><circle cx="51" cy="42" r="4.6" fill="#222220"/><path d="M32 55 Q40 60 48 55" stroke="#222220" stroke-width="2.6" fill="none" stroke-linecap="round"/><rect x="22" y="70" width="36" height="8" rx="1.5" fill="#edede8" stroke="#222220" stroke-width="2.2"/></svg>
+    <div><div class="kicker">// Agent</div><div class="big"><span class="hl" style="padding:0 4px">Specs</span></div><div class="small">dad-it-support-chat-turn</div></div></div>
+  <div class="link" style="left: 516px; width: 120px;"><span class="pill">COMPLETION</span></div>
+  <div class="box model"><span class="c1"></span><span class="c2"></span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222220" stroke-width="1.4"><path d="M12 2.5l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 7.8l5-.7z"/></svg>
+    <div><div class="kicker">// Model</div><div class="big" style="font-size:14px">OpenAI · <span class="mono" style="font-size:11px">gpt-5.5</span></div></div></div>
+  <div class="legend"><span>- - - traced span</span><span><span class="sq"></span>tool call</span><span>▲ observed by Langfuse</span></div>
+</div>
+</body></html>
