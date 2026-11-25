@@ -90,7 +90,7 @@ This first run is your **baseline experiment**. It uses the production `dad-it-s
 ## What to inspect in Langfuse
 
 - The new **Run** under your dataset: one row per item with `behavior_match` and `correctness`, plus a trace link.
-- Item-level traces with the same `dad-it-support-chat-turn` root as production.
+- Item-level traces: an `experiment-item-run` root with the same `dad-it-support-chat-turn` agent tree as production under it, plus the `correctness` judge's OpenAI generation. Experiment traces use the `sdk-experiment` environment.
 - The dataset chart view: per-run averages for every score.
 
 ## How to verify you are done
@@ -98,7 +98,7 @@ This first run is your **baseline experiment**. It uses the production `dad-it-s
 - One run row appears under the dataset.
 - Every item has a trace and both scores.
 - The console summary printed both `behavior_match` and `correctness`.
-- The trace shape matches a normal production trace.
+- Under `experiment-item-run`, the `dad-it-support-chat-turn` tree matches a normal production trace.
 
 ## End state
 

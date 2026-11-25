@@ -38,7 +38,7 @@ The Langfuse keys are configured now, but traces start only after you add instru
 ## Step 1: Get the API keys
 
 1. **OpenAI**: [platform.openai.com](https://platform.openai.com) → API Keys → create one. Copy the `sk-...` value.
-2. **Langfuse**: sign up at [langfuse.com](https://langfuse.com) on the **EU region**, create a project, and copy the public and secret keys from **Settings → API Keys**.
+2. **Langfuse**: sign up at [langfuse.com](https://langfuse.com) on the **EU region**, create a project, and copy the public and secret keys from **Settings → API Keys**. If your organization is on another region, use that region's host in `LANGFUSE_BASE_URL`, for example `https://us.cloud.langfuse.com` for US.
 3. **AI Features**: confirm Halo is visible in the project. If it is missing, an owner or admin enables **Organization Settings → General → AI Features**.
 
 ## Step 2: Install the Langfuse skill and CLI
@@ -67,7 +67,7 @@ LANGFUSE_SECRET_KEY=sk-lf-...
 LANGFUSE_BASE_URL=https://cloud.langfuse.com
 ```
 
-Leave the rest of the defaults as they are. `app/env.py` loads this file with override turned on, so a `LANGFUSE_*`, `OPENAI_*`, or `DATASET_NAME` value exported in your shell from another project does not win. Edit `.env` to change the workshop configuration.
+`LANGFUSE_BASE_URL` is the EU host. Change it to your region's host if your project is elsewhere, for example `https://us.cloud.langfuse.com`. Leave the rest of the defaults as they are. `app/env.py` loads this file with override turned on, so a `LANGFUSE_*`, `OPENAI_*`, or `DATASET_NAME` value exported in your shell from another project does not win. Edit `.env` to change the workshop configuration.
 
 Keep real keys in `.env` only.
 
@@ -100,6 +100,8 @@ You should see the **Dad IT Support Agent** chat:
 - `uv run python -m app.server` is running and the UI loads at `http://127.0.0.1:3333`.
 - The browser shows the Specs greeting.
 - Sending one suggestion chip returns a real iPhone answer from the model. `GET /api/health` returns `"provider": "openai"`.
+
+![The Python app after sending the Bluetooth suggestion chip: Specs answers with numbered steps for Dad's iPhone 15.](../images/python-ui-answer.png)
 
 ## End state
 

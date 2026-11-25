@@ -16,9 +16,9 @@ uv run python scripts/run_workshop.py
 uv run python scripts/use_checkpoint.py --check
 ```
 
-`scripts/run_workshop.py` is also `make smoke`. It must pass with no API keys. When `OPENAI_API_KEY` or `LANGFUSE_*` are missing it skips the live steps and exits 0. When the Langfuse keys are present it calls the projects API and still does not spend an OpenAI request.
+`scripts/run_workshop.py` is also `make smoke`. It must pass with no API keys. When `OPENAI_API_KEY` or `LANGFUSE_*` are missing it skips the live steps and exits 0. When the Langfuse keys are present it calls the projects API and still does not spend an OpenAI request. `uv run python scripts/run_workshop.py --live` also sends one chat turn through the reference agent and reads its trace back: agent root, tools, generations, the `{ messages, sessionId, userId }` root input, and the prompt link.
 
-GitHub Actions runs the same command on pull requests and every Monday. Missing repository secrets are empty and the live steps skip. Do not make that workflow fail just because secrets are unset.
+GitHub Actions runs the same command on pull requests and every Monday. The Monday and manual runs add `--live`. Set `LANGFUSE_BASE_URL` as a secret when the project is not on the EU host. Missing repository secrets are empty and the live steps skip. Do not make that workflow fail just because secrets are unset.
 
 ## Checkpoints
 

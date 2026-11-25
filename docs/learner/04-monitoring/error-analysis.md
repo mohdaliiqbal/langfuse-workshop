@@ -48,7 +48,7 @@ The TypeScript workshop replays an OpenTelemetry export of real traffic. This po
 
 `--check` validates the 20 scenarios without calling Langfuse. `--dry-run` prints the plan.
 
-In [Tracing](https://cloud.langfuse.com/project/~/traces), select the last 20 traces and add them to an annotation queue named `error analysis`. The queue has two score configs: `open coding` (Text) and `pass or fail` (Categorical, with the categories pass and fail). Create the queue with those configs, then add the traces. A queue keeps the score configs it was created with.
+In [Tracing](https://cloud.langfuse.com/project/~/traces) (on another region, open **Tracing** in your own project), select the last 20 traces and add them to an annotation queue named `error analysis`. The queue has two score configs: `open coding` (Text) and `pass or fail` (Categorical, with the categories pass and fail). New projects already include both configs, with the categories spelled `Pass` and `Fail`. Use those, or create them if your project does not have them. Create the queue with those configs, then add the traces. A queue keeps the score configs it was created with.
 
 ![Select the traces, then add them to an annotation queue.](../../images/monitoring/add-to-annotation-queue.png)
 

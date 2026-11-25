@@ -14,6 +14,6 @@ Learner guide: [00 Setup](../learner/00-setup.md)
 - Learners load the untraced app with `uv run python scripts/use_checkpoint.py 00-setup`. That snapshot matches `01-base-app`. It is not the finished reference in `app/` on a fresh clone. A fresh clone is the finished app, so say the checkpoint command out loud before they edit.
 - The UI is at `http://127.0.0.1:3333`. One Python process serves the page and the API. There is no Vite reload. After a code edit they restart `uv run python -m app.server`.
 - `app/env.py` loads `.env` with override, so stale exported keys from another project do not win. Tell them to edit `.env`.
-- EU host: `LANGFUSE_BASE_URL=https://cloud.langfuse.com`.
+- EU host: `LANGFUSE_BASE_URL=https://cloud.langfuse.com`. US host: `https://us.cloud.langfuse.com`.
 - Do not front-load **Project Settings → LLM Connections**. That happens in section 4.2, where they pick **5.6 Luna**.
 - Node is only for `npx langfuse-cli` and the skill installer. The app runs without it.

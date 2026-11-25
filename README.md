@@ -75,7 +75,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 - `app/` is the sample agent, the FastAPI server, and the chat UI.
 - `docs/learner/` and `docs/instructor/` are the lessons.
-- `docs/images/` are Langfuse UI screenshots reused from upstream. See [docs/images/README.md](docs/images/README.md).
+- `docs/images/` holds the workshop figures. Thirteen Langfuse UI screenshots were recaptured from a live Python run on 2026-11-25. The rest are still the upstream captures. See [docs/images/README.md](docs/images/README.md).
 - `data/seed-dataset.json` is the 25-item eval dataset.
 - `scripts/` holds the checkpoint switcher, the seed and experiment runners, the smoke test, and the screenshot refresher.
 - `checkpoints/` holds the per-chapter copies of the three milestone files.
@@ -88,7 +88,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 | `OPENAI_MODEL` | Chat, correctness judge | Defaults to `gpt-5.5-2026-04-23` |
 | `LANGFUSE_PUBLIC_KEY` | Tracing and every Langfuse script | Project public key |
 | `LANGFUSE_SECRET_KEY` | Tracing and every Langfuse script | Project secret key |
-| `LANGFUSE_BASE_URL` | Langfuse Cloud EU | `https://cloud.langfuse.com` |
+| `LANGFUSE_BASE_URL` | Langfuse region | `https://cloud.langfuse.com` (EU). Use `https://us.cloud.langfuse.com` for US |
 | `LANGFUSE_PROMPT_NAME` | Prompt fetch and publish | Defaults to `dad-it-support-agent` |
 | `LANGFUSE_PROMPT_LABEL` | Prompt fetch and publish | Defaults to `production` |
 | `DATASET_NAME` | Dataset seed and experiments | Defaults to `dad-it-support-workshop` |
@@ -102,7 +102,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 ## Smoke test
 
-`uv run python scripts/run_workshop.py` (or `make smoke`) compiles the app, checks checkpoint snapshots, runs the local tool and dataset checks, boots the HTTP routes, and validates the error-analysis scenarios. Steps that call Langfuse or OpenAI are skipped when the keys above are missing, and the command still exits 0. A weekly GitHub Actions run does the same. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`uv run python scripts/run_workshop.py` (or `make smoke`) compiles the app, checks checkpoint snapshots, runs the local tool and dataset checks, boots the HTTP routes, and validates the error-analysis scenarios. Steps that call Langfuse or OpenAI are skipped when the keys above are missing, and the command still exits 0. Add `--live` to also send one chat turn through the agent and check its trace shape in Langfuse (a few OpenAI calls). Pull requests run the plain command. The weekly GitHub Actions run adds `--live` when the repository secrets are set. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Where to go next
 
@@ -111,4 +111,4 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 ## License
 
-MIT, see [LICENSE](LICENSE). This project is a Python port of the MIT-licensed Langfuse workshop. UI screenshots and the chat stylesheet are reused from that repository. See [docs/images/README.md](docs/images/README.md).
+MIT, see [LICENSE](LICENSE). This project is a Python port of the MIT-licensed Langfuse workshop. The chat stylesheet, and the Langfuse UI screenshots that were not recaptured, are reused from that repository. See [docs/images/README.md](docs/images/README.md).
