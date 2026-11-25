@@ -28,19 +28,40 @@ These 13 files were recaptured on 2026-11-25 from a live Python run in the `pyth
 
 `tracing/02-tracing-step-2.png` and `tracing/02-tracing-step-3.png` are the same finished trace: the `dad-it-support-chat-turn` root, two `OpenAI-generation` rows, `get_support_context`, and `search_help_library`. `monitoring/user-disagrees-example.png` and `monitoring/all-caps-example.png` are the same trace, showing both the disagreement score and the all-caps score.
 
+## Recaptured on 2026-11-25, second pass
+
+These 6 monitoring files and 11 topics files were recaptured on 2026-11-25 in project `python-workshop-walkthrough`. Each is 1280×692, browser content only. The monitoring shots are the Python app's traces. The topics shots are the 200 traces from `scripts/seed_topics_traces.py`.
+
+Monitoring:
+
+- `monitoring/select-sample-observation.png`
+- `monitoring/user-disagreement-conversation-history-mapping.png`
+- `monitoring/user-disagreement-last-user-message-mapping.png`
+- `monitoring/user-disagreement-test-evaluator.png` (the one-turn sample scores false: "There is no prior assistant response...")
+- `monitoring/user-disagreement-execute-evaluator.png`
+- `monitoring/user-frustration-target-root-observation.png` (ALL CAPS opens as a Code evaluator, with no variable mapping)
+
+Topics:
+
+- Setup: `topics/empty-setup.png`, `topics/setup-look-for-current.png`, `topics/select-traces-current.png`, `topics/review-current.png`, `topics/edit-map.png`
+- Intent and Outcome: `topics/topic-map.png`, `topics/scatter.png`, `topics/result-treemap.png`, `topics/result-scatter.png`, `topics/insight-intent.png`, `topics/insight-issue-group.png`
+
+`insight-issue-group.png` is the Outcome facet, group **Repeated Instructions Without Resolution** (30 traces), not an Issues tile.
+
+## Topics that stay upstream
+
+Four topics files stay as the upstream captures from `df8f386dd6594074ca31227b811c8472d377d595`. In the Python run, Sentiment and Issues still showed **Not enough analyzed traces yet** after more than 15 minutes, so those screens were not a populated map. The handoff also contained empty captures of these four, plus an Outcome scatter saved under `insight-issues.png`. Those files were not used.
+
+- `topics/result-issues.png`
+- `topics/result-sentiment.png`
+- `topics/insight-sentiment.png`
+- `topics/insight-issues.png`
+
+`result-issues.png` and `insight-issues.png` are the same upstream bytes. `result-sentiment.png` and `insight-sentiment.png` are the same upstream bytes.
+
 ## Still the upstream captures
 
-The remaining monitoring screenshots are still the upstream captures: the evaluator wizard steps, Halo, failure categories, the frustration dashboard, and out-of-scope.
-
-## Topics (reused from upstream `df8f386`)
-
-The 15 files in `topics/` were copied unchanged from upstream commit `df8f386dd6594074ca31227b811c8472d377d595` (2026-11-25, "Add the topics lab to monitoring (#82)"). Topics is a Langfuse product feature, so the wizard and the result screens look the same whichever SDK wrote the traces, and the Python seed sends the same 200 scenarios. They were not recaptured from the Python walkthrough project: the setup wizard, the LLM connection, and the analysis run are UI mutations, and the result tiles are model-named, so a recapture would not match the lesson text word for word anyway.
-
-- Setup: `empty-setup.png`, `setup-look-for-current.png`, `select-traces-current.png`, `review-current.png`, `edit-map.png`
-- Results: `topic-map.png`, `scatter.png`, `result-treemap.png`, `result-scatter.png`, `result-issues.png`, `result-sentiment.png`
-- Insights: `insight-intent.png`, `insight-sentiment.png`, `insight-issue-group.png`, `insight-issues.png`
-
-Some are byte-identical upstream too (`result-issues.png` = `insight-issues.png`, `result-sentiment.png` = `insight-sentiment.png`). `edit-map.png`, `topic-map.png`, and `scatter.png` are not referenced by the lesson; they are kept because upstream ships them.
+The monitoring screenshots that were not in either 2026-11-25 pass stay upstream: `default-evaluation-model.png`, Halo (`halo-cluster-annotations.png`, `halo-conversation-signals-prompt.png`), `failure-categories.png`, `user-frustration-dashboard.png`, and the unlinked `out-of-scope.png` / `out-of-scope-example.png`.
 
 ## Agent diagrams (Python, 2026-11-25)
 
@@ -50,12 +71,6 @@ Some are byte-identical upstream too (`result-issues.png` = `insight-issues.png`
 
 ## Langfuse UI captures that still show TypeScript-written traces
 
-These upstream captures show Langfuse's UI, not the app, but the traces in them came from the TypeScript app: `OpenAI.chat` generation names (Python writes `OpenAI-generation`), `gpt-4.1-mini`, or JS SDK metadata (`scope.name: langfuse-sdk`, `scope.version: 5.3.0`). Recapturing them needs the Langfuse UI and evaluator-wizard mutations:
-
-- `monitoring/select-sample-observation.png`, `monitoring/user-frustration-target-root-observation.png`
-- `monitoring/user-disagreement-conversation-history-mapping.png`, `monitoring/user-disagreement-last-user-message-mapping.png`, `monitoring/user-disagreement-test-evaluator.png`, `monitoring/user-disagreement-execute-evaluator.png`
-- `monitoring/out-of-scope.png`, `monitoring/out-of-scope-example.png` (not linked from a lesson)
-
-`monitoring/user-frustration-target-root-observation.png` also shows the ALL CAPS evaluator's TypeScript, which is correct: Langfuse runs code evaluators in its TypeScript sandbox.
+`monitoring/out-of-scope.png` and `monitoring/out-of-scope-example.png` are still the upstream captures. They are not linked from a lesson. The four topics files listed above also show the upstream project's traces, not this Python run.
 
 `scripts/refresh_screenshots.py` is the refresh path for a later pass. It exits successfully and leaves the files in place when `LANGFUSE_PROJECT_URL` and a Playwright storage state (or email and password) are missing.

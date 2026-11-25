@@ -40,7 +40,7 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 | `docs/learner/08-wrap-up.md` | `docs/learner/08-wrap-up.md` | Ported |
 | `docs/instructor/*.md` | `docs/instructor/*.md` | Ported, with Python commands |
 | `docs/preparation_and_materials/README.md` | `docs/preparation_and_materials/README.md` | Ported |
-| `docs/images/**` | `docs/images/**` | Diagrams, the monitoring shots that were not recaptured, and all 15 `topics/` shots are upstream captures (`topics/` from `df8f386`). Thirteen Langfuse UI screenshots were recaptured on 2026-11-25 from a live Python run. `python-ui.png`, `python-ui-answer.png`, and `sample_app.png` are local captures of the Python chat page. `specs_illustration.png` and `tracing/process_illustration.png` are redrawn from a real Python run (`docs/images/source/`); keep them when syncing upstream image changes |
+| `docs/images/**` | `docs/images/**` | Recaptured 2026-11-25 from the Python workshop: 6 monitoring evaluator screens and 11 `topics/` files (wizard, Intent, Outcome). Four `topics/` files stay upstream from `df8f386` because Sentiment and Issues showed "Not enough analyzed traces yet": `result-issues.png`, `result-sentiment.png`, `insight-sentiment.png`, `insight-issues.png`. `python-ui.png`, `python-ui-answer.png`, and `sample_app.png` are local captures of the Python chat page. `specs_illustration.png` and `tracing/process_illustration.png` are redrawn from a real Python run (`docs/images/source/`); keep them when syncing upstream image changes |
 | `src/server/support-agent.ts` | `app/support_agent.py` | Ported |
 | `src/server/tools.ts` | `app/tools.py` | Ported |
 | `src/server/support-data.ts` | `app/support_data.py` | Ported |
@@ -90,7 +90,7 @@ Upstream teaches user and session IDs as an appendix and does not mention `LANGF
 - A commented `LANGFUSE_TRACING_ENVIRONMENT` line in `.env.example`
 - The optional row in the root README environment table
 
-The variable stays unset in the workshop defaults. Traces still use Langfuse's default environment, and chapter 4.3 still tells learners to filter the sample observation to `production` when that panel shows another environment. When porting a new upstream `02-tracing.md`, keep this appendix.
+The variable stays unset in the workshop defaults. `app/env.py` does not read it, and the app calls `get_client()` with no environment, so traces use the SDK's `default` environment. Chapter 4.3 filters the sample panel with `isRootObservation:true` and picks the AGENT `dad-it-support-chat-turn` row. It does not tell learners to filter to `production`. When porting a new upstream `02-tracing.md`, keep this appendix.
 
 ### Root input shape
 

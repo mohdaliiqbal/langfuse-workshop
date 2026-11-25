@@ -76,7 +76,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 - `app/` is the sample agent, the FastAPI server, and the chat UI.
 - `docs/learner/` and `docs/instructor/` are the lessons.
-- `docs/images/` holds the workshop figures. Thirteen Langfuse UI screenshots were recaptured from a live Python run on 2026-11-25. The rest are still the upstream captures. See [docs/images/README.md](docs/images/README.md).
+- `docs/images/` holds the workshop figures. Langfuse UI shots recaptured on 2026-11-25 include 6 monitoring evaluator screens and 11 topics files. Four topics files stay upstream because Sentiment and Issues had not populated. See [docs/images/README.md](docs/images/README.md).
 - `data/seed-dataset.json` is the 25-item eval dataset.
 - `scripts/` holds the checkpoint switcher, the seed and experiment runners, the smoke test, and the screenshot refresher.
 - `checkpoints/` holds the per-chapter copies of the three milestone files.

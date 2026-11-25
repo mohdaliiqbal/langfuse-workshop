@@ -188,7 +188,7 @@ LANGFUSE_TRACING_ENVIRONMENT=development
 
 Restart `uv run python -m app.server`. In the Traces table, filter **Environment** to `development`. A deployed copy of the same project sets the variable to `production`.
 
-The lessons leave this variable unset. Traces then use Langfuse's default environment, and the sample observation in [4.3 Capturing signals](./04-monitoring/capturing-signals.md) can still be filtered to `production` when that panel shows another environment. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
+The lessons leave this variable unset. `app/env.py` does not read it, and the app calls `get_client()` with no `environment` argument, so the SDK labels those traces `default`. [Section 4.3 Capturing signals](./04-monitoring/capturing-signals.md) filters the sample panel with `isRootObservation:true` and picks the AGENT row `dad-it-support-chat-turn` in that `default` environment. There is no `production` environment unless you set this variable to create one. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
 
 ## End state
 

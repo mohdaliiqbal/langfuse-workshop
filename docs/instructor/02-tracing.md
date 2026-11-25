@@ -14,7 +14,7 @@ Learner guide: [02 Tracing](../learner/02-tracing.md)
 - Create the OpenAI client inside the decorated function so generations nest under the agent.
 - Do not skip the `update_current_span(input=request.model_dump(mode="json", by_alias=True, exclude_none=True))` line in Step 2. Without it the Python root input is `{"args": [...], "kwargs": {}}` in snake_case, and the 4.3 evaluator mapping **Input → messages** finds nothing.
 - User and session propagation is optional live. The `03-prompt-management` snapshot already includes `propagate_attributes`.
-- Tracing environment is an appendix, not a fourth live step. Leave `LANGFUSE_TRACING_ENVIRONMENT` unset unless a learner wants laptop traces separated from a deployed app. If they set it, the Traces filter and the 4.3 sample-observation filter have to use that same value.
+- Tracing environment is an appendix, not a fourth live step. Leave `LANGFUSE_TRACING_ENVIRONMENT` unset unless a learner wants laptop traces separated from a deployed app. Unset traces land in `default`. The app never sets a tracing environment. If they set the variable, the Traces filter and the 4.3 sample-observation filter have to use that same value. Do not tell them to filter the sample panel to `production`.
 
 ## Demo rhythm
 
