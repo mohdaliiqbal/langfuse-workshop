@@ -9,7 +9,7 @@ and every skipped step was skipped only because a secret was missing.
 
 `--live` also sends one real chat turn through the reference agent (a few
 OpenAI calls) and checks its trace in Langfuse: the agent root, the tool
-observations, the OpenAI generations, the camelCase root input the 4.2
+observations, the OpenAI generations, the camelCase root input the 4.3
 evaluators map, and the prompt link when the prompt is published.
 """
 
@@ -127,6 +127,22 @@ def step_error_analysis(report: Report) -> None:
     assert_scenarios()
     assert_annotations()
     report.add("error-analysis", "PASS", "20 scenarios and 20 annotation notes validate")
+
+
+def step_topics(report: Report) -> None:
+    from datetime import datetime, timezone
+
+    from seed_topics_traces import build_offline
+    from topics_data import assert_scenarios, frustrated_count
+
+    now = datetime.now(timezone.utc)
+    assert_scenarios(now)
+    spans = build_offline(now)
+    report.add(
+        "topics",
+        "PASS",
+        f"200 scenarios validate ({frustrated_count()} frustrated); dry run built {len(spans)} observations offline",
+    )
 
 
 def step_prompt_variants(report: Report) -> None:
@@ -312,6 +328,7 @@ def main() -> int:
         step_guides,
         step_dataset_file,
         step_error_analysis,
+        step_topics,
         step_prompt_variants,
         step_http,
         _syntax_guard,

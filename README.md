@@ -38,7 +38,7 @@ Facilitator notes are in [docs/instructor/](docs/instructor/). Preparation notes
 | 01 | [Base app](docs/learner/01-base-app.md) | `use_checkpoint.py 01-base-app` | Tour the running app |
 | 02 | [Tracing](docs/learner/02-tracing.md) | `use_checkpoint.py 02-tracing` | Generations, agent root, tool spans |
 | 03 | [Prompt management](docs/learner/03-prompt-management.md) | `use_checkpoint.py 03-prompt-management` | Fetch a versioned system prompt |
-| 04 | [Monitoring](docs/learner/04-monitoring.md) | `use_checkpoint.py 04-monitoring` | Dashboards, error analysis, signals |
+| 04 | [Monitoring](docs/learner/04-monitoring.md) | `use_checkpoint.py 04-monitoring` | Dashboards, error analysis, topics, signals |
 | 05 | [Build eval datasets](docs/learner/05-dataset.md) | `use_checkpoint.py 05-dataset` | Dataset shape and seeding |
 | 06 | [Experiments](docs/learner/06-experiments.md) | `use_checkpoint.py 06-experiments` | Run the agent on the dataset and score it |
 | 07 | [Evaluation](docs/learner/07-evaluation.md) | `use_checkpoint.py 07-evaluation` | Change the prompt, rerun, compare |
@@ -67,6 +67,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 | Publish the error-analysis prompt | `WORKSHOP_PROMPT_VARIANT=error-analysis uv run python scripts/publish_prompt.py` |
 | Seed error-analysis traces | `uv run python scripts/seed_error_analysis.py` |
 | Seed error-analysis annotations | `uv run python scripts/seed_error_analysis_annotations.py` |
+| Seed topics traces | `uv run python scripts/seed_topics_traces.py` |
 | Seed the eval dataset | `uv run python scripts/seed_dataset.py` |
 | Run an experiment | `uv run python scripts/run_dataset.py` |
 | Smoke test | `uv run python scripts/run_workshop.py` |
@@ -75,7 +76,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 - `app/` is the sample agent, the FastAPI server, and the chat UI.
 - `docs/learner/` and `docs/instructor/` are the lessons.
-- `docs/images/` holds the workshop figures. Thirteen Langfuse UI screenshots were recaptured from a live Python run on 2026-11-25. The rest are still the upstream captures. See [docs/images/README.md](docs/images/README.md).
+- `docs/images/` holds the workshop figures. Langfuse UI shots recaptured on 2026-11-25 include 6 monitoring evaluator screens and 11 topics files. Four topics files stay upstream because Sentiment and Issues had not populated. See [docs/images/README.md](docs/images/README.md).
 - `data/seed-dataset.json` is the 25-item eval dataset.
 - `scripts/` holds the checkpoint switcher, the seed and experiment runners, the smoke test, and the screenshot refresher.
 - `checkpoints/` holds the per-chapter copies of the three milestone files.
@@ -102,7 +103,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 ## Smoke test
 
-`uv run python scripts/run_workshop.py` (or `make smoke`) compiles the app, checks checkpoint snapshots, runs the local tool and dataset checks, boots the HTTP routes, and validates the error-analysis scenarios. Steps that call Langfuse or OpenAI are skipped when the keys above are missing, and the command still exits 0. Add `--live` to also send one chat turn through the agent and check its trace shape in Langfuse (a few OpenAI calls). Pull requests run the plain command. The weekly GitHub Actions run adds `--live` when the repository secrets are set. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`uv run python scripts/run_workshop.py` (or `make smoke`) compiles the app, checks checkpoint snapshots, runs the local tool and dataset checks, boots the HTTP routes, validates the error-analysis scenarios, and validates the 200 topics scenarios with an offline dry run of the topics seed. Steps that call Langfuse or OpenAI are skipped when the keys above are missing, and the command still exits 0. Add `--live` to also send one chat turn through the agent and check its trace shape in Langfuse (a few OpenAI calls). Pull requests run the plain command. The weekly GitHub Actions run adds `--live` when the repository secrets are set. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Where to go next
 

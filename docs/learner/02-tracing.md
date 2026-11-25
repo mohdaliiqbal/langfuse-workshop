@@ -21,7 +21,7 @@ When Dad asks "How do I turn Bluetooth on?", the agent does not just hit OpenAI 
 
 The goal is one nested trace per chat turn: the agent run, the OpenAI generations, and the two tool calls, in order.
 
-![Spec's step by step process](../images/tracing/process_illustration.png)
+![One question becomes six steps: Dad asks, the model requests both tools, get_support_context and search_help_library return, the model writes, and Specs answers.](../images/tracing/process_illustration.png)
 
 1. **First trace**: log the OpenAI generations themselves.
 2. **Nested traces**: group the generations under one agent run per turn.
@@ -109,7 +109,7 @@ def run_support_conversation(request: ChatRequest) -> ChatResponse:
     ...
 ```
 
-`@observe` records the return value as the trace output. On its own it would record the input as `{"args": [...], "kwargs": {}}` with snake_case fields. The `update_current_span` line replaces that with the same `{ sessionId, userId, messages }` body the TypeScript app logs, which is what the evaluators in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) map with **Input → messages**.
+`@observe` records the return value as the trace output. On its own it would record the input as `{"args": [...], "kwargs": {}}` with snake_case fields. The `update_current_span` line replaces that with the same `{ sessionId, userId, messages }` body the TypeScript app logs, which is what the evaluators in [4.3 Capturing signals](./04-monitoring/capturing-signals.md) map with **Input → messages**.
 
 Restart, ask one question. One chat turn should now be a single `dad-it-support-chat-turn` observation with the OpenAI generation nested underneath.
 
@@ -188,7 +188,7 @@ LANGFUSE_TRACING_ENVIRONMENT=development
 
 Restart `uv run python -m app.server`. In the Traces table, filter **Environment** to `development`. A deployed copy of the same project sets the variable to `production`.
 
-The lessons leave this variable unset. Traces then use Langfuse's default environment, and the sample observation in [4.2 Capturing signals](./04-monitoring/capturing-signals.md) can still be filtered to `production` when that panel shows another environment. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
+The lessons leave this variable unset. `app/env.py` does not read it, and the app calls `get_client()` with no `environment` argument, so the SDK labels those traces `default`. [Section 4.3 Capturing signals](./04-monitoring/capturing-signals.md) filters the sample panel with `isRootObservation:true` and picks the AGENT row `dad-it-support-chat-turn` in that `default` environment. There is no `production` environment unless you set this variable to create one. When you set the variable, filter on the value you set. See [Environments](https://langfuse.com/docs/observability/features/environments).
 
 ## End state
 

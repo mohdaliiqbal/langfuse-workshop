@@ -1,11 +1,13 @@
 ---
-title: "Workshop: 4.2 Capturing Signals"
+title: "Workshop: 4.3 Capturing Signals"
 description: "Score user disagreement and all-caps frustration on production traces so the turns worth reading stand out."
 ---
 
-# 4.2 Capturing signals
+# 4.3 Capturing signals
 
 ## Why capture signals
+
+On Sentiment in [section 4.2 Detect topics and issues](./topics.md), frustration showed up as its own tiles, including all-caps lines and pushback on the steps. These scores are how you find those turns without opening the map.
 
 Once traces are coming in, you want a judgment on them without opening each one. A production signal is something the user does or says that shows whether a turn went well. Stored as a score on the trace, it points you to the rows worth reading. Start with the negative ones.
 
@@ -28,7 +30,7 @@ uv run python -m app.server
 
 ## Step 0: Set up the evaluator model
 
-The disagreement judge needs a model connection on the project. The keys in `.env` do not fill that list.
+The disagreement judge needs a model connection on the project. The keys in `.env` do not fill that list. [Section 4.2 Detect topics and issues](./topics.md) adds this connection. If it is already there, keep it and continue. If you skipped that section, add it now.
 
 1. In Langfuse, open **Project Settings → LLM Connections**.
 2. Click **Add LLM Connection**.
@@ -46,9 +48,9 @@ Langfuse ships a published **Detect User Disagreement** template. It reads varia
 **Detect User Disagreement** maps `{{conversation_history}}` to every input message and `{{last_user_message}}` to the last input message. Target the root `dad-it-support-chat-turn` agent observation. The Python app logs that same input shape: `messages`, `sessionId`, and `userId`.
 
 1. Open **Evaluators → New Evaluator** and pick **Detect User Disagreement** from the **Template Gallery**.
-2. On the right side, select the trace root as a sample observation. Filter to the `production` environment if the panel is showing something else.
+2. On the right, **Test with sample observations** already filters with `isRootObservation:true`. The workshop leaves `LANGFUSE_TRACING_ENVIRONMENT` unset. `app/env.py` does not read that variable, and `get_client()` is called with no `environment` argument, so the Python SDK labels these traces `default`. There is no `production` environment in the project. If the panel is filtered to another environment, switch it to `default`. Select the **AGENT** row named `dad-it-support-chat-turn`. The sample line under the table should read that name. Do not leave a child **TOOL** row selected.
 
-   ![Select the trace root as a sample observation in the evaluator setup panel.](../../images/monitoring/select-sample-observation.png)
+   ![The sample panel filtered with isRootObservation:true. Pick the AGENT row dad-it-support-chat-turn.](../../images/monitoring/select-sample-observation.png)
 
 3. Under **Map variables to data**, bind each variable from the live observation tree. Open a row, hover the field, and press **Use**. Do not use **Type a JSONPath instead**.
 
@@ -59,9 +61,9 @@ Langfuse ships a published **Detect User Disagreement** template. It reads varia
 
    ![Bind the last user message with Use on Input → messages → last.](../../images/monitoring/user-disagreement-last-user-message-mapping.png)
 
-4. Test the evaluator on the sample observation.
+4. Test the evaluator on the sample observation. On a one-turn seed trace the score is **false**, with the reason "There is no prior assistant response, so the user's message cannot indicate disagreement with the assistant." That is the right result for a first question. The disagreement turn in Step 3 is what should score true.
 
-   ![Test the User Disagreement evaluator on the selected sample observation.](../../images/monitoring/user-disagreement-test-evaluator.png)
+   ![The disagreement test on a one-turn sample scores false: there is no prior assistant response.](../../images/monitoring/user-disagreement-test-evaluator.png)
 
 5. Click **Create evaluator**. Review the cost estimate and sampling rate, then click **Execute**.
 
@@ -73,10 +75,10 @@ The rule scores observations that arrive after you execute it. The seeded batch 
 
 This check does not need a model. It looks for a user message that is mostly capital letters.
 
-1. Open **Evaluators → New Evaluator** and pick **Detect User Frustration (ALL CAPS)**. The template targets the input of an observation and checks whether more than 70% of a message is capital letters.
-2. Target the same root agent observation:
+1. Open **Evaluators → New Evaluator** and pick **Detect User Frustration (ALL CAPS)**. It opens as a **Code evaluator**, written in TypeScript. There is no variable-mapping step. The code reads the observation input and returns true when more than 70% of the latest user message is capital letters.
+2. Target the same root agent observation. Keep the `isRootObservation:true` filter and select the **AGENT** row `dad-it-support-chat-turn`:
 
-   ![Target the same root observation for the user-frustration code evaluator.](../../images/monitoring/user-frustration-target-root-observation.png)
+   ![ALL CAPS opens as a Code evaluator. The sample panel still targets the AGENT row dad-it-support-chat-turn.](../../images/monitoring/user-frustration-target-root-observation.png)
 
 3. Run a test.
 4. Click **Create Evaluator**, then **Execute**.

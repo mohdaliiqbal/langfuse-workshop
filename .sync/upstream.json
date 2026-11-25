@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/langfuse/langfuse-workshop",
-  "commit": "28996a20d39a82e511a8fd043fb26252495453e3",
-  "upstreamDate": "2026-11-23",
-  "syncedOn": "2026-11-24",
-  "subject": "Revert \"Nest tool observations under the generation that requested them\" (#84)",
+  "commit": "df8f386dd6594074ca31227b811c8472d377d595",
+  "upstreamDate": "2026-11-25",
+  "syncedOn": "2026-11-25",
+  "subject": "Add the topics lab to monitoring (#82)",
   "notes": "Diff future weekly syncs from this commit. See SYNC.md for the module map."
 }

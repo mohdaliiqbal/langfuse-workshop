@@ -77,7 +77,7 @@ The model never sees the expected label. The score itself is an equality check. 
 
 ## Step 4: Review the `correctness` regression check
 
-The second callback asks OpenAI whether the agent answer preserves the material meaning of `idealAnswer`. It maps the judge's true/false result to `0` or `1` plus a short comment. The judge uses `OPENAI_API_KEY` and `OPENAI_MODEL` from `.env`. `behavior_match` uses the same API key with `gpt-6-luna` fixed in the script. You do not need the Langfuse evaluator model from section 4.2 for this chapter.
+The second callback asks OpenAI whether the agent answer preserves the material meaning of `idealAnswer`. It maps the judge's true/false result to `0` or `1` plus a short comment. The judge uses `OPENAI_API_KEY` and `OPENAI_MODEL` from `.env`. `behavior_match` uses the same API key with `gpt-6-luna` fixed in the script. You do not need the Langfuse model connection from sections 4.2 and 4.3 for this chapter.
 
 ## Step 5: Run the dataset
 
