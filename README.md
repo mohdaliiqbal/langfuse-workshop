@@ -75,7 +75,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 - `app/` is the sample agent, the FastAPI server, and the chat UI.
 - `docs/learner/` and `docs/instructor/` are the lessons.
-- `docs/images/` are Langfuse UI screenshots reused from upstream. See [docs/images/README.md](docs/images/README.md).
+- `docs/images/` holds the workshop figures. Thirteen Langfuse UI screenshots were recaptured from a live Python run on 2026-11-25. The rest are still the upstream captures. See [docs/images/README.md](docs/images/README.md).
 - `data/seed-dataset.json` is the 25-item eval dataset.
 - `scripts/` holds the checkpoint switcher, the seed and experiment runners, the smoke test, and the screenshot refresher.
 - `checkpoints/` holds the per-chapter copies of the three milestone files.
@@ -111,4 +111,4 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 
 ## License
 
-MIT, see [LICENSE](LICENSE). This project is a Python port of the MIT-licensed Langfuse workshop. UI screenshots and the chat stylesheet are reused from that repository. See [docs/images/README.md](docs/images/README.md).
+MIT, see [LICENSE](LICENSE). This project is a Python port of the MIT-licensed Langfuse workshop. The chat stylesheet, and the Langfuse UI screenshots that were not recaptured, are reused from that repository. See [docs/images/README.md](docs/images/README.md).

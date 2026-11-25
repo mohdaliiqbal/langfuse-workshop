@@ -84,9 +84,9 @@ from langfuse.openai import OpenAI
 
 `from langfuse.openai import OpenAI` is the Python equivalent of `observeOpenAI(new OpenAI(...))`. The call site stays `OpenAI(api_key=env.openai_api_key)`. Every `chat.completions.create(...)` now emits a generation.
 
-Restart the server (`uv run python -m app.server`), ask one question, and refresh Langfuse. You should see one generation per OpenAI call with prompt, response, tokens, and latency. Each generation is still its own top-level trace. The Python SDK names these generations `OpenAI-generation`. The screenshot comes from the TypeScript workshop, where the same rows are named `openai-chat-completion`.
+Restart the server (`uv run python -m app.server`), ask one question, and refresh Langfuse. You should see one generation per OpenAI call with prompt, response, tokens, and latency. Each generation is still its own top-level trace. The Python SDK names these generations `OpenAI-generation`, which is the name in the screenshot.
 
-![Langfuse Traces view after Step 1: each chat turn appears as standalone OpenAI generations.](../images/tracing/02-tracing-step-1.png)
+![Langfuse Tracing view with generations named OpenAI-generation.](../images/tracing/02-tracing-step-1.png)
 
 ## Step 2: Nested traces
 
@@ -113,7 +113,7 @@ def run_support_conversation(request: ChatRequest) -> ChatResponse:
 
 Restart, ask one question. One chat turn should now be a single `dad-it-support-chat-turn` observation with the OpenAI generation nested underneath.
 
-![Trace tree after Step 2: one dad-it-support-chat-turn agent root with the OpenAI generation as a child.](../images/tracing/02-tracing-step-2.png)
+![Finished dad-it-support-chat-turn trace: OpenAI-generation children, get_support_context, and search_help_library. The same capture is used for Step 3.](../images/tracing/02-tracing-step-2.png)
 
 ## Step 3: Recording tool calls
 
@@ -138,7 +138,7 @@ def search_help_library_tool(question: str) -> dict:
 
 `TOOL_DEFINITIONS` stays untouched. Restart and ask again. The trace should now show both tools.
 
-![Trace after Step 3. dad-it-support-chat-turn with OpenAI generations, get_support_context, and search_help_library.](../images/tracing/02-tracing-step-3.png)
+![Trace after Step 3. dad-it-support-chat-turn with OpenAI-generation rows, get_support_context, and search_help_library.](../images/tracing/02-tracing-step-3.png)
 
 ## How to verify you are done
 
