@@ -42,7 +42,7 @@ LANGFUSE_PROMPT_LABEL=production
 5. **Label** the version `production` (this matches `LANGFUSE_PROMPT_LABEL`).
 6. **Save**.
 
-![The published dad-it-support-agent prompt in Langfuse: version 1 with the production and latest labels.](../images/prompt-management/03-prompt-management-published-prompt.png)
+![The dad-it-support-agent prompt in Langfuse: version 2 with the production and latest labels, and version 1 listed beside it.](../images/prompt-management/03-prompt-management-published-prompt.png)
 
 The same publish is available as a script. It reads `SYSTEM_PROMPT` and creates the text prompt with the configured label:
 
@@ -118,7 +118,7 @@ Restart `uv run python -m app.server`, ask one question, then in Langfuse:
 - Open the trace and the OpenAI generation. It should show a **Prompt** badge linking to `dad-it-support-agent` at the version you published.
 - In the Prompts view for `dad-it-support-agent`, the trace shows up where that version was used.
 
-![A traced OpenAI generation with the prompt badge in its header linking back to dad-it-support-agent.](../images/prompt-management/03-prompt-management-prompt-badge.png)
+![An OpenAI-generation whose prompt badge reads dad-it-support-agent v2.](../images/prompt-management/03-prompt-management-prompt-badge.png)
 
 ## Wrap-up
 
