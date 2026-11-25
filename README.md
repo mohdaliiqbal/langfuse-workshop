@@ -92,6 +92,7 @@ Open [http://127.0.0.1:3333](http://127.0.0.1:3333). The page and the API are th
 | `LANGFUSE_PROMPT_NAME` | Prompt fetch and publish | Defaults to `dad-it-support-agent` |
 | `LANGFUSE_PROMPT_LABEL` | Prompt fetch and publish | Defaults to `production` |
 | `DATASET_NAME` | Dataset seed and experiments | Defaults to `dad-it-support-workshop` |
+| `LANGFUSE_TRACING_ENVIRONMENT` | Optional | Labels traces, for example `development` or `production`. Unset here, so traces use Langfuse's default environment |
 | `WORKSHOP_PROMPT_VARIANT` | `publish_prompt.py` only | `default`, `gentler`, or `error-analysis` |
 | `PORT` | The server | Defaults to `3333` |
 | `LANGFUSE_PROJECT_URL` | Screenshot refresh | Cloud project URL |

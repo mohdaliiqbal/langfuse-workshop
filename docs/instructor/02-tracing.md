@@ -13,6 +13,7 @@ Learner guide: [02 Tracing](../learner/02-tracing.md)
 - Python equivalents of the TypeScript wrappers: `from langfuse.openai import OpenAI` instead of `observeOpenAI`, `@observe(name=..., as_type="agent"|"tool")` instead of `observe(fn, { asType })`, and `get_client()` plus `flush()` / `shutdown()` instead of `NodeSDK` and `LangfuseSpanProcessor`.
 - Create the OpenAI client inside the decorated function so generations nest under the agent.
 - User and session propagation is optional live. The `03-prompt-management` snapshot already includes `propagate_attributes`.
+- Tracing environment is an appendix, not a fourth live step. Leave `LANGFUSE_TRACING_ENVIRONMENT` unset unless a learner wants laptop traces separated from a deployed app. If they set it, the Traces filter and the 4.2 sample-observation filter have to use that same value.
 
 ## Demo rhythm
 

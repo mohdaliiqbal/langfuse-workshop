@@ -74,3 +74,30 @@ Do not open issues, pull requests, or pushes on `langfuse/langfuse-workshop`.
 - `scripts/refresh_screenshots.py`
 - `.github/workflows/workshop-smoke.yml`
 - Checkpoint snapshots instead of git tags, so the sync does not force-push this repo's tags
+
+## Python-only adaptations to preserve on sync
+
+Weekly syncs must keep the pieces below. They are deliberate differences from upstream, taken from attendee feedback in [PR #9](https://github.com/mohdaliiqbal/langfuse-workshop/pull/9) (`f1fba023`, Annabell Schaefer).
+
+### Tracing environment
+
+Upstream teaches user and session IDs as an appendix and does not mention `LANGFUSE_TRACING_ENVIRONMENT`. The feedback asked for a way to keep laptop traces out of a deployed app's stream. This port keeps the upstream chapter order and the three tracing steps. It adds:
+
+- The "Tracing environment" appendix in [docs/learner/02-tracing.md](docs/learner/02-tracing.md)
+- The instructor note in [docs/instructor/02-tracing.md](docs/instructor/02-tracing.md)
+- A commented `LANGFUSE_TRACING_ENVIRONMENT` line in `.env.example`
+- The optional row in the root README environment table
+
+The variable stays unset in the workshop defaults. Traces still use Langfuse's default environment, and chapter 4.2 still tells learners to filter the sample observation to `production` when that panel shows another environment. When porting a new upstream `02-tracing.md`, keep this appendix.
+
+### Feedback from that PR that stays dropped
+
+The same PR reworked the old DataStream labs. Those files are gone, and the ideas that would replace an upstream chapter stay dropped. Do not revive them on a later sync.
+
+| Feedback | Where the current workshop stands |
+| --- | --- |
+| Lab 02 collapses tracing into one pass and names the trace on the first observation | Chapter 02 still builds the trace in three steps: OpenAI generations, then the `dad-it-support-chat-turn` agent root, then tool spans. That end state already has the drop-in client, the nested observations, and the trace name. |
+| Lab 03 becomes its own Sessions & Environments chapter, and drops `tags` and `trace_name` from `propagate_attributes` | Chapter 03 stays prompt management. User, session, trace name, and tags are already set in the tracing appendix and in `app/support_agent.py`. |
+| Lab 05 aims both evaluators at out-of-scope detection, adds an SDK `in-scope` judge, and adds a task for thumbs-versus-judge disagreement | Chapter 4.2 stays on Detect User Disagreement and the ALL CAPS evaluator. The chat UI has no thumbs control. Out-of-scope replies are an error-analysis failure and a dataset case, scored offline by `behavior_match`. |
+| Lab 07 removes the script judge and scores dataset runs only with a platform LLM-as-a-judge | Chapter 06 still scores `behavior_match` and `correctness` inside `dataset.run_experiment`. The lesson keeps platform evaluators out of this chapter. Chapter 07 already reads the low-scoring items, publishes the error-analysis prompt, and compares the two runs. |
+| Lab folder rename, solution files, and the old root workshop-flow tables | `labs/` is not part of this tree. No lesson links to it. |
